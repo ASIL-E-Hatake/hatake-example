@@ -1,0 +1,11 @@
+repositories:
+  departmentRepository   ← 登録が要る
+  employeeRepository   ← 登録が要る
+  supplierRepository   ← 登録が要る
+plugins:
+  bulkRetire   ← 登録が要る
+sinks:
+  exportSink   ← 登録が要る
+roles:
+  admin   ← アプリが配る必要がある
+  hr   ← アプリが配る必要がある

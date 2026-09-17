@@ -1,0 +1,15 @@
+{
+  "name": "master-maintenance-api",
+  "private": true,
+  "type": "module",
+  "description": "社内マスタメンテナンスの API。画面と同じ定義（../definitions/app.yaml）で検証する。",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "dependencies": {
+    "@hatake-fw/api": "https://github.com/ASIL-E-Hatake/hatake/releases/download/v0.9.0/hatake-fw-api-0.9.0.tgz",
+    "express": "^4.19.2",
+    "pg": "^8.12.0"
+  }
+}

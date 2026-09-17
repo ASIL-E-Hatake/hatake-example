@@ -1,0 +1,345 @@
+# yaml-language-server: $schema=https://github.com/ASIL-E-Hatake/hatake/raw/main/spec/hatake-page.schema.json
+#
+# 社内マスタメンテナンス — 画面の定義（これ1枚で4画面）。
+#
+# この定義は **flutter-src と node-src の両方が読む**。画面を描くのも、API が
+# リクエストを検証するのも、同じこの1枚。だから definitions/ は案件の直下に置いてある。
+#
+#   npx hatake check definitions/app.yaml --project definitions/hatake.project.yaml
+dsl_version: "1.0"
+
+app:
+  id: master_maintenance
+  title: 社内マスタ
+  home: employees
+  # 配りうる役割の語彙。ここに無い名前をどこかに書いたら「誰にも見えません」と言われる。
+  roles: [admin, hr, viewer]
+
+  menu:
+    - { id: employees, label: 社員マスタ, icon: people, page: employee_master }
+    - { id: departments, label: 部署マスタ, icon: apartment, page: department_master }
+    - { id: suppliers, label: 取引先マスタ, icon: store, page: supplier_master }
+
+  pages:
+    # ------------------------------------------------------------------
+    # 社員マスタ（CRUD・権限・一括・CSV）
+    # ------------------------------------------------------------------
+    - type: crud
+      id: employee_master
+      title: 社員マスタ
+      repository: employeeRepository
+      key: employeeNo
+
+      search:
+        layout: { columns: 3 }
+        filters:
+          - { field: employeeNo, label: 社員番号, type: text, operator: equals }
+          - { field: name, label: 氏名, type: text, operator: contains }
+          - field: departmentCode
+            label: 所属部署
+            type: select
+            operator: equals
+            optionsFrom:
+              repository: departmentRepository
+              value: departmentCode
+              label: departmentName
+          - field: employmentStatus
+            label: 在籍区分
+            type: select
+            operator: equals
+            options:
+              - { value: active, label: 在籍 }
+              - { value: leave, label: 休職 }
+              - { value: retired, label: 退職 }
+
+      table:
+        pagination: { pageSize: 50 }
+        rowActions: [edit, delete]
+        columns:
+          - { field: employeeNo, label: 社員番号, width: 110, sortable: true }
+          - { field: name, label: 氏名, sortable: true }
+          - { field: nameKana, label: カナ, width: 160 }
+          - { field: departmentName, label: 所属部署, width: 160 }
+          - { field: position, label: 役職, width: 120 }
+          - { field: hireDate, label: 入社日, type: date, width: 120, sortable: true }
+          - { field: employmentStatus, label: 在籍区分, type: badge, width: 100 }
+          # 内線は情シスと人事だけ（一般には見せない）。
+          - { field: extension, label: 内線, width: 90, roles: [admin, hr] }
+
+      form:
+        sections:
+          - title: 基本情報
+            layout: { columns: 2 }
+            fields:
+              - field: employeeNo
+                label: 社員番号
+                type: text
+                required: true
+                validators:
+                  - { type: pattern, pattern: "^[0-9]{6}$", message: 社員番号は6桁の数字です }
+              - { field: name, label: 氏名, type: text, required: true }
+              - { field: nameKana, label: カナ, type: text, required: true }
+              - field: departmentCode
+                label: 所属部署
+                type: select
+                required: true
+                optionsFrom:
+                  repository: departmentRepository
+                  value: departmentCode
+                  label: departmentName
+              - { field: position, label: 役職, type: text }
+              - { field: email, label: メール, type: text, validators: [{ type: email }] }
+              - { field: extension, label: 内線, type: text }
+
+          - title: 在籍
+            layout: { columns: 2 }
+            fields:
+              - field: employmentStatus
+                label: 在籍区分
+                type: select
+                required: true
+                options:
+                  - { value: active, label: 在籍 }
+                  - { value: leave, label: 休職 }
+                  - { value: retired, label: 退職 }
+              - { field: hireDate, label: 入社日, type: date, required: true }
+              - field: retireDate
+                label: 退職日
+                type: date
+                # 退職のときだけ必須（在籍中に退職日が入っていると話が合わない）。
+                requiredWhen: { field: employmentStatus, value: retired }
+                validators:
+                  - { type: compare, field: hireDate, operator: gte, message: 退職日は入社日以降にしてください }
+
+      actions:
+        - id: exportCsv
+          type: export
+          label: CSV 出力
+          scope: all
+          roles: [admin, hr]
+        - id: bulkRetire
+          type: plugin
+          plugin: bulkRetire
+          label: まとめて退職にする
+          scope: selection
+          roles: [admin, hr]
+          confirm:
+            message: 選んだ {count} 件を退職にします。よろしいですか？
+            danger: true
+          # 選べるのは画面に出ている行だけなので、上限は1ページの件数より大きくできない
+          # （100 にしていたら validate が「一度も効きません」と言った）。
+          maxRows:
+            default: 50
+            byRole: { hr: 20 }
+          onSuccess: { message: "{count} 件を退職にしました" }
+          # 失敗した行を名指しする（`hatake advise` がそう言った）。アプリ側の
+          # ハンドラが rejected に行を返したときだけ埋まる。
+          onError: { message: "{count} 件が処理できませんでした（失敗した行: {failedKeys}）" }
+        - id: openDetail
+          type: navigate
+          label: 詳細
+          scope: row
+          page: employee_detail
+          params: { employeeNo: $row.employeeNo }
+
+    # ------------------------------------------------------------------
+    # 社員詳細（読み取り）
+    # ------------------------------------------------------------------
+    - type: detail
+      id: employee_detail
+      title: 社員詳細
+      repository: employeeRepository
+      key: employeeNo
+      form:
+        sections:
+          - title: 基本情報
+            layout: { columns: 2 }
+            fields:
+              - { field: employeeNo, label: 社員番号 }
+              - { field: name, label: 氏名 }
+              - { field: nameKana, label: カナ }
+              - { field: departmentName, label: 所属部署 }
+              - { field: position, label: 役職 }
+              - { field: email, label: メール }
+              - { field: extension, label: 内線, roles: [admin, hr] }
+          - title: 在籍
+            layout: { columns: 2 }
+            fields:
+              - { field: employmentStatus, label: 在籍区分 }
+              - { field: hireDate, label: 入社日, format: date }
+              - { field: retireDate, label: 退職日, format: date }
+
+    # ------------------------------------------------------------------
+    # 部署マスタ
+    # ------------------------------------------------------------------
+    - type: master
+      id: department_master
+      title: 部署マスタ
+      repository: departmentRepository
+      key: departmentCode
+
+      search:
+        layout: { columns: 2 }
+        filters:
+          - { field: departmentName, label: 部署名, type: text, operator: contains }
+
+      table:
+        pagination: { pageSize: 50 }
+        rowActions: [edit, delete]
+        columns:
+          - { field: departmentCode, label: 部署コード, width: 120, sortable: true }
+          - { field: departmentName, label: 部署名, sortable: true }
+          - { field: shortName, label: 略称, width: 120 }
+          - { field: parentDepartmentName, label: 上位部署, width: 160 }
+          - { field: validFromDate, label: 開始日, type: date, width: 120 }
+          - { field: validToDate, label: 終了日, type: date, width: 120 }
+
+      form:
+        sections:
+          - title: 部署
+            layout: { columns: 2 }
+            fields:
+              - field: departmentCode
+                label: 部署コード
+                type: text
+                required: true
+                validators:
+                  - { type: pattern, pattern: "^[A-Za-z0-9]{4}$", message: 部署コードは英数4文字です }
+              - { field: departmentName, label: 部署名, type: text, required: true }
+              - { field: shortName, label: 略称, type: text }
+              - field: parentDepartmentCode
+                label: 上位部署
+                type: select
+                optionsFrom:
+                  repository: departmentRepository
+                  value: departmentCode
+                  label: departmentName
+              - { field: validFromDate, label: 開始日, type: date, required: true }
+              - field: validToDate
+                label: 終了日
+                type: date
+                validators:
+                  - { type: compare, field: validFromDate, operator: gte, message: 終了日は開始日以降にしてください }
+
+      actions:
+        - { id: exportCsv, type: export, label: CSV 出力, scope: all, roles: [admin, hr] }
+
+    # ------------------------------------------------------------------
+    # 取引先マスタ（複雑な検索）
+    # ------------------------------------------------------------------
+    - type: crud
+      id: supplier_master
+      title: 取引先マスタ
+      repository: supplierRepository
+      key: supplierCode
+
+      search:
+        layout: { columns: 3 }
+        filters:
+          - { field: supplierName, label: 取引先名, type: text, operator: contains }
+          - field: supplierType
+            label: 区分
+            type: select
+            operator: equals
+            options:
+              - { value: corp, label: 法人 }
+              - { value: individual, label: 個人 }
+          - field: tradeStatus
+            label: 取引状態
+            type: select
+            operator: equals
+            options:
+              - { value: active, label: 取引中 }
+              - { value: suspended, label: 停止 }
+              - { value: closed, label: 終了 }
+          # 範囲で絞る（与信限度額 いくら以上 いくら以下）。
+          - { field: creditLimit, label: 与信限度額, type: number, operator: between }
+          # 複数選べる（締め日 20日 と 末日 の両方、など）。
+          - field: closingDay
+            label: 締め日
+            type: select
+            operator: in
+            options:
+              - { value: 10, label: 10日 }
+              - { value: 15, label: 15日 }
+              - { value: 20, label: 20日 }
+              - { value: 31, label: 末日 }
+
+      table:
+        pagination: { pageSize: 50 }
+        rowActions: [edit]
+        columns:
+          - { field: supplierCode, label: 取引先コード, width: 130, sortable: true }
+          - { field: supplierName, label: 取引先名, sortable: true }
+          - { field: supplierType, label: 区分, type: badge, width: 90 }
+          - { field: creditLimit, label: 与信限度額, type: number, format: currency, width: 140, sortable: true }
+          - { field: closingDay, label: 締め日, width: 90 }
+          - { field: paymentSiteDays, label: 支払サイト, width: 110 }
+          - { field: tradeStatus, label: 取引状態, type: badge, width: 100 }
+
+      form:
+        sections:
+          - title: 基本情報
+            layout: { columns: 2 }
+            fields:
+              - field: supplierCode
+                label: 取引先コード
+                type: text
+                required: true
+                validators:
+                  - { type: maxLength, value: 10 }
+              - { field: supplierName, label: 取引先名, type: text, required: true }
+              - { field: supplierNameKana, label: カナ, type: text }
+              - field: supplierType
+                label: 区分
+                type: select
+                required: true
+                options:
+                  - { value: corp, label: 法人 }
+                  - { value: individual, label: 個人 }
+              - field: invoiceNo
+                label: インボイス登録番号
+                type: text
+                # 法人のときだけ必須（個人は登録していないことがある）。
+                requiredWhen: { field: supplierType, value: corp }
+                validators:
+                  - { type: pattern, pattern: "^T[0-9]{13}$", message: インボイス登録番号は T + 13桁です }
+
+          - title: 連絡先
+            layout: { columns: 2 }
+            fields:
+              - { field: postalCode, label: 郵便番号, type: text, validators: [{ type: postalCode }] }
+              - { field: address, label: 住所, type: text }
+              - { field: phone, label: 電話, type: text }
+
+          - title: 取引条件
+            layout: { columns: 2 }
+            fields:
+              - field: creditLimit
+                label: 与信限度額
+                type: number
+                format: currency
+                required: true
+                validators:
+                  - { type: min, value: 0 }
+              - field: closingDay
+                label: 締め日
+                type: select
+                required: true
+                options:
+                  - { value: 10, label: 10日 }
+                  - { value: 15, label: 15日 }
+                  - { value: 20, label: 20日 }
+                  - { value: 31, label: 末日 }
+              - { field: paymentSiteDays, label: 支払サイト（日）, type: number, validators: [{ type: min, value: 0 }] }
+              - field: tradeStatus
+                label: 取引状態
+                type: select
+                required: true
+                options:
+                  - { value: active, label: 取引中 }
+                  - { value: suspended, label: 停止 }
+                  - { value: closed, label: 終了 }
+
+      actions:
+        - { id: exportCsv, type: export, label: CSV 出力, scope: all, roles: [admin] }

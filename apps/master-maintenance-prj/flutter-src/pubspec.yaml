@@ -1,0 +1,46 @@
+# 社内マスタメンテナンスの画面。
+#
+# hatake はまだ pub.dev に出していないので **git の tag から入れる**。決めごとが2つ:
+#   ・`ref:` に tag を書く（`main` を指さない＝向こうが push した瞬間に壊れる）
+#   ・`dependency_overrides` に**下に居る hatake_* を全部**書く（パッケージは
+#     pub.dev 前提で書かれていて、その中の overrides は根でしか効かない）
+# → https://github.com/ASIL-E-Hatake/hatake/blob/main/docs/guide/release.ja.md
+name: master_maintenance_app
+description: 社内マスタメンテナンス（hatake の見本）。画面のコードは書かない。
+publish_to: none
+version: 0.9.0
+
+environment:
+  sdk: ^3.5.0
+  flutter: ">=3.16.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # 画面を描く（Material3 の Renderer）
+  hatake_material:
+    git: { url: https://github.com/ASIL-E-Hatake/hatake.git, ref: v0.9.0, path: flutter/packages/hatake_material }
+  # YAML の定義を読む
+  hatake_yaml:
+    git: { url: https://github.com/ASIL-E-Hatake/hatake.git, ref: v0.9.0, path: flutter/packages/hatake_yaml }
+  # 定義が宣言している REST と話す Repository
+  hatake_http:
+    git: { url: https://github.com/ASIL-E-Hatake/hatake.git, ref: v0.9.0, path: flutter/packages/hatake_http }
+  http: ^1.2.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+dependency_overrides:
+  hatake:
+    git: { url: https://github.com/ASIL-E-Hatake/hatake.git, ref: v0.9.0, path: flutter/packages/hatake }
+  hatake_core:
+    git: { url: https://github.com/ASIL-E-Hatake/hatake.git, ref: v0.9.0, path: flutter/packages/hatake_core }
+
+flutter:
+  # **これが無いとアイコンのフォントが同梱されない**（画面のアイコンが全部
+  # 豆腐 □ になる）。定義の menu に icon を書いても出ないので、納品用の
+  # スクリーンショットが「壊れている」ように見えた。
+  uses-material-design: true

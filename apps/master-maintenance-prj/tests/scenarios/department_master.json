@@ -1,0 +1,92 @@
+{
+  "$comment": "部署マスタの値の試験。",
+  "page": "department_master",
+  "cases": [
+    {
+      "name": "S-19 正しく入れたら通る",
+      "record": {
+        "departmentCode": "TEST",
+        "departmentName": "試験部",
+        "shortName": "試験",
+        "parentDepartmentCode": "HONB",
+        "validFromDate": "2026-04-01"
+      },
+      "expect": {
+        "errors": []
+      }
+    },
+    {
+      "name": "S-20 部署コードが英数4文字でない",
+      "record": {
+        "departmentCode": "TES",
+        "departmentName": "試験部",
+        "shortName": "試験",
+        "parentDepartmentCode": "HONB",
+        "validFromDate": "2026-04-01"
+      },
+      "expect": {
+        "errors": [
+          {
+            "field": "departmentCode",
+            "message": "部署コードは英数4文字です"
+          }
+        ]
+      }
+    },
+    {
+      "name": "S-21 終了日が開始日より前",
+      "record": {
+        "departmentCode": "TEST",
+        "departmentName": "試験部",
+        "shortName": "試験",
+        "parentDepartmentCode": "HONB",
+        "validFromDate": "2026-04-01",
+        "validToDate": "2026-03-31"
+      },
+      "expect": {
+        "errors": [
+          {
+            "field": "validToDate",
+            "message": "終了日は開始日以降にしてください"
+          }
+        ]
+      }
+    },
+    {
+      "name": "S-26 開始日が空",
+      "record": {
+        "departmentCode": "TEST",
+        "departmentName": "試験部",
+        "shortName": "試験",
+        "parentDepartmentCode": "HONB",
+        "validFromDate": ""
+      },
+      "expect": {
+        "errors": [
+          {
+            "field": "validFromDate",
+            "message": "必須項目です"
+          }
+        ]
+      }
+    },
+    {
+      "name": "S-28 部署名が空",
+      "record": {
+        "departmentCode": "TEST",
+        "departmentName": "",
+        "shortName": "試験",
+        "parentDepartmentCode": "HONB",
+        "validFromDate": "2026-04-01"
+      },
+      "expect": {
+        "errors": [
+          {
+            "field": "departmentName",
+            "message": "必須項目です"
+          }
+        ]
+      }
+    }
+  ]
+}

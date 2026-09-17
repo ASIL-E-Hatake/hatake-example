@@ -1,0 +1,20 @@
+# Dart / Flutter
+.dart_tool/
+build/
+pubspec.lock
+.flutter-plugins*
+
+# Node
+node_modules/
+dist/
+
+# Docker が作る置き場
+.data/
+
+# エディタ
+.idea/
+.vscode/
+*.iml
+
+# テストが作るもの（生成物だが、納品物なので**残す**）
+# ※ スクリーンショットは docs/4-テスト/画面/ に入る（.gitignore しない）

@@ -1,0 +1,149 @@
+# yaml-language-server: $schema=https://github.com/ASIL-E-Hatake/hatake/raw/main/spec/hatake-project.schema.json
+#
+# 案件の前書き — 定義を書く**前**に AI に読ませる1枚。
+#
+# 出どころ: docs/01-案件の説明.md（人が書いたメモ）を `hatake project --draft --from`
+# に通して下書きを起こし、**人が直した**もの。下書きはほとんど空だった（資料の見出しから
+# 拾える所しか拾わないので）。育てたのは人。
+#
+#   npx hatake project definitions/hatake.project.yaml        # 読み返す
+#   npx hatake project definitions/hatake.project.yaml --coverage definitions/*.yaml
+#
+# ブランチ名・コミット規約はここに書かない（定義に現れないので機械が突き合わせられず、
+# 必ず腐る）。
+project_version: "1.0"
+
+system:
+  what: >-
+    人事部と購買部が使う社内マスタの管理画面。社員・部署・取引先の3つを、情シスに
+    依頼せず自分たちで直せるようにする。いまは Excel で管理している。
+  users:
+    - 情シス（admin・2人）。全マスタを直せる
+    - 人事（hr・5人）。社員と部署を直せる。取引先は見るだけ
+    - 一般（viewer・全社員）。どのマスタも見るだけ
+  premises:
+    # **できないこと**を書く場所。書かないと、AI は書ける方に倒す。
+    - ログインは hatake の外。画面は定義で作るが、資格を確かめるのは API 側。
+    - 認証は当面このシステムが ID とパスワードを持つ。将来 Active Directory に差し替える。
+    - 社員番号は採番しない。人事が決めた番号を手で入れる（既存の Excel と揃えるため）。
+    - 退職者は消さない。在籍区分を「退職」にするだけ。
+    - 監査（誰がいつ何を直したか）は API 側で残す。画面は残さない。
+    - 与信限度額の判断（この取引先にいくらまで）は購買部の別システムが正。ここでは記録するだけ。
+  external:
+    - name: employeeRepository
+      what: 社員マスタ（この案件の API）
+      owner: 情シス
+    - name: departmentRepository
+      what: 部署マスタ（この案件の API）
+      owner: 情シス
+    - name: supplierRepository
+      what: 取引先マスタ（この案件の API）
+      owner: 情シス
+    - name: csvExport
+      what: 一覧の CSV 出力（ブラウザに落とす）
+      owner: 情シス
+
+glossary:
+  # 「業務の言葉 → 定義に書く名前」。同じものが画面ごとに違う字になるのを止める。
+  - term: 社員番号
+    field: employeeNo
+    avoid: [社員コード, 従業員番号]
+    note: 6桁の数字。人事が決める。あとから変えない
+  - term: 所属部署
+    field: departmentCode
+    avoid: [部門, 課]
+    note: 画面に出すのは部署名だが、持つのはコード
+  - term: 在籍区分
+    field: employmentStatus
+    avoid: [ステータス]
+    note: >-
+      在籍 / 休職 / 退職。「退職フラグ」とは呼ばない（3値あるので）。
+      avoid に「状態」を入れていたら「取引状態」まで巻き込んだので外した
+  - term: 取引先コード
+    field: supplierCode
+    avoid: [仕入先コード, ベンダーコード]
+  - term: 取引先区分
+    field: supplierType
+    avoid: [種別, タイプ]
+    note: >-
+      法人 / 個人。**見出しを「区分」にしない**（在籍区分まで巻き込んで、助言が
+      「employmentStatus は supplier で始めろ」と言い出す。実際に一度そうなった）
+  - term: 与信限度額
+    field: creditLimit
+    avoid: [与信枠]
+  - term: 締め日
+    field: closingDay
+    avoid: [締日, 支払締め]
+  - term: 取引状態
+    field: tradeStatus
+    avoid: [取引ステータス]
+    note: 取引中 / 停止 / 終了。在籍区分とは別物
+
+logic:
+  # 業務ロジックの**置き場**だけを書く（規則の中身は書かない）。
+  # 区分は `npx hatake where <やりたいこと>` で引いたものをそのまま書く。
+  - what: ログインして資格を確かめる
+    where: outside
+    why: hatake は認証を持たない。画面は作れるが、確かめるのは API と認証基盤
+  - what: 誰がいつ何を直したかを残す（削除と一括は必ず。監査表に残す）
+    where: outside
+    name: auditLog
+    why: 画面は押した結果しか知らない。残すのは API 側の責任
+    answers: [audit]
+  - what: 社員番号は採番しない（人事が決めた番号を手で入れる）
+    where: server
+    why: 採番するかしないかを決めるのはサーバ側。画面は入れさせるだけ
+    answers: [numbering]
+  - what: 退職者をまとめて退職にする
+    where: plugin
+    name: bulkRetire
+    why: 一括の中身（何件ずつ・失敗したらどうするか）はアプリ側
+  - what: 与信限度額がいくらまで妥当か
+    where: outside
+    why: 購買部の別システムが正。ここでは記録するだけ
+
+  # --- ここから下は `hatake ask` が「決めてください」と言ったものへの答え -------------
+  # 問い（id）は `npx hatake ask --kinds` で引ける。勝手な id を書くと落とされる。
+  - what: 同じ1件を2人が同時に直したら、更新日時が変わっていたら弾いて読み直させる
+    where: server
+    why: 先に保存した人の入力が黙って消えるのを止める。マスタは直す人が少ないので楽観で足りる
+    answers: [concurrency]
+  - what: 一括の退職は1件ずつ確定し、失敗した行だけ残す
+    where: server
+    why: 全部取り消すと「40件目で落ちたら最初からやり直し」になる。人事は少しずつ直す
+    answers: [partial-failure]
+  - what: 保存の検証は同じ定義でサーバでも回す
+    where: server
+    name: formValidator
+    why: 画面の検証は親切であって守りではない（API を直接叩けば通る）
+    answers: [validation-server]
+  - what: 役割はログイン時にこのシステムが返す（admin / hr / viewer）
+    where: outside
+    why: 当面は自前の認証。AD に差し替えるときは、group をこの3つに写す
+    answers: [role-source]
+  - what: 一括の退職を誰かに知らせるか → 知らせない（人事が画面で結果を見て終わり）
+    where: outside
+    why: 退職処理は人事の中だけで完結する。後工程に自動で流す先がいまは無い
+    answers: [notify]
+
+naming:
+  page: snake_case
+  field: camelCase
+  action: camelCase
+  repository: camelCase
+  role: camelCase
+  suffix:
+    # 日付だけ縛る。数値の接尾辞（Amount）も書いてみたが、`creditLimit` を
+    # `creditLimitAmount` にするのは業務の言葉から離れるので**やめた**
+    # （守れない決めごとを書くと、助言が毎回鳴って読まれなくなる）。
+    date: Date
+
+questions:
+  decided:
+    # `hatake ask` が返した問いのうち、人が決めたもの。決めた問いは次から出ない。
+    - id: erase
+      why: 退職者も過去の伝票から参照されるので消さない。在籍区分を「退職」にする
+      date: "2026-09-10"
+    - id: authz-server
+      why: 役割で隠したものはサーバでも止める（画面の roles は親切であって守りではない）
+      date: "2026-09-10"

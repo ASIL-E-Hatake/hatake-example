@@ -1,0 +1,333 @@
+{
+  "$comment": "取引先マスタの値の試験。条件つき必須（法人だけインボイス番号）が効くかが主眼。",
+  "page": "supplier_master",
+  "cases": [
+    {
+      "name": "S-11 法人で正しく入れたら通る",
+      "record": {
+        "supplierCode": "S9999",
+        "supplierName": "試験商事",
+        "supplierNameKana": "シケンショウジ",
+        "supplierType": "corp",
+        "invoiceNo": "T1234567890123",
+        "postalCode": "100-0001",
+        "address": "東京都千代田区1-1",
+        "phone": "03-0000-0000",
+        "creditLimit": 1000000,
+        "closingDay": 20,
+        "paymentSiteDays": 30,
+        "tradeStatus": "active"
+      },
+      "expect": {
+        "errors": []
+      }
+    },
+    {
+      "name": "S-12 法人なのにインボイス番号が空",
+      "record": {
+        "supplierCode": "S9999",
+        "supplierName": "試験商事",
+        "supplierNameKana": "シケンショウジ",
+        "supplierType": "corp",
+        "invoiceNo": "",
+        "postalCode": "100-0001",
+        "address": "東京都千代田区1-1",
+        "phone": "03-0000-0000",
+        "creditLimit": 1000000,
+        "closingDay": 20,
+        "paymentSiteDays": 30,
+        "tradeStatus": "active"
+      },
+      "expect": {
+        "errors": [
+          {
+            "field": "invoiceNo",
+            "message": "必須項目です"
+          }
+        ],
+        "required": [
+          "supplierCode",
+          "supplierName",
+          "supplierType",
+          "invoiceNo",
+          "creditLimit",
+          "closingDay",
+          "tradeStatus"
+        ]
+      }
+    },
+    {
+      "name": "S-13 個人ならインボイス番号は要らない",
+      "record": {
+        "supplierCode": "S9999",
+        "supplierName": "試験商事",
+        "supplierNameKana": "シケンショウジ",
+        "supplierType": "individual",
+        "invoiceNo": "",
+        "postalCode": "100-0001",
+        "address": "東京都千代田区1-1",
+        "phone": "03-0000-0000",
+        "creditLimit": 1000000,
+        "closingDay": 20,
+        "paymentSiteDays": 30,
+        "tradeStatus": "active"
+      },
+      "expect": {
+        "errors": [],
+        "required": [
+          "supplierCode",
+          "supplierName",
+          "supplierType",
+          "creditLimit",
+          "closingDay",
+          "tradeStatus"
+        ]
+      }
+    },
+    {
+      "name": "S-14 インボイス番号の形が違う（T が無い）",
+      "record": {
+        "supplierCode": "S9999",
+        "supplierName": "試験商事",
+        "supplierNameKana": "シケンショウジ",
+        "supplierType": "corp",
+        "invoiceNo": "1234567890123",
+        "postalCode": "100-0001",
+        "address": "東京都千代田区1-1",
+        "phone": "03-0000-0000",
+        "creditLimit": 1000000,
+        "closingDay": 20,
+        "paymentSiteDays": 30,
+        "tradeStatus": "active"
+      },
+      "expect": {
+        "errors": [
+          {
+            "field": "invoiceNo",
+            "message": "インボイス登録番号は T + 13桁です"
+          }
+        ]
+      }
+    },
+    {
+      "name": "S-15 与信限度額が負",
+      "record": {
+        "supplierCode": "S9999",
+        "supplierName": "試験商事",
+        "supplierNameKana": "シケンショウジ",
+        "supplierType": "corp",
+        "invoiceNo": "T1234567890123",
+        "postalCode": "100-0001",
+        "address": "東京都千代田区1-1",
+        "phone": "03-0000-0000",
+        "creditLimit": -1,
+        "closingDay": 20,
+        "paymentSiteDays": 30,
+        "tradeStatus": "active"
+      },
+      "expect": {
+        "errors": [
+          {
+            "field": "creditLimit",
+            "message": "0以上で入力してください"
+          }
+        ]
+      }
+    },
+    {
+      "name": "S-16 与信限度額が0（境界・通る）",
+      "record": {
+        "supplierCode": "S9999",
+        "supplierName": "試験商事",
+        "supplierNameKana": "シケンショウジ",
+        "supplierType": "corp",
+        "invoiceNo": "T1234567890123",
+        "postalCode": "100-0001",
+        "address": "東京都千代田区1-1",
+        "phone": "03-0000-0000",
+        "creditLimit": 0,
+        "closingDay": 20,
+        "paymentSiteDays": 30,
+        "tradeStatus": "active"
+      },
+      "expect": {
+        "errors": []
+      }
+    },
+    {
+      "name": "S-17 郵便番号の形が違う（ハイフン無し7桁は**正しい**）",
+      "record": {
+        "supplierCode": "S9999",
+        "supplierName": "試験商事",
+        "supplierNameKana": "シケンショウジ",
+        "supplierType": "corp",
+        "invoiceNo": "T1234567890123",
+        "postalCode": "100-00",
+        "address": "東京都千代田区1-1",
+        "phone": "03-0000-0000",
+        "creditLimit": 1000000,
+        "closingDay": 20,
+        "paymentSiteDays": 30,
+        "tradeStatus": "active"
+      },
+      "expect": {
+        "errors": [
+          {
+            "field": "postalCode",
+            "message": "郵便番号の形式が正しくありません"
+          }
+        ]
+      }
+    },
+    {
+      "name": "S-18 取引先コードが10文字を超える",
+      "record": {
+        "supplierCode": "S12345678901",
+        "supplierName": "試験商事",
+        "supplierNameKana": "シケンショウジ",
+        "supplierType": "corp",
+        "invoiceNo": "T1234567890123",
+        "postalCode": "100-0001",
+        "address": "東京都千代田区1-1",
+        "phone": "03-0000-0000",
+        "creditLimit": 1000000,
+        "closingDay": 20,
+        "paymentSiteDays": 30,
+        "tradeStatus": "active"
+      },
+      "expect": {
+        "errors": [
+          {
+            "field": "supplierCode",
+            "message": "10文字以内で入力してください"
+          }
+        ]
+      }
+    },
+    {
+      "name": "S-25 取引状態が空",
+      "record": {
+        "supplierCode": "S9999",
+        "supplierName": "試験商事",
+        "supplierNameKana": "シケンショウジ",
+        "supplierType": "corp",
+        "invoiceNo": "T1234567890123",
+        "postalCode": "100-0001",
+        "address": "東京都千代田区1-1",
+        "phone": "03-0000-0000",
+        "creditLimit": 1000000,
+        "closingDay": 20,
+        "paymentSiteDays": 30,
+        "tradeStatus": ""
+      },
+      "expect": {
+        "errors": [
+          {
+            "field": "tradeStatus",
+            "message": "必須項目です"
+          }
+        ]
+      }
+    },
+    {
+      "name": "S-27 支払サイトが負",
+      "record": {
+        "supplierCode": "S9999",
+        "supplierName": "試験商事",
+        "supplierNameKana": "シケンショウジ",
+        "supplierType": "corp",
+        "invoiceNo": "T1234567890123",
+        "postalCode": "100-0001",
+        "address": "東京都千代田区1-1",
+        "phone": "03-0000-0000",
+        "creditLimit": 1000000,
+        "closingDay": 20,
+        "paymentSiteDays": -1,
+        "tradeStatus": "active"
+      },
+      "expect": {
+        "errors": [
+          {
+            "field": "paymentSiteDays",
+            "message": "0以上で入力してください"
+          }
+        ]
+      }
+    },
+    {
+      "name": "S-29 締め日が空",
+      "record": {
+        "supplierCode": "S9999",
+        "supplierName": "試験商事",
+        "supplierNameKana": "シケンショウジ",
+        "supplierType": "corp",
+        "invoiceNo": "T1234567890123",
+        "postalCode": "100-0001",
+        "address": "東京都千代田区1-1",
+        "phone": "03-0000-0000",
+        "creditLimit": 1000000,
+        "closingDay": "",
+        "paymentSiteDays": 30,
+        "tradeStatus": "active"
+      },
+      "expect": {
+        "errors": [
+          {
+            "field": "closingDay",
+            "message": "必須項目です"
+          }
+        ]
+      }
+    },
+    {
+      "name": "S-30 取引先区分が空",
+      "record": {
+        "supplierCode": "S9999",
+        "supplierName": "試験商事",
+        "supplierNameKana": "シケンショウジ",
+        "supplierType": "",
+        "invoiceNo": "",
+        "postalCode": "100-0001",
+        "address": "東京都千代田区1-1",
+        "phone": "03-0000-0000",
+        "creditLimit": 1000000,
+        "closingDay": 20,
+        "paymentSiteDays": 30,
+        "tradeStatus": "active"
+      },
+      "expect": {
+        "errors": [
+          {
+            "field": "supplierType",
+            "message": "必須項目です"
+          }
+        ]
+      }
+    },
+    {
+      "name": "S-31 取引先名が空",
+      "record": {
+        "supplierCode": "S9999",
+        "supplierName": "",
+        "supplierNameKana": "シケンショウジ",
+        "supplierType": "corp",
+        "invoiceNo": "T1234567890123",
+        "postalCode": "100-0001",
+        "address": "東京都千代田区1-1",
+        "phone": "03-0000-0000",
+        "creditLimit": 1000000,
+        "closingDay": 20,
+        "paymentSiteDays": 30,
+        "tradeStatus": "active"
+      },
+      "expect": {
+        "errors": [
+          {
+            "field": "supplierName",
+            "message": "必須項目です"
+          }
+        ]
+      }
+    }
+  ]
+}

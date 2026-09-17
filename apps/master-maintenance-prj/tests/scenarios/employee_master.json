@@ -1,0 +1,300 @@
+{
+  "$comment": "社員マスタの値の試験（`npx hatake run`）。画面もブラウザも要らない＝**定義に書いた規則がその値でどう効くか**だけを見る。押せるか・出ているかは画面の試験（tests/screen）の担当。名前の頭の S-xx は docs/4-テスト/ケース一覧.md の項番。",
+  "page": "employee_master",
+  "cases": [
+    {
+      "name": "S-01 正しく入れたら通る",
+      "record": {
+        "employeeNo": "100999",
+        "name": "試験 太郎",
+        "nameKana": "シケン タロウ",
+        "departmentCode": "JINJ",
+        "position": "担当",
+        "email": "shiken@example.co.jp",
+        "extension": "4999",
+        "employmentStatus": "active",
+        "hireDate": "2020-04-01"
+      },
+      "expect": {
+        "errors": []
+      }
+    },
+    {
+      "name": "S-02 社員番号が空",
+      "record": {
+        "employeeNo": "",
+        "name": "試験 太郎",
+        "nameKana": "シケン タロウ",
+        "departmentCode": "JINJ",
+        "position": "担当",
+        "email": "shiken@example.co.jp",
+        "extension": "4999",
+        "employmentStatus": "active",
+        "hireDate": "2020-04-01"
+      },
+      "expect": {
+        "errors": [
+          {
+            "field": "employeeNo",
+            "message": "必須項目です"
+          }
+        ]
+      }
+    },
+    {
+      "name": "S-03 社員番号が6桁でない（5桁）",
+      "record": {
+        "employeeNo": "10099",
+        "name": "試験 太郎",
+        "nameKana": "シケン タロウ",
+        "departmentCode": "JINJ",
+        "position": "担当",
+        "email": "shiken@example.co.jp",
+        "extension": "4999",
+        "employmentStatus": "active",
+        "hireDate": "2020-04-01"
+      },
+      "expect": {
+        "errors": [
+          {
+            "field": "employeeNo",
+            "message": "社員番号は6桁の数字です"
+          }
+        ]
+      }
+    },
+    {
+      "name": "S-04 社員番号に英字が混ざる",
+      "record": {
+        "employeeNo": "10A999",
+        "name": "試験 太郎",
+        "nameKana": "シケン タロウ",
+        "departmentCode": "JINJ",
+        "position": "担当",
+        "email": "shiken@example.co.jp",
+        "extension": "4999",
+        "employmentStatus": "active",
+        "hireDate": "2020-04-01"
+      },
+      "expect": {
+        "errors": [
+          {
+            "field": "employeeNo",
+            "message": "社員番号は6桁の数字です"
+          }
+        ]
+      }
+    },
+    {
+      "name": "S-05 氏名とカナが空（2件まとめて出る）",
+      "record": {
+        "employeeNo": "100999",
+        "name": "",
+        "nameKana": "",
+        "departmentCode": "JINJ",
+        "position": "担当",
+        "email": "shiken@example.co.jp",
+        "extension": "4999",
+        "employmentStatus": "active",
+        "hireDate": "2020-04-01"
+      },
+      "expect": {
+        "errors": [
+          {
+            "field": "name",
+            "message": "必須項目です"
+          },
+          {
+            "field": "nameKana",
+            "message": "必須項目です"
+          }
+        ]
+      }
+    },
+    {
+      "name": "S-06 メールの形が違う",
+      "record": {
+        "employeeNo": "100999",
+        "name": "試験 太郎",
+        "nameKana": "シケン タロウ",
+        "departmentCode": "JINJ",
+        "position": "担当",
+        "email": "not-a-mail",
+        "extension": "4999",
+        "employmentStatus": "active",
+        "hireDate": "2020-04-01"
+      },
+      "expect": {
+        "errors": [
+          {
+            "field": "email",
+            "message": "メールアドレスの形式が正しくありません"
+          }
+        ]
+      }
+    },
+    {
+      "name": "S-07 在籍のままなら退職日は要らない",
+      "record": {
+        "employeeNo": "100999",
+        "name": "試験 太郎",
+        "nameKana": "シケン タロウ",
+        "departmentCode": "JINJ",
+        "position": "担当",
+        "email": "shiken@example.co.jp",
+        "extension": "4999",
+        "employmentStatus": "active",
+        "hireDate": "2020-04-01"
+      },
+      "expect": {
+        "errors": [],
+        "required": [
+          "employeeNo",
+          "name",
+          "nameKana",
+          "departmentCode",
+          "employmentStatus",
+          "hireDate"
+        ]
+      }
+    },
+    {
+      "name": "S-08 退職にすると退職日が必須になる",
+      "record": {
+        "employeeNo": "100999",
+        "name": "試験 太郎",
+        "nameKana": "シケン タロウ",
+        "departmentCode": "JINJ",
+        "position": "担当",
+        "email": "shiken@example.co.jp",
+        "extension": "4999",
+        "employmentStatus": "retired",
+        "hireDate": "2020-04-01"
+      },
+      "expect": {
+        "errors": [
+          {
+            "field": "retireDate",
+            "message": "必須項目です"
+          }
+        ],
+        "required": [
+          "employeeNo",
+          "name",
+          "nameKana",
+          "departmentCode",
+          "employmentStatus",
+          "hireDate",
+          "retireDate"
+        ]
+      }
+    },
+    {
+      "name": "S-09 退職日が入社日より前",
+      "record": {
+        "employeeNo": "100999",
+        "name": "試験 太郎",
+        "nameKana": "シケン タロウ",
+        "departmentCode": "JINJ",
+        "position": "担当",
+        "email": "shiken@example.co.jp",
+        "extension": "4999",
+        "employmentStatus": "retired",
+        "hireDate": "2020-04-01",
+        "retireDate": "2019-12-31"
+      },
+      "expect": {
+        "errors": [
+          {
+            "field": "retireDate",
+            "message": "退職日は入社日以降にしてください"
+          }
+        ]
+      }
+    },
+    {
+      "name": "S-10 退職日と入社日が同じ日（境界・通る）",
+      "record": {
+        "employeeNo": "100999",
+        "name": "試験 太郎",
+        "nameKana": "シケン タロウ",
+        "departmentCode": "JINJ",
+        "position": "担当",
+        "email": "shiken@example.co.jp",
+        "extension": "4999",
+        "employmentStatus": "retired",
+        "hireDate": "2020-04-01",
+        "retireDate": "2020-04-01"
+      },
+      "expect": {
+        "errors": []
+      }
+    },
+    {
+      "name": "S-22 所属部署が空",
+      "record": {
+        "employeeNo": "100999",
+        "name": "試験 太郎",
+        "nameKana": "シケン タロウ",
+        "departmentCode": "",
+        "position": "担当",
+        "email": "shiken@example.co.jp",
+        "extension": "4999",
+        "employmentStatus": "active",
+        "hireDate": "2020-04-01"
+      },
+      "expect": {
+        "errors": [
+          {
+            "field": "departmentCode",
+            "message": "必須項目です"
+          }
+        ]
+      }
+    },
+    {
+      "name": "S-23 在籍区分が空",
+      "record": {
+        "employeeNo": "100999",
+        "name": "試験 太郎",
+        "nameKana": "シケン タロウ",
+        "departmentCode": "JINJ",
+        "position": "担当",
+        "email": "shiken@example.co.jp",
+        "extension": "4999",
+        "employmentStatus": "",
+        "hireDate": "2020-04-01"
+      },
+      "expect": {
+        "errors": [
+          {
+            "field": "employmentStatus",
+            "message": "必須項目です"
+          }
+        ]
+      }
+    },
+    {
+      "name": "S-24 入社日が空",
+      "record": {
+        "employeeNo": "100999",
+        "name": "試験 太郎",
+        "nameKana": "シケン タロウ",
+        "departmentCode": "JINJ",
+        "position": "担当",
+        "email": "shiken@example.co.jp",
+        "extension": "4999",
+        "employmentStatus": "active",
+        "hireDate": ""
+      },
+      "expect": {
+        "errors": [
+          {
+            "field": "hireDate",
+            "message": "必須項目です"
+          }
+        ]
+      }
+    }
+  ]
+}

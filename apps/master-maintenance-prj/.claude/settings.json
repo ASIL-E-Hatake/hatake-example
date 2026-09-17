@@ -1,0 +1,26 @@
+{
+  "$comment": "この案件で Claude Code に許す操作。読み取り・検証の道具は毎回聞かれると手が止まるので通す。書き換える道具（fix --write）と git は通さない（人が見てから）。",
+  "permissions": {
+    "allow": [
+      "Bash(npx hatake check:*)",
+      "Bash(npx hatake validate:*)",
+      "Bash(npx hatake explain:*)",
+      "Bash(npx hatake advise:*)",
+      "Bash(npx hatake ask:*)",
+      "Bash(npx hatake where:*)",
+      "Bash(npx hatake reference:*)",
+      "Bash(npx hatake examples:*)",
+      "Bash(npx hatake rules:*)",
+      "Bash(npx hatake refs:*)",
+      "Bash(npx hatake new:*)",
+      "Bash(npx hatake project:*)",
+      "Bash(npx hatake run:*)",
+      "Bash(bash tools/refresh-docs.sh:*)"
+    ],
+    "deny": [
+      "Bash(npx hatake fix:* --write)",
+      "Bash(git push:*)",
+      "Bash(git commit:*)"
+    ]
+  }
+}
