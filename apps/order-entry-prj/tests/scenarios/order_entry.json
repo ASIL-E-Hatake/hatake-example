@@ -1,0 +1,219 @@
+{
+  "$comment": "受注入力（ウィザード）の値の試験。下書きは `hatake run --draft` で起こし、業務としてあり得る値に人が直した。画面もブラウザも DB も要らない ── 定義を直接動かしている。",
+  "page": "order_entry",
+  "cases": [
+    {
+      "name": "S-01 正しく入れたら通る（金額と小計が出る）",
+      "record": {
+        "customerCode": "C001",
+        "orderDate": "2026-09-15",
+        "dueDate": "2026-09-25",
+        "salesPersonName": "佐藤 健一",
+        "deliveryPlace": "本社総務部",
+        "lines": [
+          { "productCode": "P001", "quantity": 10, "unitPrice": 480, "taxRate": 0.1 },
+          { "productCode": "P006", "quantity": 2, "unitPrice": 1580, "taxRate": 0.08 }
+        ]
+      },
+      "expect": {
+        "errors": [],
+        "computed": {
+          "lineCount": 2,
+          "subtotalAmount": 7960,
+          "orderSummary": "P001、P006"
+        }
+      }
+    },
+    {
+      "name": "S-02 取引先が空",
+      "record": {
+        "orderDate": "2026-09-15",
+        "dueDate": "2026-09-25",
+        "salesPersonName": "佐藤 健一",
+        "lines": [{ "productCode": "P001", "quantity": 1, "unitPrice": 480, "taxRate": 0.1 }]
+      },
+      "expect": { "errors": [{ "field": "customerCode", "message": "必須項目です" }] }
+    },
+    {
+      "name": "S-03 受注日が空",
+      "record": {
+        "customerCode": "C001",
+        "orderDate": "",
+        "dueDate": "2026-09-25",
+        "salesPersonName": "佐藤 健一",
+        "lines": [{ "productCode": "P001", "quantity": 1, "unitPrice": 480, "taxRate": 0.1 }]
+      },
+      "expect": { "errors": [{ "field": "orderDate", "message": "必須項目です" }] }
+    },
+    {
+      "name": "S-04 納期が受注日より前",
+      "record": {
+        "customerCode": "C001",
+        "orderDate": "2026-09-15",
+        "dueDate": "2026-09-01",
+        "salesPersonName": "佐藤 健一",
+        "lines": [{ "productCode": "P001", "quantity": 1, "unitPrice": 480, "taxRate": 0.1 }]
+      },
+      "expect": {
+        "errors": [{ "field": "dueDate", "message": "納期は受注日以降にしてください" }]
+      }
+    },
+    {
+      "name": "S-05 納期が受注日と同じ日なら通る（当日出荷）",
+      "record": {
+        "customerCode": "C001",
+        "orderDate": "2026-09-15",
+        "dueDate": "2026-09-15",
+        "salesPersonName": "佐藤 健一",
+        "lines": [{ "productCode": "P001", "quantity": 1, "unitPrice": 480, "taxRate": 0.1 }]
+      },
+      "expect": { "errors": [] }
+    },
+    {
+      "name": "S-06 担当が空",
+      "record": {
+        "customerCode": "C001",
+        "orderDate": "2026-09-15",
+        "dueDate": "2026-09-25",
+        "salesPersonName": "",
+        "lines": [{ "productCode": "P001", "quantity": 1, "unitPrice": 480, "taxRate": 0.1 }]
+      },
+      "expect": { "errors": [{ "field": "salesPersonName", "message": "必須項目です" }] }
+    },
+    {
+      "name": "S-07 担当が20文字を超える",
+      "record": {
+        "customerCode": "C001",
+        "orderDate": "2026-09-15",
+        "dueDate": "2026-09-25",
+        "salesPersonName": "あいうえおかきくけこさしすせそたちつてとな",
+        "lines": [{ "productCode": "P001", "quantity": 1, "unitPrice": 480, "taxRate": 0.1 }]
+      },
+      "expect": { "errors": [{ "field": "salesPersonName", "message": "20文字以内で入力してください" }] }
+    },
+    {
+      "name": "S-08 明細が1行も無い",
+      "$comment": "`required` は**空の並び**も「無い」と見るので、これだけで1行以上になる。",
+      "record": {
+        "customerCode": "C001",
+        "orderDate": "2026-09-15",
+        "dueDate": "2026-09-25",
+        "salesPersonName": "佐藤 健一",
+        "lines": []
+      },
+      "expect": { "errors": [{ "field": "lines", "message": "必須項目です" }] }
+    },
+    {
+      "name": "S-09 同じ商品を2行に入れた",
+      "$comment": "行をまたいで見る検証（`unique`）。この案件で一番多いミス。",
+      "record": {
+        "customerCode": "C001",
+        "orderDate": "2026-09-15",
+        "dueDate": "2026-09-25",
+        "salesPersonName": "佐藤 健一",
+        "lines": [
+          { "productCode": "P001", "quantity": 1, "unitPrice": 480, "taxRate": 0.1 },
+          { "productCode": "P001", "quantity": 2, "unitPrice": 480, "taxRate": 0.1 }
+        ]
+      },
+      "expect": {
+        "errors": [{ "field": "lines", "message": "同じ商品が複数行にあります" }]
+      }
+    },
+    {
+      "name": "S-10 数量が0",
+      "record": {
+        "customerCode": "C001",
+        "orderDate": "2026-09-15",
+        "dueDate": "2026-09-25",
+        "salesPersonName": "佐藤 健一",
+        "lines": [{ "productCode": "P001", "quantity": 0, "unitPrice": 480, "taxRate": 0.1 }]
+      },
+      "expect": {
+        "errors": [{ "field": "lines[0].quantity", "message": "数量は1以上にしてください" }]
+      }
+    },
+    {
+      "name": "S-11 数量が上限を超える",
+      "record": {
+        "customerCode": "C001",
+        "orderDate": "2026-09-15",
+        "dueDate": "2026-09-25",
+        "salesPersonName": "佐藤 健一",
+        "lines": [{ "productCode": "P001", "quantity": 10000, "unitPrice": 480, "taxRate": 0.1 }]
+      },
+      "expect": { "errors": [{ "field": "lines[0].quantity", "message": "9999以下で入力してください" }] }
+    },
+    {
+      "name": "S-12 単価がマイナス",
+      "record": {
+        "customerCode": "C001",
+        "orderDate": "2026-09-15",
+        "dueDate": "2026-09-25",
+        "salesPersonName": "佐藤 健一",
+        "lines": [{ "productCode": "P001", "quantity": 1, "unitPrice": -1, "taxRate": 0.1 }]
+      },
+      "expect": { "errors": [{ "field": "lines[0].unitPrice", "message": "0以上で入力してください" }] }
+    },
+    {
+      "name": "S-13 2行目の商品が空（どの行かまで言う）",
+      "record": {
+        "customerCode": "C001",
+        "orderDate": "2026-09-15",
+        "dueDate": "2026-09-25",
+        "salesPersonName": "佐藤 健一",
+        "lines": [
+          { "productCode": "P001", "quantity": 1, "unitPrice": 480, "taxRate": 0.1 },
+          { "productCode": "", "quantity": 1, "unitPrice": 0, "taxRate": 0.1 }
+        ]
+      },
+      "expect": {
+        "errors": [{ "field": "lines[1].productCode", "message": "必須項目です" }]
+      }
+    },
+    {
+      "name": "S-14 取り消した行は小計に入らない",
+      "$comment": "`where` で畳む前に絞る。絞らないと業務の合計にならない。",
+      "record": {
+        "customerCode": "C001",
+        "orderDate": "2026-09-15",
+        "dueDate": "2026-09-25",
+        "salesPersonName": "佐藤 健一",
+        "lines": [
+          { "productCode": "P001", "quantity": 10, "unitPrice": 480, "taxRate": 0.1 },
+          { "productCode": "P006", "quantity": 2, "unitPrice": 1580, "taxRate": 0.08, "cancelled": true }
+        ]
+      },
+      "expect": {
+        "errors": [],
+        "computed": {
+          "lineCount": 1,
+          "subtotalAmount": 4800,
+          "orderSummary": "P001"
+        }
+      }
+    },
+    {
+      "name": "S-15 明細が6行あると、商品の並びは5件で切れる",
+      "$comment": "`limit: 5` の確認。切ったことは「ほか N 件」で分かるようにしてある。",
+      "record": {
+        "customerCode": "C001",
+        "orderDate": "2026-09-15",
+        "dueDate": "2026-09-25",
+        "salesPersonName": "佐藤 健一",
+        "lines": [
+          { "productCode": "P001", "quantity": 1, "unitPrice": 480, "taxRate": 0.1 },
+          { "productCode": "P002", "quantity": 1, "unitPrice": 780, "taxRate": 0.1 },
+          { "productCode": "P003", "quantity": 1, "unitPrice": 1200, "taxRate": 0.1 },
+          { "productCode": "P004", "quantity": 1, "unitPrice": 3200, "taxRate": 0.1 },
+          { "productCode": "P005", "quantity": 1, "unitPrice": 18500, "taxRate": 0.1 },
+          { "productCode": "P006", "quantity": 1, "unitPrice": 1580, "taxRate": 0.08 }
+        ]
+      },
+      "expect": {
+        "errors": [],
+        "computed": { "lineCount": 6, "subtotalAmount": 25740 }
+      }
+    }
+  ]
+}

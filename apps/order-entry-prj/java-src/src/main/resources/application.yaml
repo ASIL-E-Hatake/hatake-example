@@ -1,0 +1,18 @@
+# 動かすための設定だけ。**業務の決めごとはここに書かない**（定義が正）。
+server:
+  port: 8080
+spring:
+  application:
+    name: order-entry-api
+  datasource:
+    url: jdbc:postgresql://${PGHOST:db}:${PGPORT:5432}/${PGDATABASE:order_entry}
+    username: ${PGUSER:hatake}
+    password: ${PGPASSWORD:hatake}
+  jackson:
+    default-property-inclusion: always
+logging:
+  level:
+    root: INFO
+hatake:
+  # 画面と**同じ1枚**を読む（コピーを持たない）。
+  definition: ${HATAKE_DEFINITION:/app/definitions/app.yaml}

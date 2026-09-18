@@ -1,0 +1,44 @@
+{
+  "_": "案件ごとに違うところだけ。道具そのものは ../../tools/build-design-docs.mjs（使い回し）。",
+  "impl": "java-src",
+  "paths": {
+    "orderRepository": "/api/orders",
+    "orderLineRepository": "/api/order-lines",
+    "customerRepository": "/api/customers",
+    "productRepository": "/api/products"
+  },
+  "repositories": [
+    { "name": "customerRepository", "what": "取引先の選択肢（受注照会の条件・受注入力の取引先）" },
+    { "name": "productRepository", "what": "商品の選択肢（明細の商品・単価の出どころ）" }
+  ],
+  "outside": [
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "what": "ログイン",
+      "why": "hatake は認証を持たない"
+    },
+    {
+      "method": "POST",
+      "path": "/api/bulk/cancel",
+      "what": "まとめて取り消す",
+      "why": "一括の中身はアプリ側（`plugin`）"
+    },
+    {
+      "method": "POST",
+      "path": "/api/orders/{orderNo}/ship",
+      "what": "出荷指示を基幹システムへ投げる",
+      "why": "外部システム連携は枠組みの外（前書きの shipmentGateway）"
+    },
+    {
+      "method": "GET",
+      "path": "/api/definition.yaml",
+      "what": "画面の定義を配る",
+      "why": "この案件の作り（画面が定義のコピーを持たない）"
+    }
+  ],
+  "authz": {
+    "file": "java-src/src/main/java/io/example/order/web/Authz.java",
+    "cases": "A-10 / A-11"
+  }
+}

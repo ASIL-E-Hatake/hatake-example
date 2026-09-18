@@ -1,0 +1,28 @@
+{
+  "_": "案件ごとに違うところだけ。道具そのものは ../../tools/build-design-docs.mjs（使い回し）。",
+  "impl": "node-src",
+  "outside": [
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "what": "ログイン",
+      "why": "hatake は認証を持たない"
+    },
+    {
+      "method": "POST",
+      "path": "/api/bulk/retire",
+      "what": "まとめて退職にする",
+      "why": "一括の中身はアプリ側（`plugin`）"
+    },
+    {
+      "method": "GET",
+      "path": "/api/definition.yaml",
+      "what": "画面の定義を配る",
+      "why": "この案件の作り（画面が定義のコピーを持たない）"
+    }
+  ],
+  "authz": {
+    "file": "node-src/src/authz.js",
+    "cases": "A-09 / A-13"
+  }
+}

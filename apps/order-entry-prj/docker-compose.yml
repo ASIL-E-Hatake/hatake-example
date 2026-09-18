@@ -1,0 +1,62 @@
+# 受注入力を丸ごと動かす。
+#
+#   docker compose up
+#
+# Flutter SDK も JDK も要らない。入っているのは Docker だけでいい。
+# 1本目（master-maintenance-prj）との違いは API が Java（Spring Boot）なこと。
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: hatake
+      POSTGRES_PASSWORD: hatake
+      POSTGRES_DB: order_entry
+      # 日本語を含むので、照合順序を明示しておく（並べ替えの結果が環境で変わらないように）。
+      LANG: ja_JP.utf8
+    ports:
+      - "5433:5432"
+    volumes:
+      # 初期データは**毎回入れ直す**（見本なので、消えて困るものを置かない）。
+      # 名前順に流れるので 01 → 02 の順。
+      - ./docker/postgres/01-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./docker/postgres/02-seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hatake -d order_entry"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build:
+      # 定義（./definitions）も持ち込むので、文脈は案件の根。
+      context: .
+      dockerfile: docker/api.Dockerfile
+    environment:
+      PGHOST: db
+      PGUSER: hatake
+      PGPASSWORD: hatake
+      PGDATABASE: order_entry
+      # 見本なので固定。**本番で固定の合言葉を使わない**。
+      TOKEN_SECRET: example-only-do-not-use-in-production
+    ports:
+      - "3001:8080"
+    volumes:
+      # 定義は image に焼き込まない。**動かしている間はここを見る**＝定義を直したら
+      # `docker compose restart api` だけで効く。焼き込むと、直したのに古いまま、が
+      # 黙って起きる（1本目で実際に踏んだ）。
+      - ./definitions:/app/definitions:ro
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    # Flutter Web をビルドして nginx で配る。**利用者に Flutter SDK は要らない。**
+    # 1回目のビルドは数分かかる（SDK が重いので）。2回目からは速い。
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+    ports:
+      - "8081:80"
+    depends_on:
+      - api

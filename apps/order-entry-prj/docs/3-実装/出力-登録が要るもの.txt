@@ -1,0 +1,17 @@
+repositories:
+  customerRepository   ← 登録が要る
+  orderLineRepository   ← 登録が要る
+  orderRepository   ← 登録が要る
+  productRepository   ← 登録が要る
+plugins:
+  bulkCancel   ← 登録が要る
+sinks:
+  exportSink   ← 登録が要る
+  printSink   ← 登録が要る
+columnTypes:
+  checkbox   ← 登録が要る
+computedOps:
+  tax   ← 登録が要る
+roles:
+  clerk   ← アプリが配る必要がある
+  manager   ← アプリが配る必要がある

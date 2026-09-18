@@ -1,0 +1,33 @@
+// 受注入力の API（フレームワーク**無し**版）。
+//
+// hatake を入れない代わりに、Spring Boot で普通に選ぶものを入れる:
+//   ・spring-boot-starter-validation … Jakarta Bean Validation（`@NotNull` など）
+//
+// 検証は DTO の注釈で書く。**画面側にも同じ規則を書く**ことになるが、それは
+// この作りの前提（1か所に置く口が無い）。
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.3.4'
+    id 'io.spring.dependency-management' version '1.1.6'
+}
+
+group = 'io.example'
+version = '1.0.0'
+
+java {
+    toolchain { languageVersion = JavaLanguageVersion.of(21) }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    // hatake の FormValidator の代わり。
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    runtimeOnly 'org.postgresql:postgresql'
+}
+
+tasks.named('test') { useJUnitPlatform() }

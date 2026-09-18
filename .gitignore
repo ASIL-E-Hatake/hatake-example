@@ -4,6 +4,11 @@ build/
 pubspec.lock
 .flutter-plugins*
 
+# Java / Gradle
+# ビルドの置き場（`gradle compileJava` を手元で回すと出る）。
+# `build/` は上の Dart の行で既に落ちている。
+.gradle/
+
 # Node
 node_modules/
 dist/
