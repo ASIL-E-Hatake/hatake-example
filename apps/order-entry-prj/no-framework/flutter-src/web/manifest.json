@@ -1,0 +1,8 @@
+{
+  "name": "受注管理",
+  "short_name": "受注管理",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#00796b"
+}

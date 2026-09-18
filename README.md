@@ -22,29 +22,42 @@ git からそのまま入れている。
 
 ## 案件
 
-| 案件 | 何の案件か | 使っている機能 |
-|---|---|---|
-| [master-maintenance-prj](apps/master-maintenance-prj/) | 社内マスタメンテナンス（社員・部署・取引先） | crud / master / detail / 権限 / 複雑な検索 / 一括 / CSV |
+| 案件 | 何の案件か | 使っている機能 | API |
+|---|---|---|---|
+| [master-maintenance-prj](apps/master-maintenance-prj/) | 社内マスタメンテナンス（社員・部署・取引先） | crud / master / detail / 権限 / 複雑な検索 / 一括 / CSV | Node |
+| [order-entry-prj](apps/order-entry-prj/) | 受注入力（受注を入れて出荷指示まで） | wizard / subTable / 計算項目 / dashboard / report / 帳票印刷 | **Java** |
 
-> **導入を検討する方へ**: 1本目を通してみた記録（工数の比較・人が作るべきもの・
-> 納品物・起きた問題・課題）を
-> **[apps/master-maintenance-prj/docs/まとめ/](apps/master-maintenance-prj/docs/まとめ/)**
-> にまとめてあります。
+> **導入を検討する方へ**: 通してみた記録（工数の比較・人が作るべきもの・納品物・
+> 起きた問題・課題）を各案件の `docs/まとめ/` に置いてあります。
+>
+> ・[1本目のまとめ](apps/master-maintenance-prj/docs/まとめ/)（見積もり）
+> ・**[2本目のまとめ](apps/order-entry-prj/docs/まとめ/)（実測。同じものを
+>   hatake 無しでも作って比べました）**
 
-これから増やす予定: 受注入力（親子明細・計算項目・ウィザード・帳票・ダッシュボード）、
-Vue 版。
+2本目には**フレームワークを使わない版**が
+[`no-framework/`](apps/order-entry-prj/no-framework/) に入っています。
+同じ DB・同じテストで比べた結果は
+[工数の比較](apps/order-entry-prj/docs/まとめ/工数の比較.md)。
+
+これから増やす予定: Vue 版。
 
 ## フォルダの決めごと
 
 ```
+tools/                 **案件をまたいで使う道具**（設計資料・出力紙・テスト）
 apps/<案件名>-prj/
-├─ README.md        この案件は何か・動かし方
-├─ docs/            **人が AI に渡したもの**（案件の説明・依頼文・返ってきた問い）
-├─ definitions/     定義（YAML）。flutter-src と node-src が**同じものを読む**
-├─ flutter-src/     画面（Flutter + hatake_material）
-├─ node-src/        API（Express + @hatake-fw/api）
-└─ docker/          動かすための一式
+├─ README.md           この案件は何か・動かし方
+├─ docs/               工程ごとの納品物（設計は全部生成物）＋ まとめ
+├─ 手順/               **人が AI に何をしたか**（依頼文つき）
+├─ definitions/        定義（YAML）。画面と API が**同じものを読む**
+├─ flutter-src/        画面（Flutter + hatake_material）
+├─ node-src/ or java-src/  API
+├─ tools/              **この案件の設定だけ**（道具は上の tools/）
+└─ docker/             動かすための一式
 ```
+
+道具を案件の外に置いているのは、**2本目で作り直さないため**です。
+1本目の生成物がバイト単位で変わらないことを確かめてから上げました。
 
 `definitions/` を案件の直下に置いているのは意図的。**同じ定義でフロントとバックの
 バリデーションがずれない**、が hatake の主張なので、アプリごとに定義をコピーすると
@@ -58,7 +71,7 @@ apps/<案件名>-prj/
 ## 動かす
 
 ```bash
-cd apps/master-maintenance-prj
+cd apps/master-maintenance-prj   # または apps/order-entry-prj
 docker compose up
 ```
 

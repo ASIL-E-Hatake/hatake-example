@@ -1,0 +1,382 @@
+# yaml-language-server: $schema=https://github.com/ASIL-E-Hatake/hatake/raw/main/spec/hatake-page.schema.json
+#
+# 受注入力 — 画面の定義（これ1枚で5画面）。
+#
+# この定義は **flutter-src と java-src の両方が読む**。画面を描くのも、API が
+# リクエストを検証するのも、同じこの1枚。だから definitions/ は案件の直下に置いてある。
+#
+#   npx hatake check definitions/app.yaml --project definitions/hatake.project.yaml
+dsl_version: "1.0"
+
+app:
+  id: order_entry
+  title: 受注管理
+  home: orders
+  # 配りうる役割の語彙。社内ポータルがこの名前で返してくる（前書きの role-source）。
+  roles: [sales, clerk, manager]
+
+  menu:
+    - { id: orders, label: 受注照会, icon: search, page: order_search }
+    - { id: newOrder, label: 受注入力, icon: add_shopping_cart, page: order_entry }
+    # 注文請書は取引先に送る紙なので、営業事務も刷る。
+    - { id: slip, label: 注文請書, icon: print, page: order_slip, roles: [clerk, manager] }
+    # グループの roles は中身にも掛かる。管理者しかメニューから開けない。
+    - group: 管理
+      icon: insights
+      roles: [manager]
+      items:
+        - { id: dashboard, label: ダッシュボード, page: order_dashboard }
+
+  pages:
+    # ------------------------------------------------------------------
+    # 受注照会（複雑な検索・一括取消・CSV）
+    # ------------------------------------------------------------------
+    - type: search
+      id: order_search
+      title: 受注照会
+      repository: orderRepository
+      key: orderNo
+
+      search:
+        layout: { columns: 3 }
+        filters:
+          - { field: orderNo, label: 受注番号, type: text, operator: equals }
+          - field: customerCode
+            label: 取引先
+            type: select
+            operator: equals
+            optionsSource:
+              repository: customerRepository
+              value: customerCode
+              label: customerName
+          - { field: orderDate, label: 受注日, type: date, operator: between }
+          - { field: dueDate, label: 納期, type: date, operator: between }
+          # 複数選べる（入力中 と 確定 の両方を見たい、が普通に起きる）。
+          - field: orderStatus
+            label: 受注状態
+            type: select
+            operator: in
+            options:
+              - { value: draft, label: 入力中 }
+              - { value: confirmed, label: 確定 }
+              - { value: shipped, label: 出荷済 }
+              - { value: cancelled, label: 取消 }
+          # 範囲で絞る（いくら以上 いくら以下）。
+          - { field: totalAmount, label: 合計, type: number, operator: between }
+
+      table:
+        pagination: { pageSize: 50 }
+        rowActions: [openDetail, openEdit]
+        columns:
+          - { field: orderNo, label: 受注番号, width: 125, sortable: true }
+          - { field: customerName, label: 取引先, sortable: true }
+          - { field: orderDate, label: 受注日, type: date, width: 100, sortable: true }
+          - { field: dueDate, label: 納期, type: date, width: 100, sortable: true }
+          - { field: orderStatus, label: 受注状態, type: badge, width: 85 }
+          - { field: lineCount, label: 明細, type: number, width: 60 }
+          - { field: totalAmount, label: 合計, type: number, format: currency, config: { symbol: "¥" }, width: 105, sortable: true }
+          # 誰が入れたかは営業事務と管理者だけが見る（営業には要らない）。
+          - { field: createdBy, label: 入力者, width: 85, roles: [clerk, manager] }
+
+      actions:
+        - { id: openDetail, type: navigate, label: 詳細, scope: row, page: order_detail, params: { orderNo: $row.orderNo } }
+        - { id: openEdit, type: navigate, label: 修正, scope: row, page: order_entry, params: { orderNo: $row.orderNo } }
+        - id: bulkCancel
+          type: plugin
+          plugin: bulkCancel
+          label: まとめて取り消す
+          scope: selection
+          # 取り消せるのは営業事務だけ（営業は自分の受注を直すところまで）。
+          roles: [clerk]
+          confirm:
+            title: 受注の取消
+            message: 選んだ {count} 件を取消にします。よろしいですか？
+            danger: true
+          # 選べるのは画面に出ている行だけなので、上限は1ページの件数より大きくできない。
+          maxRows:
+            default: 50
+            byRole: { clerk: 20 }
+          onSuccess: { message: "{count} 件を取消にしました" }
+          onError: { message: "{count} 件が取り消せませんでした（失敗した行: {failedKeys}）" }
+        - { id: exportCsv, type: export, label: CSV 出力, scope: all, roles: [clerk, manager], config: { filename: 受注一覧, bom: true } }
+
+    # ------------------------------------------------------------------
+    # 受注入力（ウィザード・親子明細・計算項目）
+    # ------------------------------------------------------------------
+    - type: wizard
+      id: order_entry
+      title: 受注入力
+      repository: orderRepository
+      key: orderNo
+
+      steps:
+        - id: header
+          title: 取引先と納期
+          description: まず誰からの注文かを入れてください。受注番号はサーバが採番します。
+          layout: { columns: 2 }
+          fields:
+            - field: customerCode
+              label: 取引先
+              type: select
+              required: true
+              optionsSource:
+                repository: customerRepository
+                value: customerCode
+                label: customerName
+            - { field: orderDate, label: 受注日, type: date, required: true }
+            - field: dueDate
+              label: 納期
+              type: date
+              required: true
+              validators:
+                - { type: compare, field: orderDate, operator: gte, message: 納期は受注日以降にしてください }
+            - { field: salesPersonName, label: 担当, type: text, required: true, validators: [{ type: maxLength, value: 20 }] }
+            - { field: deliveryPlace, label: 納入先, type: text, validators: [{ type: maxLength, value: 60 }] }
+            - { field: note, label: 備考, type: textarea, validators: [{ type: maxLength, value: 200 }] }
+
+        # 見出しは付けない: subTable 自身の label がグリッドの見出しになるため。
+        - id: lines
+          title: 明細
+          description: 商品と数量を入れてください。金額は自動で出ます。
+          fields:
+            - field: lines
+              label: 明細
+              type: subTable
+              # 明細の無い受注は受注ではない。`required` は**空の並び**も「無い」と見る
+              # ので、これだけで「1行以上」になる（API を直接叩いても止まる）。
+              required: true
+              # 行をまたいで見る検証は subTable 自身に書く（同じ商品を2行に入れさせない）。
+              validators:
+                - { type: unique, of: productCode, message: 同じ商品が複数行にあります }
+              columns:
+                - { field: productCode, label: 商品コード, width: 130 }
+                - { field: productName, label: 商品名, width: 220 }
+                - { field: quantity, label: 数量, type: number, width: 90 }
+                - { field: unitPrice, label: 単価, type: number, width: 120, format: currency, config: { symbol: "¥" } }
+                # 税率は割合（0.1）で持っているので `ratio: true` が要る。書かないと
+                # 0.10% と出る（percent の既定は「もう百分率の数」なので）。
+                - { field: taxRate, label: 税率, type: number, width: 80, format: percent, config: { ratio: true, decimals: 0 } }
+                - { field: amount, label: 金額, type: number, width: 130, format: currency, config: { symbol: "¥" } }
+                # 取消印は列にも出す。出さないと、合計から外れた行を画面で見分けられない。
+                - { field: cancelled, label: 取消, type: checkbox, width: 70 }
+              fields:
+                - field: productCode
+                  label: 商品
+                  type: select
+                  required: true
+                  optionsSource:
+                    repository: productRepository
+                    value: productCode
+                    label: productName
+                - field: quantity
+                  label: 数量
+                  type: number
+                  required: true
+                  validators:
+                    - { type: min, value: 1, message: 数量は1以上にしてください }
+                    - { type: max, value: 9999 }
+                - field: unitPrice
+                  label: 単価
+                  type: number
+                  required: true
+                  validators:
+                    - { type: min, value: 0 }
+                # 単価と税率は商品マスタから来る（触らせない）。軽減税率の商品が混ざるので、
+                # 税率は**行が持つ**（伝票に1つではない）。
+                - { field: taxRate, label: 税率, type: number, readOnly: true, format: percent, config: { ratio: true, decimals: 0 } }
+                # 行内の計算項目: 金額 = 数量 × 単価
+                - { field: amount, label: 金額, computed: { op: product, fields: [quantity, unitPrice] } }
+                - { field: cancelled, label: 取消, type: checkbox }
+
+        - id: confirm
+          title: 確認
+          description: 金額を確かめて保存してください。保存する値の正はサーバです。
+          layout: { columns: 2 }
+          fields:
+            # 縦計（明細の行を畳む）。`field` が明細の項目、`of` が行の項目。
+            # 取消した行を足さないのは、絞らないと合計が業務の合計にならないため。
+            - { field: lineCount, label: 明細,
+                computed: { op: count, field: lines,
+                            where: { field: cancelled, operator: notEquals, value: true } } }
+            - { field: subtotalAmount, label: 小計, format: currency, config: { symbol: "¥" },
+                computed: { op: sum, field: lines, of: amount,
+                            where: { field: cancelled, operator: notEquals, value: true } } }
+            # 消費税は組み込みの計算では書けない。丸めが要るうえ、**軽減税率の商品が
+            # 混ざる**ので「税率ごとに畳んで、税率ごとに1回だけ丸める」必要がある。
+            # `op` は開いた文字列なので、アプリが足す＝ `HatakeScope(computeds:)` に
+            # 登録した `tax`。中身は枠組みの `computeTax` / `computeInvoice`（3版同出力）
+            # なので、サーバの Java と同じ数が出る。丸めは切り捨て（前書きの rounding）。
+            - { field: taxAmount, label: 消費税, format: currency, config: { symbol: "¥" },
+                computed: { op: tax, field: lines, of: amount, rateField: taxRate,
+                            rounding: floor,
+                            where: { field: cancelled, operator: notEquals, value: true } } }
+            # 同じレコードの項目を畳むのは `fields`。計算は**書いた順に1回**なので、
+            # 小計・消費税より後ろに置く（前の結果を使える）。
+            - { field: totalAmount, label: 合計, format: currency, config: { symbol: "¥" },
+                computed: { op: sum, fields: [subtotalAmount, taxAmount] } }
+            # 並べて1行にするのは `join`。**畳めるのは行が持っている項目だけ**なので、
+            # 商品名ではなく商品コードを並べる（商品名は一覧の列で、行の入力項目では
+            # ない＝入力中のレコードには入っていない）。
+            - { field: orderSummary, label: 商品, type: textarea, readOnly: true,
+                computed: { op: join, field: lines, of: productCode, separator: "、", limit: 5,
+                            where: { field: cancelled, operator: notEquals, value: true } } }
+
+    # ------------------------------------------------------------------
+    # 受注詳細（読み取り）
+    # ------------------------------------------------------------------
+    - type: detail
+      id: order_detail
+      title: 受注詳細
+      # 理由は印の2つ目の `#` の後ろに書く（書かないと、後から誰も外せない）。
+      # advise-off: total-without-compare # 読み取り専用の画面なので手で入れようが無い（合計はサーバが保存した値をそのまま見せる）
+      repository: orderRepository
+      key: orderNo
+      form:
+        sections:
+          - title: 受注情報
+            layout: { columns: 2 }
+            fields:
+              - { field: orderNo, label: 受注番号 }
+              - { field: customerName, label: 取引先 }
+              - { field: orderDate, label: 受注日, format: date }
+              - { field: dueDate, label: 納期, format: date }
+              - { field: orderStatus, label: 受注状態 }
+              - { field: deliveryPlace, label: 納入先 }
+              - { field: note, label: 備考, type: textarea }
+
+          - fields:
+              - field: lines
+                label: 明細
+                type: subTable
+                columns:
+                  - { field: productCode, label: 商品コード, width: 130 }
+                  - { field: productName, label: 商品名, width: 220 }
+                  - { field: quantity, label: 数量, type: number, width: 90 }
+                  - { field: unitPrice, label: 単価, type: number, width: 120, format: currency, config: { symbol: "¥" } }
+                  - { field: amount, label: 金額, type: number, width: 130, format: currency, config: { symbol: "¥" } }
+                  - { field: cancelled, label: 取消, type: checkbox, width: 70 }
+
+          - title: 金額
+            layout: { columns: 2 }
+            fields:
+              - { field: subtotalAmount, label: 小計, format: currency, config: { symbol: "¥" } }
+              - { field: taxAmount, label: 消費税, format: currency, config: { symbol: "¥" } }
+              - { field: totalAmount, label: 合計, format: currency, config: { symbol: "¥" } }
+
+          - title: 履歴
+            layout: { columns: 2 }
+            fields:
+              - { field: createdBy, label: 入力者, roles: [clerk, manager] }
+              - { field: updatedAt, label: 最終更新, roles: [clerk, manager] }
+
+    # ------------------------------------------------------------------
+    # 受注ダッシュボード（管理者）
+    # ------------------------------------------------------------------
+    - type: dashboard
+      id: order_dashboard
+      title: 受注ダッシュボード
+      repository: orderRepository
+      layout: { columns: 4 }
+      # 検索エリアは全カードのクエリに混ざる（期間で board 全体を絞る）。
+      search:
+        layout: { columns: 3 }
+        filters:
+          - { field: orderDate, label: 受注日, type: date, operator: between }
+          # 状態でも絞れるようにする。**ついでに「直近の受注」カードの受注状態が
+          # コードではなく名前で出る**（カードの一覧は入力欄を持たないので、
+          # 名前を引ける相手はこの出力条件しかない）。
+          - field: orderStatus
+            label: 受注状態
+            type: select
+            operator: in
+            options:
+              - { value: draft, label: 入力中 }
+              - { value: confirmed, label: 確定 }
+              - { value: shipped, label: 出荷済 }
+              - { value: cancelled, label: 取消 }
+      items:
+        - { id: orderCount, title: 受注件数, action: openOrders }
+        - id: totalAmountCard
+          title: 受注金額
+          value: { aggregate: sum, field: totalAmount }
+          format: currency
+          config: { symbol: "¥" }
+        - id: avgAmountCard
+          title: 平均受注額
+          value: { aggregate: avg, field: totalAmount }
+          format: currency
+          config: { symbol: "¥" }
+        - id: cancelledCount
+          title: 取消
+          filters: { orderStatus: cancelled }   # このカードだけの固定条件
+          action: openOrders
+        - id: byCustomer
+          type: chart
+          title: 取引先別の受注金額
+          span: 2
+          chart: { kind: bar, labelField: customerName, valueField: totalAmount, aggregate: sum }
+          format: currency
+          config: { symbol: "¥" }
+        - id: byDay
+          type: chart
+          title: 日別の受注金額
+          span: 2
+          chart: { kind: line, labelField: orderDate, valueField: totalAmount, aggregate: sum }
+          format: currency
+          config: { symbol: "¥" }
+        - id: recent
+          type: table
+          title: 直近の受注
+          span: 4
+          limit: 5
+          sort: { field: orderDate, ascending: false }
+          columns:
+            - { field: orderNo, label: 受注番号, width: 130 }
+            - { field: customerName, label: 取引先 }
+            - { field: orderDate, label: 受注日, type: date, width: 110 }
+            - { field: orderStatus, label: 受注状態, type: badge, width: 90 }
+            - { field: totalAmount, label: 合計, type: number, format: currency, config: { symbol: "¥" }, width: 130 }
+      actions:
+        # カードの action はここの id を指す（タップで実行）。
+        - { id: openOrders, type: navigate, label: 受注照会, page: order_search }
+
+    # ------------------------------------------------------------------
+    # 注文請書（帳票）— 1件を A4 で刷って取引先に送る
+    # ------------------------------------------------------------------
+    - type: report
+      id: order_slip
+      title: 注文請書
+      # 明細を1行1件で刷るので、ヘッダではなく明細の出どころを見る。
+      repository: orderLineRepository
+      search:
+        layout: { columns: 2 }
+        filters:
+          # 1件ぶんを刷る紙なので、受注番号で1件に絞る。
+          - { field: orderNo, label: 受注番号, type: text, operator: equals }
+          - { field: orderDate, label: 受注日, type: date, operator: between }
+      table:
+        columns:
+          # 幅は紙の上ではポイント（1/72 inch）。A4 縦は 595.28pt しかないので、
+          # 画面の px をそのまま書くと全体が縮んで読めなくなる（check が言った）。
+          - { field: productCode, label: 商品コード, width: 80 }
+          - { field: productName, label: 商品名, width: 170 }
+          - { field: quantity, label: 数量, type: number, width: 50 }
+          - { field: unitPrice, label: 単価, type: number, format: currency, config: { symbol: "¥" }, width: 80 }
+          - { field: taxRate, label: 税率, type: number, format: percent, config: { ratio: true, decimals: 0 }, width: 50 }
+          - { field: amount, label: 金額, type: number, format: currency, config: { symbol: "¥" }, width: 90 }
+      report:
+        paper: { size: A4, orientation: portrait }
+        rowsPerPage: 30
+        limit: 200
+        # 印字順。groupBy はこの並びに依存する（コントロールブレイクなので）。
+        sort: { field: orderNo }
+        groupBy:
+          # 受注が変わったら小計を出して改ページする（1件＝1枚の紙にする）。
+          - { field: orderNo, label: 受注番号, pageBreak: true }
+        totals:
+          - { field: amount, aggregate: sum }
+          - { field: amount, aggregate: count }
+      actions:
+        # 持ち出せる口は役割で絞る（紙も画面の外に出たら取り戻せない）。
+        - { id: csv, type: export, label: CSV 出力, roles: [clerk, manager], config: { filename: 注文請書, bom: true } }
+        - { id: printPdf, type: print, label: 印刷, roles: [clerk, manager], config: { filename: 注文請書 } }

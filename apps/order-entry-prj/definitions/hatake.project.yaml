@@ -1,0 +1,164 @@
+# yaml-language-server: $schema=https://github.com/ASIL-E-Hatake/hatake/raw/main/spec/hatake-project.schema.json
+#
+# 案件の前書き — 定義を書く**前**に AI に読ませる1枚。
+#
+# 出どころ: docs/1-要件定義/案件の説明.md（人が書いたメモ）。下書きは
+# `hatake project --draft --from` で起こし、**人が育てた**。
+#
+#   npx hatake project definitions/hatake.project.yaml
+project_version: "1.0"
+
+system:
+  what: >-
+    営業事務が電話・FAX で受けた注文を入れて、出荷指示まで出す画面。いまは Excel の
+    注文書を手で転記していて、単価の入れ間違いと消費税の計算違いが毎月出ている。
+  users:
+    - 営業（sales・10人）。自分の拠点の受注を入れる・直す
+    - 営業事務（clerk・4人）。全拠点の受注を入れる・直す・取り消す
+    - 管理者（manager・1人）。ダッシュボードと帳票も見る
+  premises:
+    # **できないこと**を書く場所。書かないと、AI は書ける方に倒す。
+    - ログインは hatake の外。社内ポータルの ID を使い、役割もそちらが返す。
+    - 受注番号は画面で入れさせない。**サーバが採番する**。
+    - 出荷指示は基幹システムの担当。こちらからは投げるだけで、結果は持たない。
+    - 単価は商品マスタの定価を使う。取引先ごとの契約単価は**今回やらない**。
+    - 締めた月の受注は直せない。締めの判断はサーバが持つ（画面は結果だけを見せる）。
+    - 取り消した受注は消さない。状態を「取消」にするだけ。
+    - 明細の金額・小計・消費税・合計は**画面が計算する**が、保存する値の正はサーバ。
+  external:
+    - name: orderRepository
+      what: 受注（ヘッダ）。この案件の API
+      owner: 情報システム
+    - name: orderLineRepository
+      what: 受注明細。この案件の API（明細を別に持つ）
+      owner: 情報システム
+    - name: customerRepository
+      what: 取引先マスタ（照会だけ）
+      owner: 営業管理
+    - name: productRepository
+      what: 商品マスタ（照会だけ。単価の出どころ）
+      owner: 購買部
+    - name: shipmentGateway
+      what: 出荷指示の連携先（基幹システム）
+      owner: 基幹システム
+
+glossary:
+  # 「業務の言葉 → 定義に書く名前」。同じものが画面ごとに違う字になるのを止める。
+  - term: 受注番号
+    field: orderNo
+    avoid: [注文番号, オーダー番号]
+    note: サーバが採番する。画面では触らせない
+  - term: 取引先
+    field: customerCode
+    avoid: [得意先, 客先]
+    note: 画面に出すのは取引先名だが、持つのはコード
+  - term: 受注日
+    field: orderDate
+    avoid: [注文日]
+  - term: 納期
+    field: dueDate
+    avoid: [納入日, 希望日]
+  - term: 受注状態
+    field: orderStatus
+    avoid: [ステータス]
+    note: 入力中 / 確定 / 出荷済 / 取消
+  - term: 商品
+    field: productCode
+    avoid: [品目, アイテム]
+  - term: 数量
+    field: quantity
+    avoid: [個数, 数]
+  - term: 単価
+    field: unitPrice
+    avoid: [価格]
+    note: 商品マスタの定価。取引先ごとの契約単価は今回やらない
+  - term: 金額
+    field: amount
+    avoid: [小計金額]
+    note: 明細1行の金額（数量 × 単価）
+  - term: 小計
+    field: subtotalAmount
+    avoid: [税抜合計]
+  - term: 消費税
+    field: taxAmount
+    avoid: [税額]
+  - term: 合計
+    field: totalAmount
+    avoid: [税込合計, 総額]
+
+logic:
+  # 業務ロジックの**置き場**だけを書く（規則の中身は書かない）。
+  # 区分は `npx hatake where <やりたいこと>` で引いたものをそのまま書く。
+  - what: ログインして資格を確かめる・役割を配る
+    where: outside
+    why: hatake は認証を持たない。社内ポータルが ID と役割を返す
+  - what: 受注番号を採番する
+    where: server
+    why: 連番の在り処はサーバ。画面では入れさせない
+    answers: [numbering]
+  - what: 出荷指示を基幹システムへ投げる
+    where: outside
+    name: shipmentGateway
+    why: 相手のシステムの担当。こちらは投げるだけで結果を持たない
+  - what: 締めた月かどうかの判断
+    where: server
+    why: 締めの在り処はサーバ。画面は「直せない」という結果だけを見せる
+  - what: 取り消した受注は消さない（状態を「取消」にする）
+    where: server
+    why: 過去の伝票から参照されるので消せない
+    answers: [erase]
+  - what: 保存の検証は同じ定義でサーバでも回す
+    where: server
+    name: formValidator
+    why: 画面の検証は親切であって守りではない（API を直接叩けば通る）
+    answers: [validation-server]
+  - what: 役割で隠したものは API でも役割を見て止める
+    where: outside
+    name: authz
+    why: 画面の roles は見せ方だけ。認可は枠組みが持たないので、自分で書く
+    answers: [authz-server]
+  - what: 役割は社内ポータルが返す（sales / clerk / manager）
+    where: outside
+    why: 認証基盤の担当。名前だけこちらに合わせてもらう
+    answers: [role-source]
+  - what: 同じ受注を2人が同時に直したら、更新日時が変わっていたら弾いて読み直させる
+    where: server
+    why: 先に保存した人の入力が黙って消えるのを止める
+    answers: [concurrency]
+  - what: 消費税の端数は切り捨て（明細ごとには丸めず、伝票単位で1回だけ計算する）
+    where: outside
+    name: taxRounding
+    why: 丸めは業務の決めごとで、定義には書けない。画面もサーバも枠組みの
+      `computeTax` を同じ引数で呼ぶ（3版同出力）ので数は一致するが、保存する値の正はサーバ
+    answers: [rounding]
+  - what: 一括の取消は1件ずつ確定し、失敗した行だけ残す（成功した分は戻さない）
+    where: server
+    why: 締めた月の受注は取り消せないので、選んだ中に必ず通らない行が混ざる。
+      全部取り消すと「1件のために49件やり直し」になる
+    answers: [partial-failure]
+  - what: 帳票は刷った時点の値を読む（締めた月は直せないので、確定後は変わらない）
+    where: outside
+    why: 締めの在り処はサーバ。締め前の月は刷るたびに数が動くが、それが業務の正
+    answers: [report-source]
+  - what: 誰が・いつ・どの受注を直したかを残す
+    where: outside
+    name: auditLog
+    why: 画面は押した結果しか知らない
+    answers: [audit]
+  - what: 受注を確定しても誰にも知らせない（出荷指示は別のタイミング）
+    where: outside
+    why: 出荷指示を投げるのは基幹システム側の都合。画面からは通知しない
+    answers: [notify]
+
+naming:
+  page: snake_case
+  field: camelCase
+  action: camelCase
+  repository: camelCase
+  role: camelCase
+  step: camelCase
+  card: camelCase
+  suffix:
+    # 金額は `Amount` で終わらせる（1本目で「守れない決めごとを書くな」と学んだので、
+    # **この案件では実際に全部そう書ける**ことを確かめてから入れた）。
+    date: Date

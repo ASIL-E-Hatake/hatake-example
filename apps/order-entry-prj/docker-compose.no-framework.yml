@@ -1,0 +1,53 @@
+# フレームワークを使わない版を丸ごと動かす（比べるためのもの）。
+#
+#   docker compose -f docker-compose.no-framework.yml up
+#
+# **hatake 版と同時に上げられる**ように口を分けてある（db 5434 / api 3002 / web 8082）。
+# DB のスキーマと種データは**隣とまったく同じ**ものを共用する ── ここを分けると
+# 「同じシステムを作った」と言えなくなる。
+name: order-entry-prj-nf
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: hatake
+      POSTGRES_PASSWORD: hatake
+      POSTGRES_DB: order_entry
+      LANG: ja_JP.utf8
+    ports:
+      - "5434:5432"
+    volumes:
+      # ★ 隣（hatake 版）と同じ SQL を読む。
+      - ./docker/postgres/01-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./docker/postgres/02-seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hatake -d order_entry"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build:
+      context: .
+      dockerfile: no-framework/api.Dockerfile
+    environment:
+      PGHOST: db
+      PGUSER: hatake
+      PGPASSWORD: hatake
+      PGDATABASE: order_entry
+      TOKEN_SECRET: example-only-do-not-use-in-production
+    ports:
+      - "3002:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: no-framework/web.Dockerfile
+    ports:
+      - "8082:80"
+    depends_on:
+      - api

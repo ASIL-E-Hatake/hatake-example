@@ -1,0 +1,43 @@
+// 受注入力の API（Java 版）。
+//
+// hatake は **git の tag から**入れる（レジストリには出ていない）。Java 版は JitPack が
+// tag をビルドして配ってくれるので、**利用者は repositories に1行足すだけ**でいい。
+//
+// 座標は `com.github.<持ち主>:<リポジトリ>:<tag>`。groupId が build.gradle に書いてある
+// `group`（io.github.asil-e-hatake）ではなく**git の持ち主**になるのが分かりにくい所で、
+// artifactId も `hatake-core` ではなく**リポジトリ名**の `hatake` になる。
+//
+// > v0.9.0 の JitPack は落ちています（tag の中身に `gradlew` の実行ビットが無い）。
+// > **v0.9.1 から直った**ので、この見本は v0.9.1 以降を前提にしています
+// > （いま指しているのは v0.9.2）。
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.3.4'
+    id 'io.spring.dependency-management' version '1.1.6'
+}
+
+group = 'io.example'
+version = '1.0.0'
+
+java {
+    toolchain { languageVersion = JavaLanguageVersion.of(21) }
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'https://jitpack.io' }   // ← 枠組み（hatake）はここから
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    runtimeOnly 'org.postgresql:postgresql'
+
+    // 枠組み。定義の解析・サーバ側の検証・クエリ・消費税。
+    implementation 'com.github.ASIL-E-Hatake:hatake:v0.9.2'
+    // hatake-core は snakeyaml を implementation で持っているので、こちらでも要る
+    // （定義の YAML を自分でも読むため）。
+    implementation 'org.yaml:snakeyaml:2.2'
+}
+
+tasks.named('test') { useJUnitPlatform() }

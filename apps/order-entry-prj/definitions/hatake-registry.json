@@ -1,0 +1,24 @@
+{
+  "$comment": "hatake registry が実装から作った「登録済みのもの」の一覧。手で直さず、再生成すること。定義の隣に置くと hatake validate が黙って拾い、定義が要求している名前と突き合わせる。",
+  "repositories": [
+    "customerRepository",
+    "orderLineRepository",
+    "orderRepository",
+    "productRepository"
+  ],
+  "plugins": [
+    "bulkCancel"
+  ],
+  "computedOps": [
+    "tax"
+  ],
+  "roles": [
+    "clerk",
+    "manager",
+    "sales"
+  ],
+  "sinks": [
+    "exportSink",
+    "printSink"
+  ]
+}

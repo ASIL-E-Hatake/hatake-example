@@ -39,7 +39,7 @@ app:
             label: 所属部署
             type: select
             operator: equals
-            optionsFrom:
+            optionsSource:
               repository: departmentRepository
               value: departmentCode
               label: departmentName
@@ -83,7 +83,7 @@ app:
                 label: 所属部署
                 type: select
                 required: true
-                optionsFrom:
+                optionsSource:
                   repository: departmentRepository
                   value: departmentCode
                   label: departmentName
@@ -210,7 +210,7 @@ app:
               - field: parentDepartmentCode
                 label: 上位部署
                 type: select
-                optionsFrom:
+                optionsSource:
                   repository: departmentRepository
                   value: departmentCode
                   label: departmentName
