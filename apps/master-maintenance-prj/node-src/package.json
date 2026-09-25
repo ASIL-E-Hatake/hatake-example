@@ -8,7 +8,7 @@
     "dev": "node --watch src/server.js"
   },
   "dependencies": {
-    "@hatake-fw/api": "https://github.com/ASIL-E-Hatake/hatake/releases/download/v0.9.12/hatake-fw-api-0.9.12.tgz",
+    "@hatake-fw/api": "https://github.com/ASIL-E-Hatake/hatake/releases/download/v0.9.14/hatake-fw-api-0.9.14.tgz",
     "express": "^4.19.2",
     "pg": "^8.12.0"
   }

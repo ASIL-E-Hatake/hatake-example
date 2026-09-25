@@ -16,13 +16,13 @@ dependencies:
   flutter:
     sdk: flutter
   hatake_material:
-    git: { url: https://github.com/ASIL-E-Hatake/hatake.git, ref: v0.9.12, path: flutter/packages/hatake_material }
+    git: { url: https://github.com/ASIL-E-Hatake/hatake.git, ref: v0.9.14, path: flutter/packages/hatake_material }
   hatake_yaml:
-    git: { url: https://github.com/ASIL-E-Hatake/hatake.git, ref: v0.9.12, path: flutter/packages/hatake_yaml }
+    git: { url: https://github.com/ASIL-E-Hatake/hatake.git, ref: v0.9.14, path: flutter/packages/hatake_yaml }
   hatake_http:
-    git: { url: https://github.com/ASIL-E-Hatake/hatake.git, ref: v0.9.12, path: flutter/packages/hatake_http }
+    git: { url: https://github.com/ASIL-E-Hatake/hatake.git, ref: v0.9.14, path: flutter/packages/hatake_http }
   hatake_print:
-    git: { url: https://github.com/ASIL-E-Hatake/hatake.git, ref: v0.9.12, path: flutter/packages/hatake_print }
+    git: { url: https://github.com/ASIL-E-Hatake/hatake.git, ref: v0.9.14, path: flutter/packages/hatake_print }
   http: ^1.2.0
 
 dev_dependencies:
@@ -32,9 +32,9 @@ dev_dependencies:
 
 dependency_overrides:
   hatake:
-    git: { url: https://github.com/ASIL-E-Hatake/hatake.git, ref: v0.9.12, path: flutter/packages/hatake }
+    git: { url: https://github.com/ASIL-E-Hatake/hatake.git, ref: v0.9.14, path: flutter/packages/hatake }
   hatake_core:
-    git: { url: https://github.com/ASIL-E-Hatake/hatake.git, ref: v0.9.12, path: flutter/packages/hatake_core }
+    git: { url: https://github.com/ASIL-E-Hatake/hatake.git, ref: v0.9.14, path: flutter/packages/hatake_core }
 
 flutter:
   uses-material-design: true
