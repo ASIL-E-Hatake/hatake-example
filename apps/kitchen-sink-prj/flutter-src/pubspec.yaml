@@ -1,0 +1,40 @@
+# 機能網羅の画面。
+#
+# **画面のコードは1行も無い。** 出しているのは `HatakeApp(app: <定義>)` だけ。
+# 入れるパッケージは、定義が要求しているものに合わせる:
+#   ・hatake_print … 帳票（`type: print`）があるので要る
+name: kitchen_sink_app
+description: 機能網羅（hatake の見本・移行確認用）。画面のコードは書かない。
+publish_to: none
+version: 1.0.0
+
+environment:
+  sdk: ^3.5.0
+  flutter: ">=3.16.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  hatake_material:
+    git: { url: https://github.com/ASIL-E-Hatake/hatake.git, ref: v0.9.12, path: flutter/packages/hatake_material }
+  hatake_yaml:
+    git: { url: https://github.com/ASIL-E-Hatake/hatake.git, ref: v0.9.12, path: flutter/packages/hatake_yaml }
+  hatake_http:
+    git: { url: https://github.com/ASIL-E-Hatake/hatake.git, ref: v0.9.12, path: flutter/packages/hatake_http }
+  hatake_print:
+    git: { url: https://github.com/ASIL-E-Hatake/hatake.git, ref: v0.9.12, path: flutter/packages/hatake_print }
+  http: ^1.2.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+dependency_overrides:
+  hatake:
+    git: { url: https://github.com/ASIL-E-Hatake/hatake.git, ref: v0.9.12, path: flutter/packages/hatake }
+  hatake_core:
+    git: { url: https://github.com/ASIL-E-Hatake/hatake.git, ref: v0.9.12, path: flutter/packages/hatake_core }
+
+flutter:
+  uses-material-design: true

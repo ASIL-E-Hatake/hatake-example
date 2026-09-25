@@ -26,6 +26,7 @@ git からそのまま入れている。
 |---|---|---|---|
 | [master-maintenance-prj](apps/master-maintenance-prj/) | 社内マスタメンテナンス（社員・部署・取引先） | crud / master / detail / 権限 / 複雑な検索 / 一括 / CSV | Node |
 | [order-entry-prj](apps/order-entry-prj/) | 受注入力（受注を入れて出荷指示まで） | wizard / subTable / 計算項目 / dashboard / report / 帳票印刷 | **Java** |
+| [kitchen-sink-prj](apps/kitchen-sink-prj/) | **機能網羅**（業務のふりをしない・移行確認用） | DSL の (ノード, キー) **249組すべて** | Node（モック） |
 
 > **導入を検討する方へ**: 通してみた記録（工数の比較・人が作るべきもの・納品物・
 > 起きた問題・課題）を各案件の `docs/まとめ/` に置いてあります。
@@ -38,6 +39,11 @@ git からそのまま入れている。
 [`no-framework/`](apps/order-entry-prj/no-framework/) に入っています。
 同じ DB・同じテストで比べた結果は
 [工数の比較](apps/order-entry-prj/docs/まとめ/工数の比較.md)。
+
+> **3本目は毛色が違います。** [kitchen-sink-prj](apps/kitchen-sink-prj/) は納品物の
+> 見本ではなく、**DSL のキーを一度ずつ全部書いて動かす**ためのアプリです。
+> 1.0 で凍らせる前に全部通しておくことと、**版を上げたときの差分を1か所で見る**
+> （移行確認）のために置いています。作った初回でフレームワークの不具合が2件出ました。
 
 これから増やす予定: Vue 版。
 

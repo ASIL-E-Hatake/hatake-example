@@ -19,13 +19,13 @@ dependencies:
     sdk: flutter
   # 画面を描く（Material3 の Renderer）
   hatake_material:
-    git: { url: https://github.com/ASIL-E-Hatake/hatake.git, ref: v0.9.2, path: flutter/packages/hatake_material }
+    git: { url: https://github.com/ASIL-E-Hatake/hatake.git, ref: v0.9.12, path: flutter/packages/hatake_material }
   # YAML の定義を読む
   hatake_yaml:
-    git: { url: https://github.com/ASIL-E-Hatake/hatake.git, ref: v0.9.2, path: flutter/packages/hatake_yaml }
+    git: { url: https://github.com/ASIL-E-Hatake/hatake.git, ref: v0.9.12, path: flutter/packages/hatake_yaml }
   # 定義が宣言している REST と話す Repository
   hatake_http:
-    git: { url: https://github.com/ASIL-E-Hatake/hatake.git, ref: v0.9.2, path: flutter/packages/hatake_http }
+    git: { url: https://github.com/ASIL-E-Hatake/hatake.git, ref: v0.9.12, path: flutter/packages/hatake_http }
   http: ^1.2.0
 
 dev_dependencies:
@@ -35,9 +35,9 @@ dev_dependencies:
 
 dependency_overrides:
   hatake:
-    git: { url: https://github.com/ASIL-E-Hatake/hatake.git, ref: v0.9.2, path: flutter/packages/hatake }
+    git: { url: https://github.com/ASIL-E-Hatake/hatake.git, ref: v0.9.12, path: flutter/packages/hatake }
   hatake_core:
-    git: { url: https://github.com/ASIL-E-Hatake/hatake.git, ref: v0.9.2, path: flutter/packages/hatake_core }
+    git: { url: https://github.com/ASIL-E-Hatake/hatake.git, ref: v0.9.12, path: flutter/packages/hatake_core }
 
 flutter:
   # **これが無いとアイコンのフォントが同梱されない**（画面のアイコンが全部

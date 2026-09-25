@@ -174,8 +174,13 @@ const CASES = [
     expect: "受注情報・明細のグリッド・金額・履歴の4枠。すべて読み取りで、入力できない",
     go: async (page) => {
       await openMenu(page, "受注照会");
-      // 一覧の1行目の「詳細」を押す。
-      await page.mouse.click(1447, 344);
+      // **行のボタンは右端にあり、画面からはみ出している**（列が8本あるので）。
+      // 先に一覧を横に送ってから押す。1度、送らずに押して**空振りしたまま
+      // 「受注詳細」という名前で一覧が写った**ことがある。
+      await page.mouse.move(800, 400);
+      await page.mouse.wheel({ deltaX: 600 });
+      await settle(1200);
+      await page.mouse.click(1500, 344);
       await settle(2500);
     },
   },

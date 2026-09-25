@@ -1,0 +1,104 @@
+# yaml-language-server: $schema=https://github.com/ASIL-E-Hatake/hatake/raw/main/spec/hatake-project.schema.json
+#
+# 機能網羅の前書き。
+#
+# **これは業務の案件ではありません。** 前書きは本来「その案件は何のシステムか」を
+# 書く紙ですが、この定義は業務ではなく **DSL のキーを一度ずつ書く**ためのものなので、
+# ここもその目的をそのまま書いてあります。用語辞書も名前の決めごとも最小限です。
+project_version: "1.0"
+
+system:
+  what: >-
+    hatake の DSL で書けることを**一度ずつ全部書いて、実際に動かす**ためのアプリ。
+    業務のふりはしない。画面は業務ではなく「確かめたいこと」で分けてある。
+  users:
+    - 試す人（tester）。全画面を触る
+    - 管理（admin）。持ち出しと、区切りの大きいほうを触る
+  premises:
+    # **できないこと**を書く場所。
+    - 業務ロジックは持たない。API は決め打ちの値を返すだけのモック。
+    - 保存しても残らない（毎回同じ状態から始まる＝証跡が撮り直せる）。
+    - 認証は持たない。役割は URL の `?role=` で切り替える（**見本のための割り切り**）。
+    - 納品物の見本ではない。人に見せる設計書としての値打ちは狙わない。
+  external:
+    - name: itemRepository
+      what: 網羅用の1件（この案件のモック API）
+      owner: この見本
+    - name: lineRepository
+      what: 明細（帳票が読む）
+      owner: この見本
+    - name: groupRepository
+      what: 親の選択肢
+      owner: この見本
+    - name: childRepository
+      what: 子の選択肢（親で絞る）
+      owner: この見本
+
+glossary:
+  - term: コード
+    field: itemCode
+    avoid: [ID]
+  - term: グループ
+    field: groupCode
+    avoid: [分類]
+
+logic:
+  - what: 保存しても残らない（モックなので）
+    where: server
+    why: 証跡を何度でも撮り直せるようにするため
+    answers: [erase]
+  - what: 採番しない。コードは手で入れる
+    where: server
+    why: 網羅が目的なので、番号の規則は持たない
+    answers: [numbering]
+  - what: 同時更新は見ない（1人で触る前提）
+    where: server
+    why: モックなので衝突が起きない
+    answers: [concurrency]
+  - what: 一括は1件ずつ確定し、失敗した行だけ残す
+    where: server
+    why: 区切って実行する所を確かめるため、途中で失敗する行を用意してある
+    answers: [partial-failure]
+  - what: 保存の検証はサーバでも回す
+    where: server
+    name: formValidator
+    why: 画面の検証は親切であって守りではない
+    answers: [validation-server]
+  - what: 役割で隠したものは API でも止める
+    where: outside
+    name: authz
+    why: 画面の roles は見せ方だけ
+    answers: [authz-server]
+  - what: 役割は URL の `?role=` で配る（見本のための割り切り）
+    where: outside
+    why: 認証を持たないため
+    answers: [role-source]
+  - what: 端数は扱わない（金額は整数で持つ）
+    where: outside
+    why: 丸めの確認は2本目（受注入力）でやってある
+    answers: [rounding]
+  - what: 監査は残さない
+    where: outside
+    why: モックなので
+    answers: [audit]
+  - what: 誰にも知らせない
+    where: outside
+    why: モックなので
+    answers: [notify]
+  - what: 種別（standard / special / trial）は画面のボタンでは変えない。モックが返す値のまま
+    where: outside
+    why: 網羅が目的なので、状態を進める道筋は持たない（枠組みもワークフローを持たない）
+    answers: [state-owner]
+  - what: 帳票は刷った時点の値を読む
+    where: outside
+    why: モックなので常に同じ値
+    answers: [report-source]
+
+naming:
+  page: snake_case
+  field: camelCase
+  action: camelCase
+  repository: camelCase
+  role: camelCase
+  step: camelCase
+  card: camelCase

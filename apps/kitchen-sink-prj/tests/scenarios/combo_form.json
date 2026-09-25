@@ -1,0 +1,61 @@
+{
+  "$comment": "条件の組み合わせ（all / any / not）の真理値表。下書きは `hatake run --draft` で起こしたが、**組み合わせが成立する形は道具が作れない**（そう言ってくれる）ので、人が書いた。画面もブラウザも要らない ── 定義を直接動かしている。",
+  "page": "combo_form",
+  "cases": [
+    {
+      "name": "K-01 標準・未承認（どれも成立しない）",
+      "record": { "itemCode": "A", "kind": "standard", "amount": 500, "approved": false },
+      "expect": {
+        "errors": [],
+        "$comment": "not(標準) は偽なので unlessNote も隠れる。nestedNote だけ出る（not(特別かつ承認済み) が真）。",
+        "hidden": ["bothNote", "eitherNote", "unlessNote"]
+      }
+    },
+    {
+      "name": "K-02 特別かつ 1000 超（all が成立）",
+      "record": { "itemCode": "A", "kind": "special", "amount": 1500, "approved": false },
+      "expect": {
+        "errors": [],
+        "$comment": "bothNote が出る。標準でないので unlessNote も出る。",
+        "hidden": ["eitherNote"]
+      }
+    },
+    {
+      "name": "K-03 特別だが 1000 以下（all の片方だけ）",
+      "$comment": "片方だけでは出ない ── これが `all` と `any` の違い。",
+      "record": { "itemCode": "A", "kind": "special", "amount": 1000, "approved": false },
+      "expect": { "errors": [], "hidden": ["bothNote", "eitherNote"] }
+    },
+    {
+      "name": "K-04 試用（any の片方が成立）",
+      "record": { "itemCode": "A", "kind": "trial", "amount": 100, "approved": false },
+      "expect": {
+        "errors": [],
+        "$comment": "eitherNote が出る（試用）。unlessNote も出る（標準でない）。",
+        "hidden": ["bothNote"]
+      }
+    },
+    {
+      "name": "K-05 標準だが承認済み（any のもう片方が成立）",
+      "$comment": "`any` は**どちらでも**成立する。両方を1件ずつ確かめないと、片方が効いていなくても気づけない。",
+      "record": { "itemCode": "A", "kind": "standard", "amount": 100, "approved": true },
+      "expect": { "errors": [], "hidden": ["bothNote", "unlessNote"] }
+    },
+    {
+      "name": "K-06 特別かつ承認済み（not の中の all が成立 → 隠れる）",
+      "$comment": "入れ子（not の中に all）。中が成立したときに**隠れる**のが `not`。",
+      "record": { "itemCode": "A", "kind": "special", "amount": 1500, "approved": true },
+      "expect": {
+        "errors": [],
+        "hidden": ["nestedNote"]
+      }
+    },
+    {
+      "name": "K-07 コードが空（必須）",
+      "record": { "itemCode": "", "kind": "standard", "amount": 0, "approved": false },
+      "expect": {
+        "errors": [{ "field": "itemCode", "message": "必須項目です" }]
+      }
+    }
+  ]
+}

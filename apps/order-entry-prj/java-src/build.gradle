@@ -9,7 +9,7 @@
 //
 // > v0.9.0 の JitPack は落ちています（tag の中身に `gradlew` の実行ビットが無い）。
 // > **v0.9.1 から直った**ので、この見本は v0.9.1 以降を前提にしています
-// > （いま指しているのは v0.9.2）。
+// > （いま指しているのは v0.9.12）。
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.3.4'
@@ -34,7 +34,7 @@ dependencies {
     runtimeOnly 'org.postgresql:postgresql'
 
     // 枠組み。定義の解析・サーバ側の検証・クエリ・消費税。
-    implementation 'com.github.ASIL-E-Hatake:hatake:v0.9.2'
+    implementation 'com.github.ASIL-E-Hatake:hatake:v0.9.12'
     // hatake-core は snakeyaml を implementation で持っているので、こちらでも要る
     // （定義の YAML を自分でも読むため）。
     implementation 'org.yaml:snakeyaml:2.2'

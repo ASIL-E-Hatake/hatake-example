@@ -1,0 +1,408 @@
+# yaml-language-server: $schema=https://github.com/ASIL-E-Hatake/hatake/raw/main/spec/hatake-page.schema.json
+#
+# 機能網羅（kitchen sink）— **業務のふりをしない**定義。
+#
+# 目的は1つ: **DSL のどのキーも、一度は書いて動かした状態にする**。
+# 単体試験が在ることと、通しで動くアプリで書かれたことは別で、外から使って出た
+# 不具合はどれも「3版の試験が全部緑の状態」で存在していた。
+#
+# だから画面は**業務ではなく「確かめたいこと」で分けてある**。落ちたときに
+# どの画面かで原因が分かるようにするため。
+#
+#   combo_form    条件の組み合わせ（all / any / not）と既定値
+#   press_list    押す前に聞く・区切って実行・行の有効条件・別タブ・成功後に移動
+#   linked_master 選択肢の連動（親で絞る）とページ送りを切る
+#   fold_detail   畳み込みの並べ替え・打ち切り・詳細のボタン
+#   steps_wizard  ウィザードのボタン
+#   sorted_report 帳票の降順
+#
+#   npx hatake check definitions/app.yaml --project definitions/hatake.project.yaml
+dsl_version: "1.0"
+
+app:
+  id: kitchen_sink
+  title: 機能網羅
+  home: comboForm
+  # 画面を**並べて開く**（タブ）。`open: tab` が効くのはこの形のときだけ。
+  navigation: tabs
+  roles: [tester, admin]
+
+  # 見た目の決めごと。**画面では確かめにくい所**なので、ここで一度は書いておく。
+  theme:
+    primaryColor: "#3F51B5"
+    secondaryColor: "#FF9800"
+    brightness: system
+    density: compact
+    fontFamily: "Noto Sans JP"
+    radius: 8
+    config: { note: 見た目の追加設定は Renderer にそのまま渡る }
+
+  menu:
+    - { id: comboForm, label: 条件の組み合わせ, icon: rule, page: combo_form }
+    - { id: pressList, label: 押す前に聞く, icon: touch_app, page: press_list }
+    - { id: linkedMaster, label: 選択肢の連動, icon: link, page: linked_master }
+    - { id: stepsWizard, label: ステップ入力, icon: linear_scale, page: steps_wizard }
+    - group: 読むだけ
+      icon: menu_book
+      items:
+        # **詳細はメニューに置かない。** メニューには鍵を渡す場所が無いので、開いても
+        # 必ず空になる（1度そう書いて「データがありません」になった。いまは
+        # `detail-page-in-menu` が言う）。畳み込みの画面は一覧の「詳細」から開く。
+        - { id: sortedReport, label: 帳票（降順）, page: sorted_report }
+
+  pages:
+    # ------------------------------------------------------------------
+    # 条件の組み合わせ（all / any / not）と既定値
+    # ------------------------------------------------------------------
+    - type: form
+      id: combo_form
+      title: 条件の組み合わせ
+      repository: itemRepository
+      key: itemCode
+
+      form:
+        sections:
+          - title: 元になる値
+            layout: { columns: 2 }
+            fields:
+              - { field: itemCode, label: コード, type: text, required: true }
+              - field: kind
+                label: 種別
+                type: select
+                required: true
+                # 新規のときに入る値。**空で開いて「必須です」と怒られる**のを避ける。
+                defaultValue: standard
+                options:
+                  - { value: standard, label: 標準 }
+                  - { value: special, label: 特別 }
+                  - { value: trial, label: 試用 }
+              - { field: amount, label: 金額, type: number, defaultValue: 0,
+                  format: currency, config: { symbol: "¥" } }
+              - { field: approved, label: 承認済み, type: checkbox, defaultValue: false }
+
+          - title: 組み合わせで出し分ける
+            fields:
+              # 全部満たすときだけ（all）
+              - field: bothNote
+                label: 特別かつ 1000 超のときだけ
+                type: textarea
+                visibleWhen:
+                  all:
+                    - { field: kind, operator: equals, value: special }
+                    - { field: amount, operator: gt, value: 1000 }
+              # どれか満たすときだけ（any）
+              - field: eitherNote
+                label: 試用か承認済みのときだけ
+                type: textarea
+                visibleWhen:
+                  any:
+                    - { field: kind, operator: equals, value: trial }
+                    - { field: approved, operator: equals, value: true }
+              # 満たさないときだけ（not）
+              - field: unlessNote
+                label: 標準でないときだけ
+                type: text
+                visibleWhen:
+                  not: { field: kind, operator: equals, value: standard }
+              # 入れ子（not の中に all）。**組み合わせは入れ子にできる**ことの確認。
+              - field: nestedNote
+                label: 「特別かつ承認済み」でないときだけ
+                type: text
+                visibleWhen:
+                  not:
+                    all:
+                      - { field: kind, operator: equals, value: special }
+                      - { field: approved, operator: equals, value: true }
+
+      actions:
+        - { id: save, type: plugin, plugin: saveItem, label: 保存 }
+
+    # ------------------------------------------------------------------
+    # 押す前に聞く・区切って実行・行の有効条件・別タブ・成功後に移動
+    # ------------------------------------------------------------------
+    - type: search
+      id: press_list
+      title: 押す前に聞く
+      repository: itemRepository
+      key: itemCode
+
+      search:
+        layout: { columns: 3 }
+        filters:
+          # 条件にも追加設定を渡せる（Renderer にそのまま届く）。
+          - { field: itemCode, label: コード, type: text, operator: startsWith,
+              config: { hint: 前方一致で探します } }
+          - field: kind
+            label: 種別
+            type: select
+            operator: equals
+            options:
+              - { value: standard, label: 標準 }
+              - { value: special, label: 特別 }
+              - { value: trial, label: 試用 }
+
+      table:
+        pagination: { pageSize: 20 }
+        rowActions: [openDetail]
+        columns:
+          - { field: itemCode, label: コード, width: 120, sortable: true }
+          - { field: itemName, label: 名前, sortable: true }
+          - { field: kind, label: 種別, type: badge, width: 90 }
+          - { field: amount, label: 金額, type: number, format: currency,
+              config: { symbol: "¥" }, width: 120, sortable: true }
+
+      actions:
+        - id: openDetail
+          type: navigate
+          label: 詳細
+          scope: row
+          page: fold_detail
+          params: { itemCode: $row.itemCode }
+          # 並べて開く（`navigation: tabs` のときだけ効く）。
+          open: tab
+          # 試用の行では押せない。判断するのはその行のレコード。
+          enabledWhen: { field: kind, operator: notEquals, value: trial }
+
+        - id: reprice
+          type: plugin
+          plugin: reprice
+          label: まとめて単価を変える
+          scope: selection
+          roles: [tester, admin]
+          # **押す前に値を聞く**。確認ダイアログの代わりに出る小さなフォーム。
+          prompt:
+            # **件数は見出しに入れる**（`prompt` に message は無く、中身は聞く項目）。
+            # 入れないと「3件のつもりが30件」でも同じ文が出る（`advise` がそう言った）。
+            title: "{count} 件の単価を変える"
+            okLabel: 変える
+            cancelLabel: やめる
+            fields:
+              - { field: newAmount, label: 単価, type: number, required: true,
+                  validators: [{ type: min, value: 0 }] }
+              - { field: reason, label: 理由, type: text,
+                  validators: [{ type: maxLength, value: 40 }] }
+          # 一度に渡す行数。役割ごとに変えられる（慣れていない人は小さく）。
+          # **上限より小さくする**。同じだと区切りが1回で終わり、進み具合も中断も
+          # 出ない（`check` がそう言った）。
+          batchSize:
+            default: 5
+            byRole: { admin: 8 }
+          maxRows:
+            default: 20
+            byRole: { tester: 10 }
+          onSuccess:
+            message: "{count} 件の単価を変えました"
+            # 終わったら移る画面と、そこへ渡す値。
+            page: press_list
+            params: { kind: special }
+          onError: { message: "{count} 件が変えられませんでした（失敗した行: {failedKeys}）" }
+
+        - id: archive
+          type: plugin
+          plugin: archive
+          label: 書庫に入れる
+          scope: selection
+          roles: [tester, admin]
+          # `prompt` を書かない側（確認だけ）。打ち消しの文言まで書ける。
+          confirm:
+            title: 書庫に入れる
+            message: 選んだ {count} 件を書庫に入れます。よろしいですか？
+            okLabel: 入れる
+            cancelLabel: やめる
+            danger: true
+          maxRows: { default: 20 }
+          onSuccess: { message: "{count} 件を書庫に入れました" }
+          # **どの行が落ちたか**まで言う。件数だけだと全部やり直すことになる。
+          onError: { message: "{count} 件が入れられませんでした（失敗した行: {failedKeys}）" }
+
+        - { id: csv, type: export, label: CSV 出力, scope: all, roles: [admin],
+            config: { filename: 網羅, bom: true } }
+
+    # ------------------------------------------------------------------
+    # 選択肢の連動（親で絞る）とページ送りを切る
+    # ------------------------------------------------------------------
+    - type: master
+      id: linked_master
+      title: 選択肢の連動
+      repository: itemRepository
+      key: itemCode
+
+      search:
+        filters:
+          - field: groupCode
+            label: グループ
+            type: select
+            operator: equals
+            optionsSource:
+              repository: groupRepository
+              value: groupCode
+              label: groupName
+              # 選択肢は一覧画面ではないので、取る数に上限を置く。
+              limit: 50
+
+      table:
+        # **ページ送りを出さない**（全部載る画面）。
+        pagination: { pageSize: 100, enabled: false }
+        rowActions: [edit, delete]
+        columns:
+          - { field: itemCode, label: コード, width: 120, sortable: true }
+          - { field: itemName, label: 名前, sortable: true }
+          - { field: groupCode, label: グループ, width: 120 }
+          - { field: childCode, label: 子, width: 120 }
+
+      form:
+        sections:
+          - title: 親子で絞る
+            layout: { columns: 2 }
+            fields:
+              - { field: itemCode, label: コード, type: text, required: true }
+              - { field: itemName, label: 名前, type: text, required: true }
+              - field: groupCode
+                label: グループ
+                type: select
+                required: true
+                optionsSource:
+                  repository: groupRepository
+                  value: groupCode
+                  label: groupName
+              - field: childCode
+                label: 子（親で絞る）
+                type: select
+                # 親の項目名。これが変わると、この欄の選択肢を取り直す。
+                optionsFrom: groupCode
+                optionsSource:
+                  repository: childRepository
+                  value: childCode
+                  label: childName
+                  # 行の中で親の値を持っている項目。`{ groupCode: <親の値> }` で絞る。
+                  parentKey: groupCode
+                  limit: 20
+
+      actions:
+        - { id: save, type: plugin, plugin: saveItem, label: 保存 }
+
+    # ------------------------------------------------------------------
+    # 畳み込みの並べ替え・打ち切り・詳細のボタン
+    # ------------------------------------------------------------------
+    - type: detail
+      id: fold_detail
+      title: 畳み込み
+      repository: itemRepository
+      key: itemCode
+
+      form:
+        sections:
+          - title: もとの1件
+            layout: { columns: 2 }
+            fields:
+              - { field: itemCode, label: コード }
+              - { field: itemName, label: 名前 }
+              - { field: kind, label: 種別 }
+
+          - fields:
+              - field: lines
+                label: 明細
+                type: subTable
+                columns:
+                  - { field: lineName, label: 名前, width: 200 }
+                  - { field: lineAmount, label: 金額, type: number,
+                      format: currency, config: { symbol: "¥" }, width: 120 }
+
+          - title: 畳んだ結果
+            fields:
+              # **並べてから上位だけ**畳む。並べないと「大きい順に3件」が言えない。
+              - field: topThree
+                label: 金額の大きい順に3件
+                type: textarea
+                readOnly: true
+                computed:
+                  op: join
+                  field: lines
+                  of: lineName
+                  separator: "、"
+                  sort: { field: lineAmount, ascending: false }
+                  limit: 3
+                  # 切ったことを言う。書かないと「3件しかない」ように見える。
+                  overflow: "ほか {count} 件"
+              - { field: lineTotal, label: 合計, format: currency, config: { symbol: "¥" },
+                  computed: { op: sum, field: lines, of: lineAmount } }
+
+      actions:
+        - { id: backToList, type: navigate, label: 一覧へ戻る, page: press_list }
+
+    # ------------------------------------------------------------------
+    # ウィザードのボタン
+    # ------------------------------------------------------------------
+    - type: wizard
+      id: steps_wizard
+      title: ステップ入力
+      repository: itemRepository
+      key: itemCode
+
+      steps:
+        - id: first
+          title: 1つ目
+          description: 種別を選ぶと、次のステップが出るかどうかが変わります。
+          layout: { columns: 2 }
+          fields:
+            - { field: itemCode, label: コード, type: text, required: true }
+            - field: kind
+              label: 種別
+              type: select
+              required: true
+              defaultValue: standard
+              options:
+                - { value: standard, label: 標準 }
+                - { value: special, label: 特別 }
+
+        # 条件で丸ごと飛ばすステップ。出ないステップの必須は保存を止めない。
+        - id: extra
+          title: 特別のときだけ
+          visibleWhen: { field: kind, operator: equals, value: special }
+          fields:
+            - { field: itemName, label: 名前, type: text, required: true }
+
+        - id: last
+          title: 確認
+          fields:
+            - { field: summary, label: 内容,
+                computed: { op: concat, fields: [itemCode, kind], separator: " / " } }
+
+      actions:
+        - { id: save, type: plugin, plugin: saveItem, label: 保存 }
+        - { id: cancel, type: navigate, label: やめる, page: press_list }
+
+    # ------------------------------------------------------------------
+    # 帳票の降順
+    # ------------------------------------------------------------------
+    - type: report
+      id: sorted_report
+      title: 帳票（降順）
+      repository: lineRepository
+
+      search:
+        filters:
+          - { field: itemCode, label: コード, type: text, operator: equals }
+
+      table:
+        columns:
+          - { field: itemCode, label: コード, width: 90 }
+          - { field: lineName, label: 名前, width: 200 }
+          - { field: lineAmount, label: 金額, type: number,
+              format: currency, config: { symbol: "¥" }, width: 100 }
+
+      report:
+        paper: { size: A4, orientation: portrait }
+        rowsPerPage: 25
+        limit: 200
+        # **降順で刷る**。グループはこの並びに依存する（コントロールブレイク）。
+        sort: { field: itemCode, ascending: false }
+        groupBy:
+          - { field: itemCode, label: コード }
+        totals:
+          - { field: lineAmount, aggregate: sum }
+
+      actions:
+        # 持ち出せる口は役割で絞る（紙も画面の外に出たら取り戻せない）。
+        - { id: csv, type: export, label: CSV 出力, roles: [admin], config: { filename: 網羅帳票 } }
+        - { id: printPdf, type: print, label: 印刷, roles: [admin], config: { filename: 網羅帳票 } }

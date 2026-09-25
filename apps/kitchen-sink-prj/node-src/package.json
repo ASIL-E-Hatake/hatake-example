@@ -1,0 +1,12 @@
+{
+  "name": "kitchen-sink-api",
+  "private": true,
+  "type": "module",
+  "description": "機能網羅のモック API（業務ロジックを持たない）",
+  "scripts": { "start": "node src/server.js" },
+  "dependencies": {
+    "@hatake-fw/api": "https://github.com/ASIL-E-Hatake/hatake/releases/download/v0.9.12/hatake-fw-api-0.9.12.tgz",
+    "express": "^4.19.2",
+    "yaml": "^2.5.0"
+  }
+}

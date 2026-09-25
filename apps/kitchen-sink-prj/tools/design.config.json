@@ -1,0 +1,21 @@
+{
+  "_": "案件ごとに違うところだけ。道具そのものは ../../tools/build-design-docs.mjs（使い回し）。",
+  "impl": "node-src",
+  "paths": {
+    "itemRepository": "/api/items",
+    "lineRepository": "/api/lines",
+    "groupRepository": "/api/groups",
+    "childRepository": "/api/children"
+  },
+  "repositories": [
+    { "name": "groupRepository", "what": "親の選択肢（選択肢の連動）" },
+    { "name": "childRepository", "what": "子の選択肢（親で絞る）" }
+  ],
+  "outside": [
+    { "method": "GET", "path": "/api/definition.yaml", "what": "画面の定義を配る", "why": "この案件の作り（画面が定義のコピーを持たない）" },
+    { "method": "POST", "path": "/api/bulk/reprice", "what": "まとめて単価を変える", "why": "一括の中身はアプリ側（`plugin`）" },
+    { "method": "POST", "path": "/api/bulk/archive", "what": "書庫に入れる", "why": "同上" },
+    { "method": "POST", "path": "/api/reset", "what": "データを初期状態に戻す", "why": "証跡を撮り直すための口（この見本だけ）" }
+  ],
+  "authz": { "file": "node-src/src/server.js", "cases": "A-08 / A-09" }
+}
