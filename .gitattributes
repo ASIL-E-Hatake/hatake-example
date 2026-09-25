@@ -1,0 +1,25 @@
+# **この案件のものは、Windows の手元でも LF のまま置く。**
+#
+# ここに在るものは全部 Linux のコンテナで動く（`docker compose up`）。Windows の
+# checkout は既定（`core.autocrlf=true`）で CRLF に変換するので、変換されたものが
+# そのままイメージに入る。**中身は正しいのに環境で結果が変わる**のが困る所で、
+# 実際に2つ踏んだ:
+#
+#   ・シェルスクリプトが1行目から落ちる
+#       tools/run-tests.sh: line 9: set: pipefail: invalid option name
+#     `set -euo pipefail\r` の `\r` が引数に混ざる。**画面に出る字からは
+#     改行コードが原因だと分からない。**
+#
+#   ・定義（`definitions/app.yaml`）を CRLF のまま焼くと、API が返す字数が変わる。
+#     テストのエビデンスは長い本文を 1200 文字で切るので、**切れる位置がずれて
+#     差分が出る**。誰がどの環境で回したかで記録が変わると、証拠にならない。
+#
+# なので既定を LF にする。`text=auto` は中身を見て判断するので、png などの
+# バイナリはそのまま（git が触らない）。
+* text=auto eol=lf
+
+# 判定に迷わせないもの（中身でバイナリと分かるが、明示しておく）。
+*.png binary
+*.jpg binary
+*.pdf binary
+*.ico binary
