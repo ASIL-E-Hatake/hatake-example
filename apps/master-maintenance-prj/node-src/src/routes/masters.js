@@ -98,8 +98,12 @@ function toSql(table, spec, extra = []) {
 export function masterRoutes({ pageId, table, readFrom = table, write }) {
   const router = Router();
   const page = pageOf(pageId);
-  // 解析後のモデルは `keyField` / `kind`（YAML の `key` / `type` とは名前が違う）。
-  const key = page.keyField;
+  // 解析後のモデルは `keyFields` / `kind`（YAML の `key` / `type` とは名前が違う）。
+  //
+  // **0.9.7 から並び**になった（1件が2つ以上の列で決まる画面＝複合キーを持てる
+  // ようにしたため）。この案件のマスタはどれも1つの列で決まるので、先頭だけ取る。
+  // 複合キーを使う画面を足すなら、ここも道の区切りとして並べる必要がある。
+  const key = page.keyFields[0];
 
   router.use(requireLogin);
 

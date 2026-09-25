@@ -1,0 +1,8 @@
+{
+  "name": "機能網羅",
+  "short_name": "機能網羅",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#00796b"
+}

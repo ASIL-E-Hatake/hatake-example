@@ -12,6 +12,16 @@ app:
   id: order_entry
   title: 受注管理
   home: orders
+  # 業務のコード表は**アプリに1回**書いて、使う所は名前で指す（`optionsOf`）。
+  # 前はこの表を2か所に書いていて、**詳細画面と帳票には無かった**ので、
+  # そこだけ `shipped` と素のコードが出ていた。
+  vocabularies:
+    - name: orderStatus
+      options:
+        - { value: draft, label: 入力中 }
+        - { value: confirmed, label: 確定 }
+        - { value: shipped, label: 出荷済 }
+        - { value: cancelled, label: 取消 }
   # 配りうる役割の語彙。社内ポータルがこの名前で返してくる（前書きの role-source）。
   roles: [sales, clerk, manager]
 
@@ -56,11 +66,7 @@ app:
             label: 受注状態
             type: select
             operator: in
-            options:
-              - { value: draft, label: 入力中 }
-              - { value: confirmed, label: 確定 }
-              - { value: shipped, label: 出荷済 }
-              - { value: cancelled, label: 取消 }
+            optionsOf: orderStatus
           # 範囲で絞る（いくら以上 いくら以下）。
           - { field: totalAmount, label: 合計, type: number, operator: between }
 
@@ -72,7 +78,7 @@ app:
           - { field: customerName, label: 取引先, sortable: true }
           - { field: orderDate, label: 受注日, type: date, width: 100, sortable: true }
           - { field: dueDate, label: 納期, type: date, width: 100, sortable: true }
-          - { field: orderStatus, label: 受注状態, type: badge, width: 85 }
+          - { field: orderStatus, label: 受注状態, type: badge, width: 85, optionsOf: orderStatus }
           - { field: lineCount, label: 明細, type: number, width: 60 }
           - { field: totalAmount, label: 合計, type: number, format: currency, config: { symbol: "¥" }, width: 105, sortable: true }
           # 誰が入れたかは営業事務と管理者だけが見る（営業には要らない）。
@@ -240,7 +246,7 @@ app:
               - { field: customerName, label: 取引先 }
               - { field: orderDate, label: 受注日, format: date }
               - { field: dueDate, label: 納期, format: date }
-              - { field: orderStatus, label: 受注状態 }
+              - { field: orderStatus, label: 受注状態, optionsOf: orderStatus }
               - { field: deliveryPlace, label: 納入先 }
               - { field: note, label: 備考, type: textarea }
 
@@ -289,11 +295,7 @@ app:
             label: 受注状態
             type: select
             operator: in
-            options:
-              - { value: draft, label: 入力中 }
-              - { value: confirmed, label: 確定 }
-              - { value: shipped, label: 出荷済 }
-              - { value: cancelled, label: 取消 }
+            optionsOf: orderStatus
       items:
         - { id: orderCount, title: 受注件数, action: openOrders }
         - id: totalAmountCard

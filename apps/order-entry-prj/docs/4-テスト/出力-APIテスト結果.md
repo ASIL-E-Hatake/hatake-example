@@ -4,7 +4,7 @@
 > **やりとりをそのまま**書き出しています（手で直さない）。
 > 作り直し: `bash tools/run-tests.sh`
 
-- 実行日時: 2026-09-18T00:38:23.744Z
+- 実行日時: 2026-09-25T01:18:05.984Z
 - 対象: `http://localhost:3001/api`
 - 前提: `docker compose up` で DB が初期データの状態
 
@@ -69,15 +69,15 @@ POST http://localhost:3001/api/auth/login
 ```json
 HTTP 200
 {
+  "token": "dGFuYWthH-eUsOS4rSDlhKrlrZAfY2xlcmsfMTc5MDMyNzg4NQ.1Aow_TU3sO7IHAb7RZFAXcQImTEafPAn9Dd2B2Rxw1Q",
   "user": {
+    "name": "田中 優子",
     "officeCode": "TKY",
     "userId": "tanaka",
     "roles": [
       "clerk"
-    ],
-    "name": "田中 優子"
-  },
-  "token": "dGFuYWthH-eUsOS4rSDlhKrlrZAfY2xlcmsfMTc4OTcyMDcwMw.u0fWwW21FPk9ufeaWDCBQwXXF0qC6M4ltys2p_WTvi0"
+    ]
+  }
 }
 ```
 
@@ -862,8 +862,8 @@ HTTP 201
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "tanaka",
-  "createdAt": "2026-09-18 00:38:23.985697+00",
-  "updatedAt": "2026-09-18 00:38:23.985697+00",
+  "createdAt": "2026-09-25 01:18:06.222759+00",
+  "updatedAt": "2026-09-25 01:18:06.222759+00",
   "customerName": "株式会社あおぞら商事",
   "lines": [
     {
@@ -949,8 +949,8 @@ HTTP 201
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "tanaka",
-  "createdAt": "2026-09-18 00:38:24.017437+00",
-  "updatedAt": "2026-09-18 00:38:24.017437+00",
+  "createdAt": "2026-09-25 01:18:06.263672+00",
+  "updatedAt": "2026-09-25 01:18:06.263672+00",
   "customerName": "みどり物産株式会社",
   "lines": [
     {
@@ -1180,6 +1180,7 @@ POST http://localhost:3001/api/bulk/cancel
 ```json
 HTTP 200
 {
+  "succeeded": 1,
   "rejected": [
     {
       "key": "SO2026070001",
@@ -1193,8 +1194,7 @@ HTTP 200
       "key": "NOPE",
       "reason": "見つかりません"
     }
-  ],
-  "succeeded": 1
+  ]
 }
 ```
 
@@ -1229,8 +1229,8 @@ HTTP 200
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "tanaka",
-  "createdAt": "2026-09-18 00:38:23.985697+00",
-  "updatedAt": "2026-09-18 00:38:24.079249+00",
+  "createdAt": "2026-09-25 01:18:06.222759+00",
+  "updatedAt": "2026-09-25 01:18:06.327071+00",
   "customerName": "株式会社あおぞら商事",
   "lines": [
     {
@@ -1383,7 +1383,7 @@ HTTP 200
   "lineCount": 2,
   "createdBy": "sato",
   "createdAt": "2026-09-01 00:00:00+00",
-  "updatedAt": "2026-09-18 00:38:24.118433+00",
+  "updatedAt": "2026-09-25 01:18:06.367944+00",
   "customerName": "南商店",
   "lines": [
     {
@@ -1447,6 +1447,16 @@ app:
   id: order_entry
   title: 受注管理
   home: orders
+  # 業務のコード表は**アプリに1回**書いて、使う所は名前で指す（`optionsOf`）。
+  # 前はこの表を2か所に書いていて、**詳細画面と帳票には無かった**ので、
+  # そこだけ `shipped` と素のコードが出ていた。
+  vocabularies:
+    - name: orderStatus
+      options:
+        - { value: draft, label: 入力中 }
+        - { value: confirmed, label: 確定 }
+        - { value: shipped, label: 出荷済 }
+        - { value: cancelled, label: 取消 }
   # 配りうる役割の語彙。社内ポータルがこの名前で返してくる（前書きの role-source）。
   roles: [sales, clerk, manager]
 
@@ -1458,17 +1468,6 @@ app:
     # グループの roles は中身にも掛かる。管理者しかメニューから開けない。
     - group: 管理
       icon: insights
-      roles: [manager]
-      items:
-        - { id: dashboard, label: ダッシュボード, page: order_dashboard }
-
-  pages:
-    # ------------------------------------------------------------------
-    # 受注照会（複雑な検索・一括取消・CSV）
-    # ------------------------------------------------------------------
-    - type: search
-      id: order_search
-      title: 受注照会
-      
+      role
 …（長いので省略）
 ```

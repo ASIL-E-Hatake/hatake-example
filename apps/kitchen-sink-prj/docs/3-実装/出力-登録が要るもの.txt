@@ -1,0 +1,15 @@
+repositories:
+  childRepository   ← 登録が要る
+  groupRepository   ← 登録が要る
+  itemRepository   ← 登録が要る
+  lineRepository   ← 登録が要る
+plugins:
+  archive   ← 登録が要る
+  reprice   ← 登録が要る
+  saveItem   ← 登録が要る
+sinks:
+  exportSink   ← 登録が要る
+  printSink   ← 登録が要る
+roles:
+  admin   ← アプリが配る必要がある
+  tester   ← アプリが配る必要がある

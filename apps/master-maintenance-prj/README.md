@@ -27,7 +27,7 @@ docker compose up
 
 > **Flutter SDK も Node も入れなくていい。** 1回目は Flutter Web のビルドで数分
 > かかります（2回目からは速い）。`@hatake-fw/api` と Flutter のパッケージは
-> [v0.9.2 の tag](https://github.com/ASIL-E-Hatake/hatake/releases/tag/v0.9.2)
+> [v0.9.12 の tag](https://github.com/ASIL-E-Hatake/hatake/releases/tag/v0.9.12)
 > から入ります＝**レジストリに出していないものを git だけで配っている**形。
 
 ## 何が入っているか

@@ -35,6 +35,8 @@ DB_NAME=""
 API_BASE="http://localhost:3000/api"
 SCREEN_NETWORK=""
 SCREEN_BASE="http://web:80"
+# DB を持たない案件はこちらを書く（書けば上の docker compose は使わない）。
+RESET_CMD=""
 # shellcheck source=/dev/null
 [ -f tools/test.config.sh ] && . tools/test.config.sh
 
@@ -61,8 +63,15 @@ run_scenarios() {
 }
 
 # データを初期状態に戻す（この案件の DB は使い捨て。永続化していない）。
+#
+# エビデンスは「何度回しても同じ」でないと使えないので、**各段の前に必ず戻す**。
+# DB を持たない案件（モック API）は `RESET_CMD` を書いて、そちらに任せる。
 reset_data() {
   echo "== データを初期状態に戻す"
+  if [ -n "${RESET_CMD:-}" ]; then
+    eval "$RESET_CMD" >/dev/null 2>&1 || return 1
+    return 0
+  fi
   # `--renew-anon-volumes` が要る。postgres の image は data ディレクトリを
   # ボリュームとして宣言しているので、**作り直しても中身が残る**＝初期データの
   # SQL が走らない（空のときだけ走る仕掛けなので）。
