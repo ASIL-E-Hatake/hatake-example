@@ -15,6 +15,8 @@
 #   fold_detail   畳み込みの並べ替え・打ち切り・詳細のボタン
 #   steps_wizard  ウィザードのボタン
 #   sorted_report 帳票の降順
+#   role_crud     見せる相手で変わる（列・ボタン・項目の roles）と読み取り専用
+#   card_board    カードの盛り合わせ（数・図・表）とカードごとの見せる相手
 #
 #   npx hatake check definitions/app.yaml --project definitions/hatake.project.yaml
 dsl_version: "1.0"
@@ -42,6 +44,8 @@ app:
     - { id: pressList, label: 押す前に聞く, icon: touch_app, page: press_list }
     - { id: linkedMaster, label: 選択肢の連動, icon: link, page: linked_master }
     - { id: stepsWizard, label: ステップ入力, icon: linear_scale, page: steps_wizard }
+    - { id: roleCrud, label: 見せる相手で変わる, icon: visibility, page: role_crud }
+    - { id: cardBoard, label: カードの盛り合わせ, icon: dashboard, page: card_board }
     - group: 読むだけ
       icon: menu_book
       items:
@@ -406,3 +410,122 @@ app:
         # 持ち出せる口は役割で絞る（紙も画面の外に出たら取り戻せない）。
         - { id: csv, type: export, label: CSV 出力, roles: [admin], config: { filename: 網羅帳票 } }
         - { id: printPdf, type: print, label: 印刷, roles: [admin], config: { filename: 網羅帳票 } }
+
+    # ------------------------------------------------------------------
+    # 見せる相手で変わる（列・ボタン・項目の roles）と読み取り専用
+    #
+    # **同じ定義でも、見ている人で画面が変わる**。ここが黙って効かないと、
+    # 見えてはいけない列が出たまま出荷される（画面を見ても気づけない ——
+    # 自分には見えているのが正しいので）。
+    #
+    # 本当の遮断はサーバ。ここで確かめるのは「定義のとおりに出し分くか」だけ。
+    # ------------------------------------------------------------------
+    - type: crud
+      id: role_crud
+      title: 見せる相手で変わる
+      repository: itemRepository
+      key: itemCode
+
+      search:
+        filters:
+          - { field: itemName, label: 名前, type: text, operator: contains }
+
+      table:
+        pagination: { pageSize: 5 }
+        rowActions: [edit, delete]
+        columns:
+          - { field: itemCode, label: コード, width: 120, sortable: true }
+          - { field: itemName, label: 名前, sortable: true }
+          # **admin にしか見えない列。** tester で開くと列ごと消える。
+          - { field: unitPrice, label: 原価, type: number, width: 120,
+              format: currency, config: { symbol: "¥" }, roles: [admin] }
+
+      form:
+        sections:
+          - title: 誰が直せるか
+            layout: { columns: 2 }
+            fields:
+              # **作るときだけ入れられる。** 直すときは読み取り専用＝鍵は後から
+              # 変えられない（変えると別の1件になる）。
+              - field: itemCode
+                label: コード
+                type: text
+                required: true
+                readOnlyWhen: { field: $mode, equals: edit }
+              - { field: itemName, label: 名前, type: text, required: true }
+              # **原価を入れるのは admin だけ。** 見えない人には空のまま通す。
+              - { field: unitPrice, label: 原価, type: number, roles: [admin] }
+              # 名前を入れたときだけ必須になる（書いたのに効かない、の検査対象）。
+              - field: memo
+                label: 覚え書き
+                type: textarea
+                requiredWhen: { field: itemName, operator: isNotEmpty }
+
+      actions:
+        - { id: save, type: plugin, plugin: saveItem, label: 保存 }
+        # **押せる人を絞ったボタン。** tester には出ない。
+        - { id: csvRole, type: export, label: CSV 出力, roles: [admin],
+            config: { filename: 役割つき } }
+
+    # ------------------------------------------------------------------
+    # カードの盛り合わせ（数・図・表）とカードごとの見せる相手
+    #
+    # 1枚のカードが落ちても**そのカードだけ**が落ちること、検索欄が全部の
+    # カードに効くこと、カードごとの固定条件が画面の条件に負けること。
+    # ------------------------------------------------------------------
+    - type: dashboard
+      id: card_board
+      title: カードの盛り合わせ
+      # カードが repository を省いたときの既定。
+      repository: itemRepository
+      layout: { columns: 4 }
+
+      search:
+        filters:
+          - { field: groupCode, label: グループ, type: text, operator: equals }
+          # **並べ替えたい項目は、絞り込みにも宣言が要る。**
+          # `buildQuery` は宣言された項目でしか並べ替えを許さない（共有フィクスチャが
+          # 固定している安全側の決まり）。ここに書かないと、下の表の `sort` は
+          # **黙って効かない**（画面は出る・エラーも出ない）。
+          - { field: unitPrice, label: 原価（以上）, type: number, operator: gte }
+
+      items:
+        # 数（既定は件数）。
+        - { id: itemCount, title: 件数 }
+        # 数（畳み方を書く）。
+        - id: totalPrice
+          title: 原価の合計
+          value: { aggregate: sum, field: unitPrice }
+          format: currency
+          config: { symbol: "¥" }
+        # **このカードだけの固定条件。** 画面の検索欄が勝つ。
+        - id: oneGroup
+          title: G1 だけ
+          filters: { groupCode: G1 }
+        # **admin にしか見えないカード。**
+        - id: secretAvg
+          title: 平均原価
+          value: { aggregate: avg, field: unitPrice }
+          format: currency
+          config: { symbol: "¥" }
+          roles: [admin]
+        # 図（ラベルごとに畳む）。
+        - id: byGroup
+          type: chart
+          title: グループ別の原価
+          span: 2
+          chart: { kind: bar, labelField: groupCode, valueField: unitPrice, aggregate: sum }
+          format: currency
+          config: { symbol: "¥" }
+        # 表（並べ替えと打ち切り）。
+        - id: topItems
+          type: table
+          title: 原価の高い順
+          span: 2
+          limit: 5
+          sort: { field: unitPrice, ascending: false }
+          columns:
+            - { field: itemCode, label: コード, width: 120 }
+            - { field: itemName, label: 名前 }
+            - { field: unitPrice, label: 原価, type: number,
+                format: currency, config: { symbol: "¥" }, width: 120 }

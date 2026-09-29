@@ -42,6 +42,33 @@ app.get('/api/definition.yaml', (_request, response) => {
   response.type('text/plain').send(source);
 });
 
+/**
+ * その問い合わせを**いちばんよく説明できる画面**を選ぶ。
+ *
+ * itemRepository には画面が何枚もぶら下がっていて、REST の道は共通。条件の名前で
+ * どの画面か当てるのは当てずっぽうなので、**宣言している条件が query に在る数**で
+ * 選ぶ（0 件なら最初の画面＝条件なしの一覧と同じ）。
+ */
+function pageForQuery(query) {
+  let best = 'press_list';
+  let score = -1;
+  for (const [id, page] of pages) {
+    if (page.repository !== 'itemRepository' || page.search === undefined) continue;
+    const declared = new Set(page.search.filters.map((one) => one.field));
+    let hit = [...declared].filter((one) => query[one] !== undefined).length;
+    // **並べ替えだけの問い合わせも当てる。** ダッシュボードの表のカードは条件を
+    // 送らずに `sortField` だけ送ってくるので、条件の数だけで選ぶと条件なしの
+    // 一覧（press_list）に落ちて、**並べ替えが黙って捨てられる**（buildQuery は
+    // 宣言された項目でしか並べ替えを許さない）。
+    if (typeof query.sortField === 'string' && declared.has(query.sortField)) hit += 1;
+    if (hit > score) {
+      score = hit;
+      best = id;
+    }
+  }
+  return best;
+}
+
 /** 定義に書いてある条件だけで絞る（書いていない項目では絞らない）。 */
 function filtered(pageId, query) {
   const page = pages.get(pageId);
@@ -76,9 +103,11 @@ function filtered(pageId, query) {
 // --- 網羅用の1件 -------------------------------------------------------------
 
 app.get('/api/items', (request, response) => {
-  // 画面が3枚ぶら下がっているので、条件を持っている画面の定義で絞る。
-  const pageId = request.query.groupCode === undefined ? 'press_list' : 'linked_master';
-  const { rows, totalCount } = filtered(pageId, request.query);
+  // **どの画面から来たかは REST の契約に入っていない**（道は Repository ごとで、
+  // 画面ごとではない）。本物のサーバなら口を分けるか、受ける条件を1つに決める。
+  // ここは網羅のモックなので、**渡された条件をいちばん多く宣言している画面**を
+  // 選んで、その定義で絞る。画面が増えるたびに書き足さなくて済む。
+  const { rows, totalCount } = filtered(pageForQuery(request.query), request.query);
   response.json({ items: rows, totalCount });
 });
 

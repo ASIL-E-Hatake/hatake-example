@@ -22,3 +22,13 @@ services:
       - "8083:80"
     depends_on:
       - api
+  # **同じ定義を Vue で描いた版。** 画面のコードは1行も書いていない側も、
+  # 描く先が変わっただけで同じものが出ることを、並べて見るために上げる。
+  web-vue:
+    build:
+      context: .
+      dockerfile: docker/web-vue.Dockerfile
+    ports:
+      - "8084:80"
+    depends_on:
+      - api

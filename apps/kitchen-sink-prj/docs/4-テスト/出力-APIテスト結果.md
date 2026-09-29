@@ -4,8 +4,8 @@
 > **やりとりをそのまま**書き出しています（手で直さない）。
 > 作り直し: `bash tools/run-tests.sh`
 
-- 実行日時: 2026-09-25T08:44:42.366Z
-- 対象: `http://localhost:3003/api`
+- 実行日時: 2026-09-29T01:30:55.751Z
+- 対象: `http://api:3000/api`
 - 前提: `docker compose up` で DB が初期データの状態
 
 > **順番に意味があります。** A-07 と A-08 がデータを変えるので、最後の A-10 で初期状態に戻しています（次に回す人のため）。
@@ -38,7 +38,7 @@
 **投げたもの**
 
 ```http
-GET http://localhost:3003/api/definition.yaml
+GET http://api:3000/api/definition.yaml
 ```
 
 **返ってきたもの**
@@ -62,6 +62,8 @@ HTTP 200
 #   fold_detail   畳み込みの並べ替え・打ち切り・詳細のボタン
 #   steps_wizard  ウィザードのボタン
 #   sorted_report 帳票の降順
+#   role_crud     見せる相手で変わる（列・ボタン・項目の roles）と読み取り専用
+#   card_board    カードの盛り合わせ（数・図・表）とカードごとの見せる相手
 #
 #   npx hatake check definitions/app.yaml --project definitions/hatake.project.yaml
 dsl_version: "1.0"
@@ -85,8 +87,7 @@ app:
     config: { note: 見た目の追加設定は Renderer にそのまま渡る }
 
   menu:
-    - { id: comboForm, label: 条件の組み合わせ, icon: rule, page: combo_form }
-    - { id: pressList, label: 押す前に聞く, icon: touch_
+    - { id: comboForm,
 …（長いので省略）
 ```
 
@@ -99,7 +100,7 @@ app:
 **投げたもの**
 
 ```http
-GET http://localhost:3003/api/items?itemCode=ITEM-001&pageSize=20
+GET http://api:3000/api/items?itemCode=ITEM-001&pageSize=20
 ```
 
 **返ってきたもの**
@@ -113,6 +114,7 @@ HTTP 200
       "itemName": "網羅の 1 件目",
       "kind": "special",
       "amount": 500,
+      "unitPrice": 40,
       "approved": false,
       "groupCode": "G2",
       "childCode": "C21",
@@ -145,7 +147,7 @@ HTTP 200
 **投げたもの**
 
 ```http
-GET http://localhost:3003/api/items?itemName=%E7%B6%B2%E7%BE%85&pageSize=20
+GET http://api:3000/api/items?itemName=%E7%B6%B2%E7%BE%85&pageSize=20
 ```
 
 **返ってきたもの**
@@ -159,6 +161,7 @@ HTTP 200
       "itemName": "網羅の 1 件目",
       "kind": "special",
       "amount": 500,
+      "unitPrice": 40,
       "approved": false,
       "groupCode": "G2",
       "childCode": "C21",
@@ -182,6 +185,7 @@ HTTP 200
       "itemName": "網羅の 2 件目",
       "kind": "trial",
       "amount": 1000,
+      "unitPrice": 240,
       "approved": true,
       "groupCode": "G1",
       "childCode": "C11",
@@ -209,9 +213,7 @@ HTTP 200
       "itemName": "網羅の 3 件目",
       "kind": "standard",
       "amount": 1500,
-      "approved": false,
-      "groupCode": "G2",
-      "childCode":
+      "unitPrice": 12
 …（長いので省略）
 ```
 
@@ -224,7 +226,7 @@ HTTP 200
 **投げたもの**
 
 ```http
-GET http://localhost:3003/api/children?groupCode=G1
+GET http://api:3000/api/children?groupCode=G1
 ```
 
 **返ってきたもの**
@@ -257,7 +259,7 @@ HTTP 200
 **投げたもの**
 
 ```http
-GET http://localhost:3003/api/lines?sortField=itemCode&sortAscending=false
+GET http://api:3000/api/lines?sortField=itemCode&sortAscending=false
 ```
 
 **返ってきたもの**
@@ -340,7 +342,7 @@ HTTP 200
 **投げたもの**
 
 ```http
-POST http://localhost:3003/api/items
+POST http://api:3000/api/items
 
 {
   "itemCode": "",
@@ -377,7 +379,7 @@ HTTP 400
 **投げたもの**
 
 ```http
-POST http://localhost:3003/api/bulk/reprice
+POST http://api:3000/api/bulk/reprice
 
 {
   "keys": [
@@ -409,7 +411,7 @@ HTTP 200
 **投げたもの**
 
 ```http
-POST http://localhost:3003/api/bulk/archive
+POST http://api:3000/api/bulk/archive
 
 {
   "keys": [
@@ -450,7 +452,7 @@ HTTP 200
 **投げたもの**
 
 ```http
-GET http://localhost:3003/api/export-allowed
+GET http://api:3000/api/export-allowed
 ```
 
 **返ってきたもの**
@@ -471,7 +473,7 @@ HTTP 200
 **投げたもの**
 
 ```http
-POST http://localhost:3003/api/reset
+POST http://api:3000/api/reset
 ```
 
 **返ってきたもの**
