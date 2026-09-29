@@ -12,6 +12,8 @@
 #   出力-APIテスト結果.md      API の実行記録（投げたもの／返ってきたもの）
 #   出力-画面テスト結果.md     画面の記録（項番 → スクリーンショット）
 #   画面/*.png                 スクリーンショット本体
+#   出力-画面テスト結果-vue.md 同じ定義を Vue で描いた紙（SCREEN_VUE_BASE が在る案件だけ）
+#   画面-vue/*.png             その本体
 #
 # **api と screen は動いている環境が要る**（`docker compose up`）。
 #
@@ -35,6 +37,9 @@ DB_NAME=""
 API_BASE="http://localhost:3000/api"
 SCREEN_NETWORK=""
 SCREEN_BASE="http://web:80"
+# 同じ定義を**別の Renderer で描いた画面**が在る案件だけ書く（機能網羅の Vue 版）。
+# 書けば、同じ項番の紙がもう1枚できて並べて読める。
+SCREEN_VUE_BASE=""
 # DB を持たない案件はこちらを書く（書けば上の docker compose は使わない）。
 RESET_CMD=""
 # shellcheck source=/dev/null
@@ -101,6 +106,15 @@ run_screen() {
     ghcr.io/puppeteer/puppeteer:latest \
     sh -c "cp /prj/tests/screen/shots.mjs /home/pptruser/ && cd /home/pptruser && \
            node shots.mjs --base '$SCREEN_BASE' --shots '/prj/$OUT/画面' --out '/prj/$OUT/出力-画面テスト結果.md'" \
+    || fail=1
+
+  # 別の Renderer で描いた画面が在るなら、**同じ項番でもう1枚**撮る。
+  [ -z "$SCREEN_VUE_BASE" ] && return
+  echo "== 画面のスクリーンショット（Vue 版）"
+  MSYS_NO_PATHCONV=1 docker run --rm --network "$SCREEN_NETWORK" -v "$here:/prj" \
+    ghcr.io/puppeteer/puppeteer:latest \
+    sh -c "cp /prj/tests/screen/shots-vue.mjs /home/pptruser/ && cd /home/pptruser && \
+           node shots-vue.mjs --base '$SCREEN_VUE_BASE' --shots '/prj/$OUT/画面-vue' --out '/prj/$OUT/出力-画面テスト結果-vue.md'" \
     || fail=1
 }
 

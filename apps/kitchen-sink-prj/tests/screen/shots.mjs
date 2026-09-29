@@ -88,48 +88,52 @@ async function waitForPaint(page, { tries = 30, every = 1000 } = {}) {
  * 座標は撮ったものを見て合わせる（当てずっぽうで書くと、違う画面が「その画面」として
  * 納品物に残る ── 2本目で実際にそうなった）。 */
 const AT = {
+  // **メニューは座標で押す**（Flutter Web は canvas に描くので、DOM で探せない）。
+  // 画面を1枚足すと**全部ずれる**ので、ずれたまま撮れてしまわないように、撮る前に
+  // URL でどの画面かを確かめている（下の `pageId`）。
   menu: {
     条件の組み合わせ: [79, 84],
     押す前に聞く: [79, 124],
     選択肢の連動: [79, 164],
     ステップ入力: [79, 204],
-    畳み込み: [110, 276],
-    帳票: [110, 316],
+    見せる相手で変わる: [79, 244],
+    カードの盛り合わせ: [79, 284],
+    帳票: [110, 356],
   },
 };
 
 /** 撮る1件。`role` は URL で配る（この案件は認証を持たない）。 */
 const CASES = [
   {
-    id: "C-01", role: "tester", file: "C-01-条件の組み合わせ.png",
+    id: "C-01", pageId: "combo_form", role: "tester", file: "C-01-条件の組み合わせ.png",
     title: "条件の組み合わせ（all / any / not）と既定値",
     why: "組み合わせ条件はどの例にも書かれていなかった所",
     expect: "種別に「標準」が最初から入っている（defaultValue）。標準なので「標準でないときだけ」の欄は出ていない",
     go: async () => {},
   },
   {
-    id: "C-02", role: "tester", file: "C-02-押す前に聞く.png",
+    id: "C-02", pageId: "press_list", role: "tester", file: "C-02-押す前に聞く.png",
     title: "押す前に聞く・区切って実行",
     why: "prompt / batchSize / enabledWhen / open はどの例にも無かった",
     expect: "条件2つと一覧。行の「詳細」は試用の行では押せない。一括のボタンが2つ出ている",
     go: async (page) => { await page.mouse.click(...AT.menu.押す前に聞く); await settle(2000); },
   },
   {
-    id: "C-03", role: "tester", file: "C-03-選択肢の連動.png",
+    id: "C-03", pageId: "linked_master", role: "tester", file: "C-03-選択肢の連動.png",
     title: "選択肢の連動・ページ送りを切る",
     why: "optionsSource.parentKey / limit / pagination.enabled はどの例にも無かった",
     expect: "ページ送りが出ていない（全部載る）。グループの選択肢は API から来ている",
     go: async (page) => { await page.mouse.click(...AT.menu.選択肢の連動); await settle(2000); },
   },
   {
-    id: "C-04", role: "tester", file: "C-04-ステップ入力.png",
+    id: "C-04", pageId: "steps_wizard", role: "tester", file: "C-04-ステップ入力.png",
     title: "ウィザードのボタン・条件で飛ばすステップ",
     why: "wizardPage.actions はどの例にも無かった",
     expect: "ステップが出ていて、下に「保存」と「やめる」が出ている",
     go: async (page) => { await page.mouse.click(...AT.menu.ステップ入力); await settle(2000); },
   },
   {
-    id: "C-05", role: "tester", file: "C-05-畳み込み.png",
+    id: "C-05", pageId: "fold_detail", role: "tester", file: "C-05-畳み込み.png",
     title: "畳み込みの並べ替え・打ち切り・詳細のボタン",
     why: "computed.sort / overflow / detailPage.actions はどの例にも無かった",
     expect: "「金額の大きい順に3件」が**大きい順**に並び、4本以上ある件では「ほか N 件」が付く",
@@ -143,18 +147,39 @@ const CASES = [
     },
   },
   {
-    id: "C-06", role: "admin", file: "C-06-帳票-降順.png",
+    id: "C-06", pageId: "sorted_report", role: "admin", file: "C-06-帳票-降順.png",
     title: "帳票の降順・持ち出しは admin だけ",
     why: "report.sort.ascending はどの例にも無かった",
     expect: "コードが**降順**（ITEM-012 が先頭）。「CSV 出力」「印刷」が出ている",
     go: async (page) => { await page.mouse.click(...AT.menu.帳票); await settle(2500); },
   },
   {
-    id: "C-07", role: "tester", file: "C-07-帳票-testerには出ない.png",
+    id: "C-07", pageId: "sorted_report", role: "tester", file: "C-07-帳票-testerには出ない.png",
     title: "帳票（tester）＝持ち出しが出ない",
     why: "roles が効いているか",
     expect: "**「CSV 出力」「印刷」が出ていない**（C-06 との差）",
     go: async (page) => { await page.mouse.click(...AT.menu.帳票); await settle(2500); },
+  },
+  {
+    id: "C-08", pageId: "role_crud", role: "admin", file: "C-08-見せる相手で変わる-admin.png",
+    title: "見せる相手で変わる（admin）",
+    why: "列・ボタン・項目の roles と readOnlyWhen / requiredWhen",
+    expect: "「原価」の列が出ている。「CSV 出力」が出ている",
+    go: async (page) => { await page.mouse.click(...AT.menu.見せる相手で変わる); await settle(2500); },
+  },
+  {
+    id: "C-09", pageId: "role_crud", role: "tester", file: "C-09-見せる相手で変わる-tester.png",
+    title: "見せる相手で変わる（tester）",
+    why: "roles が列とボタンの両方に効いているか",
+    expect: "**「原価」の列が無い**。**「CSV 出力」も無い**（C-08 との差）",
+    go: async (page) => { await page.mouse.click(...AT.menu.見せる相手で変わる); await settle(2500); },
+  },
+  {
+    id: "C-10", pageId: "card_board", role: "admin", file: "C-10-カードの盛り合わせ.png",
+    title: "カードの盛り合わせ（数・図・表）",
+    why: "dashboard のカード3種と span、カードごとの roles・固定条件",
+    expect: "件数・原価の合計・G1 だけ・平均原価の4枚と、図と表。admin なので「平均原価」が出ている",
+    go: async (page) => { await page.mouse.click(...AT.menu.カードの盛り合わせ); await settle(3000); },
   },
 ];
 
@@ -186,6 +211,27 @@ const main = async () => {
         signedInAs = one.role;
       }
       await one.go(page);
+
+      // **どの画面が写るかを、撮る前に確かめる。**
+      //
+      // メニューは座標で押している（Flutter Web は canvas なので DOM で探せない）。
+      // 画面を1枚足すと座標が全部ずれるが、**ずれても撮影そのものは成功する**ので、
+      // 気づかないまま「別の画面の証跡」が納品物になる（実際に一度そうなった）。
+      // `HatakeApp` が URL を画面に合わせているので、そこを見れば分かる。
+      // Flutter Web は道をハッシュに置く（`/?role=tester#/press_list`）ので、
+      // 見るのは `location.hash`。`pathname` はずっと `/` のまま。
+      await page
+        .waitForFunction(
+          (want) => window.location.hash.replace(/^#/, "").split("?")[0] === "/" + want,
+          { timeout: 8000 },
+          one.pageId,
+        )
+        .catch(() => {
+          throw new Error(
+            `${one.pageId} を開いたはずが ${page.url()} でした（メニューの座標がずれていませんか）`,
+          );
+        });
+
       await fontsReady(page);
       await settle(1200);
 

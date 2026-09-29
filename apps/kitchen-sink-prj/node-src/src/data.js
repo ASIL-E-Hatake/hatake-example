@@ -33,6 +33,9 @@ function item(n) {
     itemName: `網羅の ${n} 件目`,
     kind,
     amount: n * 500,
+    // 役割で見せ分ける列（admin だけ）。値がグループで偏るようにしてある
+    // （カードの「グループ別」が平らにならないように）。
+    unitPrice: n % 2 === 0 ? n * 120 : n * 40,
     approved: n % 2 === 0,
     groupCode: n % 2 === 0 ? 'G1' : 'G2',
     childCode: n % 2 === 0 ? 'C11' : 'C21',
