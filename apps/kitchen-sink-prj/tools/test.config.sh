@@ -6,5 +6,6 @@ RESET_CMD="curl -s -o /dev/null -X POST http://localhost:3003/api/reset"
 API_BASE="http://localhost:3003/api"
 SCREEN_NETWORK="kitchen-sink-prj_default"
 SCREEN_BASE="http://web:80"
-# 同じ定義を Vue で描いた画面（docker compose の web-vue）。同じ項番でもう1枚撮る。
-SCREEN_VUE_BASE="http://web-vue:80"
+# 同じ定義をブラウザで描いた画面（docker compose の web-vue / web-react）。
+# **同じ項番でもう1枚ずつ**撮って、Flutter 版の紙と並べて読む。
+SCREEN_WEB="Vue:V:http://web-vue:80 React:R:http://web-react:80"

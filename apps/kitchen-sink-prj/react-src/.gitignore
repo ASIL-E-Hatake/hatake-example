@@ -1,0 +1,8 @@
+# 枠組みを**手元で固めたもの**。Release が出る前に見本を動かすときだけ使う置き場で、
+# 配るものではない（package.json は Release の URL を指している）。→ README.md
+.local/
+node_modules/
+dist/
+# 手元で `.local` から入れると、この中が **file: の道**だらけになる。それを配ると
+# 他の人の所で入らないので、置かない（Dockerfile も `npm install` のほうを使う）。
+package-lock.json
