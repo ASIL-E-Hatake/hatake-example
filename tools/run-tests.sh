@@ -12,8 +12,9 @@
 #   出力-APIテスト結果.md      API の実行記録（投げたもの／返ってきたもの）
 #   出力-画面テスト結果.md     画面の記録（項番 → スクリーンショット）
 #   画面/*.png                 スクリーンショット本体
-#   出力-画面テスト結果-vue.md 同じ定義を Vue で描いた紙（SCREEN_VUE_BASE が在る案件だけ）
-#   画面-vue/*.png             その本体
+#   出力-画面テスト結果-<名前>.md 同じ定義をブラウザで描いた紙（SCREEN_WEB が在る案件だけ）
+#   画面-<頭文字>/*.png           その本体
+#   出力-Renderer比較.md          2つの Renderer が同じ印・クラス名・字を出しているか
 #
 # **api と screen は動いている環境が要る**（`docker compose up`）。
 #
@@ -37,9 +38,12 @@ DB_NAME=""
 API_BASE="http://localhost:3000/api"
 SCREEN_NETWORK=""
 SCREEN_BASE="http://web:80"
-# 同じ定義を**別の Renderer で描いた画面**が在る案件だけ書く（機能網羅の Vue 版）。
-# 書けば、同じ項番の紙がもう1枚できて並べて読める。
-SCREEN_VUE_BASE=""
+# 同じ定義を**別の Renderer で描いた画面**が在る案件だけ書く（機能網羅の Vue / React 版）。
+# 書けば、同じ項番の紙がその数だけできて、並べて読める。
+#
+#   SCREEN_WEB="Vue:V:http://web-vue:80 React:R:http://web-react:80"
+#            （名前:項番の頭文字:URL を空白で区切って並べる）
+SCREEN_WEB=""
 # DB を持たない案件はこちらを書く（書けば上の docker compose は使わない）。
 RESET_CMD=""
 # shellcheck source=/dev/null
@@ -108,13 +112,35 @@ run_screen() {
            node shots.mjs --base '$SCREEN_BASE' --shots '/prj/$OUT/画面' --out '/prj/$OUT/出力-画面テスト結果.md'" \
     || fail=1
 
-  # 別の Renderer で描いた画面が在るなら、**同じ項番でもう1枚**撮る。
-  [ -z "$SCREEN_VUE_BASE" ] && return
-  echo "== 画面のスクリーンショット（Vue 版）"
+  # 別の Renderer で描いた画面が在るなら、**同じ項番でもう1枚ずつ**撮る。
+  # 撮る道具は同じ1本（`shots-web.mjs`）。2つの Renderer は同じ印を出すと決めて
+  # あるので、撮る側を版ごとに持つ理由が無い。
+  [ -z "$SCREEN_WEB" ] && return
+  for one in $SCREEN_WEB; do
+    name="${one%%:*}"; rest="${one#*:}"
+    prefix="${rest%%:*}"; url="${rest#*:}"
+    echo "== 画面のスクリーンショット（$name 版）"
+    MSYS_NO_PATHCONV=1 docker run --rm --network "$SCREEN_NETWORK" -v "$here:/prj" \
+      ghcr.io/puppeteer/puppeteer:latest \
+      sh -c "cp /prj/tests/screen/shots-web.mjs /home/pptruser/ && cd /home/pptruser && \
+             node shots-web.mjs --base '$url' --name '$name' --prefix '$prefix' \
+               --shots '/prj/$OUT/画面-$prefix' --out '/prj/$OUT/出力-画面テスト結果-$name.md'" \
+      || fail=1
+  done
+
+  # **2つ以上あるなら、突き合わせる。** スクリーンショットは証拠だが比べる相手と
+  # しては弱い（1px 動けば違うと言い、中身が違っても似ていれば気づけない）。
+  # 印・クラス名・字はどれも契約なので、そこを機械で突き合わせる。
+  set -- $SCREEN_WEB
+  [ "$#" -lt 2 ] && return
+  a_name="${1%%:*}"; a_rest="${1#*:}"; a_url="${a_rest#*:}"
+  b_name="${2%%:*}"; b_rest="${2#*:}"; b_url="${b_rest#*:}"
+  echo "== Renderer の突き合わせ（$a_name と $b_name）"
   MSYS_NO_PATHCONV=1 docker run --rm --network "$SCREEN_NETWORK" -v "$here:/prj" \
     ghcr.io/puppeteer/puppeteer:latest \
-    sh -c "cp /prj/tests/screen/shots-vue.mjs /home/pptruser/ && cd /home/pptruser && \
-           node shots-vue.mjs --base '$SCREEN_VUE_BASE' --shots '/prj/$OUT/画面-vue' --out '/prj/$OUT/出力-画面テスト結果-vue.md'" \
+    sh -c "cp /prj/tests/screen/compare-web.mjs /home/pptruser/ && cd /home/pptruser && \
+           node compare-web.mjs --a '$a_url' --a-name '$a_name' --b '$b_url' --b-name '$b_name' \
+             --out '/prj/$OUT/出力-Renderer比較.md'" \
     || fail=1
 }
 

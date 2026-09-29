@@ -32,3 +32,14 @@ services:
       - "8084:80"
     depends_on:
       - api
+  # **同じ定義を React で描いた版。** Vue 版と並べると、案件が書く4つ
+  # （定義の読み先・Repository の道・plugin の中身・出す口）が同じまま、
+  # 描く側だけ差し替わっていることが見える。
+  web-react:
+    build:
+      context: .
+      dockerfile: docker/web-react.Dockerfile
+    ports:
+      - "8085:80"
+    depends_on:
+      - api
