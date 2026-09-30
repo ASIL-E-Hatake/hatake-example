@@ -43,6 +43,30 @@ app.get('/api/definition.yaml', (_request, response) => {
 });
 
 /**
+ * その画面で**並べ替えてよい名前**（`buildQuery` の `table` に渡す形）。
+ *
+ * どれも**定義に書いてある名前**で、利用者が送ってきた字ではない:
+ *
+ *   ・一覧の画面 … 表の列で `sortable: true` と書いたもの（`page.table`）
+ *   ・ダッシュボード … カードが `sort.field` で名指ししているもの
+ *
+ * 0.9.18 まで `buildQuery` は**絞り込みに書いた項目**でしか並べ替えを許さなかった
+ * ので、ダッシュボードの表のカードを「原価の高い順」に並べるために、要りもしない
+ * 「原価（以上）」の絞り込みを定義に足していた。0.9.19 から `table` を渡せるので、
+ * 回り道を外した（press_list の「名前」「金額」の並べ替えも、ここで初めて効く）。
+ */
+function sortableOf(page) {
+  if (page.kind === 'dashboard') {
+    return {
+      columns: page.items
+        .filter((one) => one.sortField !== undefined)
+        .map((one) => ({ field: one.sortField, sortable: true })),
+    };
+  }
+  return page.table ?? { columns: [] };
+}
+
+/**
  * その問い合わせを**いちばんよく説明できる画面**を選ぶ。
  *
  * itemRepository には画面が何枚もぶら下がっていて、REST の道は共通。条件の名前で
@@ -58,9 +82,12 @@ function pageForQuery(query) {
     let hit = [...declared].filter((one) => query[one] !== undefined).length;
     // **並べ替えだけの問い合わせも当てる。** ダッシュボードの表のカードは条件を
     // 送らずに `sortField` だけ送ってくるので、条件の数だけで選ぶと条件なしの
-    // 一覧（press_list）に落ちて、**並べ替えが黙って捨てられる**（buildQuery は
-    // 宣言された項目でしか並べ替えを許さない）。
-    if (typeof query.sortField === 'string' && declared.has(query.sortField)) hit += 1;
+    // 一覧（press_list）に落ちて、その名前で並べてよいかを別の画面の定義で決める
+    // ことになる。**その名前を並べ替えに書いている画面**を選ぶ。
+    const sortable = new Set(
+      sortableOf(page).columns.filter((one) => one.sortable === true).map((one) => one.field),
+    );
+    if (typeof query.sortField === 'string' && sortable.has(query.sortField)) hit += 1;
     if (hit > score) {
       score = hit;
       best = id;
@@ -72,7 +99,9 @@ function pageForQuery(query) {
 /** 定義に書いてある条件だけで絞る（書いていない項目では絞らない）。 */
 function filtered(pageId, query) {
   const page = pages.get(pageId);
-  const spec = buildQuery(page.search, { ...query });
+  // 並べ替えてよいのは**定義に書いてある名前だけ**（`table` を渡さないと、絞り込みに
+  // 書いた項目でしか並べ替えられない）。
+  const spec = buildQuery(page.search, { ...query }, { table: sortableOf(page) });
   let rows = items;
   for (const one of spec.conditions) {
     const { field, operator, value } = one;

@@ -8,7 +8,7 @@
 > 「違う」になるし、中身が違っても見た目が似ていれば気づけない）。この3つは
 > **契約**なので、揃っていなければ載せ替えた案件が黙って壊れます。
 
-- 実行日時: 2026-09-30T00:31:14.068Z
+- 実行日時: 2026-09-30T00:57:46.242Z
 - Vue: `http://web-vue:80`
 - React: `http://web-react:80`
 
@@ -22,7 +22,7 @@
 | steps_wizard（tester） | 23 | 34 | 84 | 揃っている |
 | role_crud（admin） | 44 | 34 | 172 | 揃っている |
 | role_crud（tester） | 41 | 33 | 138 | 揃っている |
-| card_board（admin） | 31 | 38 | 238 | 揃っている |
+| card_board（admin） | 30 | 38 | 231 | 揃っている |
 | fold_detail（tester） | 28 | 32 | 148 | 揃っている |
 | sorted_report（admin） | 27 | 35 | 490 | 揃っている |
 | sorted_report（tester） | 24 | 34 | 480 | 揃っている |

@@ -1,1 +1,1 @@
-OK   definitions/app.yaml (app: 6 ページ)
+OK   definitions/app.yaml (app: 8 ページ)

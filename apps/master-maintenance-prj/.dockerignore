@@ -1,0 +1,16 @@
+# 手元の生成物は**組む先に持ち込まない**。
+#
+# Dockerfile は「package.json だけ先に入れて npm install → 残りを COPY」の形なので、
+# 手元に node_modules が在ると、COPY が**入れ直したばかりのものを手元の古いもので
+# 上書きする**。実際に API サーバが v0.9.20 に上げたのに v0.9.14 のまま動いていた
+# （Flutter の pubspec.lock も同じ罠）。画面は普通に出るので、版を確かめるまで
+# 気づけない。
+**/node_modules
+**/dist
+**/.local
+**/build
+**/.dart_tool
+**/pubspec.lock
+**/package-lock.json
+docs
+tests
