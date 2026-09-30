@@ -65,23 +65,3 @@ class BatchCounter {
     rows = 0;
   }
 }
-
-/// 定義が `plugin: saveItem` と言っている中身（モックなので投げるだけ）。
-ActionHandler saveItem(String baseUrl) => (context) async {
-      final record = context.record ?? const <String, Object?>{};
-      final key = record['itemCode']?.toString();
-      final url = Uri.parse(key == null ? '$baseUrl/items' : '$baseUrl/items/$key');
-      final response = await http.post(
-        url,
-        headers: const {'content-type': 'application/json'},
-        body: jsonEncode(record),
-      );
-      if (response.statusCode >= 400) {
-        final body = jsonDecode(utf8.decode(response.bodyBytes));
-        throw StateError(
-          body is Map && body['message'] != null
-              ? '${body['message']}'
-              : '保存できませんでした（${response.statusCode}）',
-        );
-      }
-    };

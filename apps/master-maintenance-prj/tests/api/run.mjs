@@ -182,7 +182,7 @@ const CASES = [
   {
     id: "A-13",
     title: "hr は取引先を直せない",
-    why: "定義の `roles: [admin]`（CSV 出力）と同じ線を、書き込みにも引いた",
+    why: "定義の取引先の新規登録が `roles: [admin]`（サーバは canRunActionIn で同じ宣言を読む）",
     expect: "403",
     run: () =>
       call({
@@ -274,6 +274,27 @@ const CASES = [
     expect: "200・schemas に SupplierMaster* が並ぶ",
     run: () => call({ who: null, path: "/openapi.json?page=supplier_master" }),
     check: (r) => r.status === 200 && Object.keys(r.response.components?.schemas ?? {}).length > 0,
+  },
+  {
+    id: "A-21",
+    title: "viewer は社員を足せない",
+    why: "定義の社員の新規登録が `roles: [admin, hr]`。画面にボタンが出ないだけでなく、サーバも同じ宣言で止める（0.9.20 まではサーバに役割名を決め打ちしていた）",
+    expect: "403",
+    run: () =>
+      call({
+        who: "viewer", method: "POST", path: "/employees",
+        body: { employeeNo: "999998", name: "試験", nameKana: "シケン",
+                departmentCode: "JINJ", employmentStatus: "active", hireDate: "2020-04-01" },
+      }),
+    check: (r) => r.status === 403,
+  },
+  {
+    id: "A-22",
+    title: "取引先は admin でも API から消せない",
+    why: "取引先の画面は削除を宣言していない（行に並べていない）。**画面に無いボタンは押せない**（canRunActionIn）",
+    expect: "403",
+    run: () => call({ who: "admin", method: "DELETE", path: "/suppliers/S1001" }),
+    check: (r) => r.status === 403,
   },
 ];
 

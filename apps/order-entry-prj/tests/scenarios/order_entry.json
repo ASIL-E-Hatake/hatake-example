@@ -11,8 +11,8 @@
         "salesPersonName": "佐藤 健一",
         "deliveryPlace": "本社総務部",
         "lines": [
-          { "productCode": "P001", "quantity": 10, "unitPrice": 480, "taxRate": 0.1 },
-          { "productCode": "P006", "quantity": 2, "unitPrice": 1580, "taxRate": 0.08 }
+          { "productCode": "P001", "productName": "A4コピー用紙（500枚）", "quantity": 10, "unitPrice": 480, "taxRate": 0.1 },
+          { "productCode": "P006", "productName": "ミネラルウォーター（24本）", "quantity": 2, "unitPrice": 1580, "taxRate": 0.08 }
         ]
       },
       "expect": {
@@ -20,7 +20,7 @@
         "computed": {
           "lineCount": 2,
           "subtotalAmount": 7960,
-          "orderSummary": "P001、P006"
+          "orderSummary": "A4コピー用紙（500枚）、ミネラルウォーター（24本）"
         }
       }
     },
@@ -180,8 +180,8 @@
         "dueDate": "2026-09-25",
         "salesPersonName": "佐藤 健一",
         "lines": [
-          { "productCode": "P001", "quantity": 10, "unitPrice": 480, "taxRate": 0.1 },
-          { "productCode": "P006", "quantity": 2, "unitPrice": 1580, "taxRate": 0.08, "cancelled": true }
+          { "productCode": "P001", "productName": "A4コピー用紙（500枚）", "quantity": 10, "unitPrice": 480, "taxRate": 0.1 },
+          { "productCode": "P006", "productName": "ミネラルウォーター（24本）", "quantity": 2, "unitPrice": 1580, "taxRate": 0.08, "cancelled": true }
         ]
       },
       "expect": {
@@ -189,7 +189,7 @@
         "computed": {
           "lineCount": 1,
           "subtotalAmount": 4800,
-          "orderSummary": "P001"
+          "orderSummary": "A4コピー用紙（500枚）"
         }
       }
     },
@@ -202,17 +202,21 @@
         "dueDate": "2026-09-25",
         "salesPersonName": "佐藤 健一",
         "lines": [
-          { "productCode": "P001", "quantity": 1, "unitPrice": 480, "taxRate": 0.1 },
-          { "productCode": "P002", "quantity": 1, "unitPrice": 780, "taxRate": 0.1 },
-          { "productCode": "P003", "quantity": 1, "unitPrice": 1200, "taxRate": 0.1 },
-          { "productCode": "P004", "quantity": 1, "unitPrice": 3200, "taxRate": 0.1 },
-          { "productCode": "P005", "quantity": 1, "unitPrice": 18500, "taxRate": 0.1 },
-          { "productCode": "P006", "quantity": 1, "unitPrice": 1580, "taxRate": 0.08 }
+          { "productCode": "P001", "productName": "A4コピー用紙（500枚）", "quantity": 1, "unitPrice": 480, "taxRate": 0.1 },
+          { "productCode": "P002", "productName": "ボールペン 黒（10本）", "quantity": 1, "unitPrice": 780, "taxRate": 0.1 },
+          { "productCode": "P003", "productName": "クリアファイル（100枚）", "quantity": 1, "unitPrice": 1200, "taxRate": 0.1 },
+          { "productCode": "P004", "productName": "デスクマット", "quantity": 1, "unitPrice": 3200, "taxRate": 0.1 },
+          { "productCode": "P005", "productName": "事務イス", "quantity": 1, "unitPrice": 18500, "taxRate": 0.1 },
+          { "productCode": "P006", "productName": "ミネラルウォーター（24本）", "quantity": 1, "unitPrice": 1580, "taxRate": 0.08 }
         ]
       },
       "expect": {
         "errors": [],
-        "computed": { "lineCount": 6, "subtotalAmount": 25740 }
+        "computed": {
+          "lineCount": 6,
+          "subtotalAmount": 25740,
+          "orderSummary": "A4コピー用紙（500枚）、ボールペン 黒（10本）、クリアファイル（100枚）、デスクマット、事務イス、ほか 1 件"
+        }
       }
     }
   ]

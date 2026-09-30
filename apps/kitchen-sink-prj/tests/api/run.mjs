@@ -9,6 +9,8 @@
 //   ・親で絞る選択肢（`optionsSource.parentKey`）が絞って返ってくるか
 //   ・帳票の並べ替え（`report.sort`）が問い合わせとして届いているか
 //   ・一括の部分失敗が**行を名指しで**返るか
+//   ・いつも掛ける条件（`search.fixed`）がサーバで足されるか
+//   ・読むだけの欄（写してきた値）をサーバが受け取らないか
 //
 // 使い方: node tests/api/run.mjs [--base http://localhost:3003/api] [--out <file>]
 
@@ -121,6 +123,34 @@ const CASES = [
   },
   {
     id: "A-10",
+    title: "いつも掛ける条件はサーバが足す（しまったものは一覧に出ない）",
+    why: "`search.fixed` は画面に出ない＝**画面からは外せない**。足すのはサーバの buildQuery",
+    expect: "A-08 でしまった2件を除いた10件",
+    run: () => call({ path: "/items?pageSize=20" }),
+    check: (r) =>
+      r.status === 200 &&
+      r.response.totalCount === 10 &&
+      r.response.items.every((one) => one.archived !== true),
+  },
+  {
+    id: "A-11",
+    title: "読むだけの欄は受け取らない（写してきた子の名前）",
+    why: "`copy` で入れた値は画面の都合。`acceptRecordIn` は `readOnly` の欄を捨てる",
+    expect: "名前は変わり、子の名前は保存されない",
+    run: () =>
+      call({
+        method: "PUT",
+        path: "/items/ITEM-001",
+        body: { itemCode: "ITEM-001", itemName: "改名", groupCode: "G2", childCode: "C22", childLabel: "勝手に" },
+      }),
+    check: (r) =>
+      r.status === 200 &&
+      r.response.itemName === "改名" &&
+      r.response.childCode === "C22" &&
+      r.response.childLabel === undefined,
+  },
+  {
+    id: "A-12",
     title: "初期状態に戻せる（何度回しても同じ結果になる）",
     why: "証跡は「何度回しても同じ」でないと使えない",
     expect: "200・12件に戻る",
@@ -134,6 +164,7 @@ await runApiReport({
   out: OUT,
   cases: CASES,
   note:
-    "> **順番に意味があります。** A-07 と A-08 がデータを変えるので、"
-    + "最後の A-10 で初期状態に戻しています（次に回す人のため）。",
+    "> **順番に意味があります。** A-07・A-08・A-11 がデータを変えるので、"
+    + "最後の A-12 で初期状態に戻しています（次に回す人のため）。"
+    + "A-10 は A-08 でしまった行が消えていることを見ます。",
 });

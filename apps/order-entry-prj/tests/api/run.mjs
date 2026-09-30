@@ -374,6 +374,15 @@ const CASES = [
     run: () => call({ path: "/definition.yaml" }),
     check: (r) => r.status === 200 && String(r.response).includes("order_entry"),
   },
+  {
+    id: "A-29",
+    title: "管理者も受注を入力できる（入れる人は定義の画面の roles）",
+    why: "要件では管理者は「全部できる」。0.9.20 まではサーバに sales と clerk を決め打ちしていて、画面は開けるのに保存で 403 になっていた",
+    expect: "201",
+    run: () =>
+      call({ who: "yamada", method: "POST", path: "/orders", body: goodOrder({ customerCode: "C003" }) }),
+    check: (r) => r.status === 201,
+  },
 ];
 
 for (const who of ["sato", "suzuki", "tanaka", "yamada"]) {

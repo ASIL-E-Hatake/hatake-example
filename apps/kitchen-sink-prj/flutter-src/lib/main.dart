@@ -90,7 +90,6 @@ class _KitchenSinkAppState extends State<KitchenSinkApp> {
 
         // 定義が `plugin:` と言っている中身。
         actions: ActionRegistry({
-          'saveItem': saveItem(_baseUrl),
           'reprice': bulkAction(_baseUrl, 'reprice', counter: _batches),
           'archive': bulkAction(_baseUrl, 'archive', counter: _batches),
         }),

@@ -2,18 +2,15 @@ package io.example.order;
 
 import io.hatake.core.AppDefinition;
 import io.hatake.core.AppParser;
-import io.hatake.core.ColumnDefinition;
 import io.hatake.core.PageDefinition;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.yaml.snakeyaml.Yaml;
 
 /**
  * 画面と<b>同じ定義</b>を読む。
@@ -29,8 +26,10 @@ import org.springframework.stereotype.Component;
  *   <li>{@link AppParser#parseAppPagesYaml} … 画面を<b>中身まで</b>読む。
  *       0.9.0 の Java 版は {@code PageRef}（id・種別・タイトル・Repository）しか
  *       返さず、{@code form} も {@code search} も取れなかった</li>
- *   <li>{@link ColumnDefinition#roles} … 列を<b>誰が見てよいか</b>。
- *       0.9.0 の Java 版は「描画専用のキー」として落としていた</li>
+ *   <li>{@link #document()}（素の定義）… <b>誰に何を許すか</b>（画面・ボタン・列と項目の
+ *       {@code roles}）。枠組みの {@code ServerAccess} がこれを読む（0.9.22 から）。
+ *       0.9.0 の Java 版は列の {@code roles} を「描画専用のキー」として落としていて、
+ *       0.9.20 までは役割名をコントローラに決め打ちしていた</li>
  * </ul>
  */
 @Component
@@ -39,6 +38,7 @@ public class Definition {
     private final String source;
     private final AppDefinition app;
     private final Map<String, PageDefinition> pages;
+    private final Map<String, Object> document;
 
     public Definition(@Value("${hatake.definition}") String path) {
         try {
@@ -49,9 +49,15 @@ public class Definition {
         // strict で読む＝知らないキーは**起動時に**落とす（動かしてから気づかない）。
         this.app = AppParser.parseAppYaml(source, true);
         this.pages = AppParser.parseAppPagesYaml(source, true);
+        this.document = rawOf(source);
     }
 
     /** 素の定義（配るときにそのまま返す）。 */
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> rawOf(String source) {
+        return (Map<String, Object>) new Yaml().load(source);
+    }
+
     public String source() {
         return source;
     }
@@ -71,18 +77,14 @@ public class Definition {
     }
 
     /**
-     * その画面の「項目名 → その列を見てよい役割」。役割を書いていない列は入らない。
+     * 素の定義（解析前の Map）。権限と一括の上限の口（{@code ServerAccess} /
+     * {@code BulkLimits}）が受ける形。
      *
-     * <p>定義を正にするための1本道。ここで別の表を持つと、画面では隠れているのに
-     * API では通る（またはその逆）が起きて、しかも誰も気づかない。
+     * <p>この版の {@link PageDefinition} はボタンも画面の {@code roles} も持たないので、
+     * 何を誰に許すかは素の定義から読む。<b>読むのはここ1か所</b>（コントローラごとに
+     * YAML を読み直さない）。
      */
-    public Map<String, List<String>> columnRoles(String pageId) {
-        Map<String, List<String>> roles = new LinkedHashMap<>();
-        for (ColumnDefinition column : page(pageId).table().columns()) {
-            if (!column.roles().isEmpty()) {
-                roles.put(column.field(), List.copyOf(new ArrayList<>(column.roles())));
-            }
-        }
-        return roles;
+    public Map<String, Object> document() {
+        return document;
     }
 }

@@ -61,6 +61,10 @@ public final class Sql {
                     params.add(range.get(1));
                     where.add(column + " between " + mark + " and " + mark);
                 }
+                case "notEquals" -> {
+                    params.add(one.value());
+                    where.add(column + " <> " + mark);
+                }
                 case "in" -> {
                     List<?> values = one.value() instanceof List<?> l ? l : List.of(one.value());
                     List<String> marks = new ArrayList<>();

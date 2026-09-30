@@ -10,8 +10,8 @@
 # どの画面かで原因が分かるようにするため。
 #
 #   combo_form    条件の組み合わせ（all / any / not）と既定値
-#   press_list    押す前に聞く・区切って実行・行の有効条件・別タブ・成功後に移動
-#   linked_master 選択肢の連動（親で絞る）とページ送りを切る
+#   press_list    押す前に聞く・区切って実行・行の有効条件・別タブ・成功後に移動・いつも掛ける条件
+#   linked_master 選択肢の連動（親で絞る）・名前を引く列・選んだ行から写す・検索欄の既定値・ページ送りを切る
 #   fold_detail   畳み込みの並べ替え・打ち切り・詳細のボタン
 #   steps_wizard  ウィザードのボタン
 #   sorted_report 帳票の降順
@@ -61,6 +61,10 @@ app:
     - type: form
       id: combo_form
       title: 条件の組み合わせ
+      # **画面そのものの roles**（0.9.22）。この見本は8画面とも両方の役割が開ける
+      # （閉じると、ほかの項目の証跡＝「tester には何が出ないか」が撮れなくなる）。
+      # 門が実際に効くところは受注入力の見本にある（ダッシュボードは管理者だけ）。
+      roles: [tester, admin]
       repository: itemRepository
       key: itemCode
 
@@ -118,15 +122,13 @@ app:
                       - { field: kind, operator: equals, value: special }
                       - { field: approved, operator: equals, value: true }
 
-      actions:
-        - { id: save, type: plugin, plugin: saveItem, label: 保存 }
-
     # ------------------------------------------------------------------
     # 押す前に聞く・区切って実行・行の有効条件・別タブ・成功後に移動
     # ------------------------------------------------------------------
     - type: search
       id: press_list
       title: 押す前に聞く
+      roles: [tester, admin]
       repository: itemRepository
       key: itemCode
 
@@ -144,6 +146,10 @@ app:
               - { value: standard, label: 標準 }
               - { value: special, label: 特別 }
               - { value: trial, label: 試用 }
+        # **いつも掛ける条件**（0.9.23）。しまったもの（一括の「しまう」）は一覧に出さない。
+        # 画面には出ず、サーバの buildQuery が毎回足す＝画面からは外せない。
+        fixed:
+          - { field: archived, operator: notEquals, value: true }
 
       table:
         pagination: { pageSize: 20 }
@@ -228,6 +234,7 @@ app:
     - type: master
       id: linked_master
       title: 選択肢の連動
+      roles: [tester, admin]
       repository: itemRepository
       key: itemCode
 
@@ -243,6 +250,8 @@ app:
               label: groupName
               # 選択肢は一覧画面ではないので、取る数に上限を置く。
               limit: 50
+            # **検索欄の既定値**（0.9.23）。開いたら第一グループで絞ってある（最初の一覧も）。
+            defaultValue: G1
 
       table:
         # **ページ送りを出さない**（全部載る画面）。
@@ -251,8 +260,11 @@ app:
         columns:
           - { field: itemCode, label: コード, width: 120, sortable: true }
           - { field: itemName, label: 名前, sortable: true }
-          - { field: groupCode, label: グループ, width: 120 }
-          - { field: childCode, label: 子, width: 120 }
+          # **名前を引く列**（0.9.23）。キー（G1）ではなく、引いた先の名前（第一グループ）が出る。
+          - { field: groupCode, label: グループ, width: 140,
+              optionsSource: { repository: groupRepository, value: groupCode, label: groupName } }
+          - { field: childCode, label: 子, width: 120,
+              optionsSource: { repository: childRepository, value: childCode, label: childName } }
 
       form:
         sections:
@@ -281,9 +293,14 @@ app:
                   # 行の中で親の値を持っている項目。`{ groupCode: <親の値> }` で絞る。
                   parentKey: groupCode
                   limit: 20
+                  # **選んだ行から写す**（0.9.23）。子の名前を下の欄に入れる。
+                  copy: { childLabel: childName }
+              - { field: childLabel, label: 子の名前（選ぶと入る）, type: text, readOnly: true }
 
+      # 0.9.22 までは `plugin: saveItem` の「保存」を置いていたが、一覧の画面の保存は
+      # 組み込み（新規登録・編集の入力枠に最初から出る）。新規登録は**宣言したときだけ**出る。
       actions:
-        - { id: save, type: plugin, plugin: saveItem, label: 保存 }
+        - { id: create, type: create, label: 新規登録 }
 
     # ------------------------------------------------------------------
     # 畳み込みの並べ替え・打ち切り・詳細のボタン
@@ -291,6 +308,7 @@ app:
     - type: detail
       id: fold_detail
       title: 畳み込み
+      roles: [tester, admin]
       repository: itemRepository
       key: itemCode
 
@@ -340,6 +358,7 @@ app:
     - type: wizard
       id: steps_wizard
       title: ステップ入力
+      roles: [tester, admin]
       repository: itemRepository
       key: itemCode
 
@@ -373,7 +392,6 @@ app:
                 computed: { op: concat, fields: [itemCode, kind], separator: " / " } }
 
       actions:
-        - { id: save, type: plugin, plugin: saveItem, label: 保存 }
         - { id: cancel, type: navigate, label: やめる, page: press_list }
 
     # ------------------------------------------------------------------
@@ -382,6 +400,7 @@ app:
     - type: report
       id: sorted_report
       title: 帳票（降順）
+      roles: [tester, admin]
       repository: lineRepository
 
       search:
@@ -423,6 +442,7 @@ app:
     - type: crud
       id: role_crud
       title: 見せる相手で変わる
+      roles: [tester, admin]
       repository: itemRepository
       key: itemCode
 
@@ -462,7 +482,9 @@ app:
                 requiredWhen: { field: itemName, operator: isNotEmpty }
 
       actions:
-        - { id: save, type: plugin, plugin: saveItem, label: 保存 }
+        # **新規登録も押せる人を絞れる**（0.9.22）。tester には出ない＝サーバの
+        # canRunActionIn も同じこの1行で断る。
+        - { id: create, type: create, label: 新規登録, roles: [admin] }
         # **押せる人を絞ったボタン。** tester には出ない。
         - { id: csvRole, type: export, label: CSV 出力, roles: [admin],
             config: { filename: 役割つき } }
@@ -476,6 +498,7 @@ app:
     - type: dashboard
       id: card_board
       title: カードの盛り合わせ
+      roles: [tester, admin]
       # カードが repository を省いたときの既定。
       repository: itemRepository
       layout: { columns: 4 }

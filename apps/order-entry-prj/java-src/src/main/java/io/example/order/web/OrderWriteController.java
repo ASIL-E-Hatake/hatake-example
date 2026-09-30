@@ -63,7 +63,8 @@ public class OrderWriteController {
     public Map<String, Object> create(
             HttpServletRequest request, @RequestBody Map<String, Object> body) {
         User user = sessions.require(request);
-        Authz.require(user, "sales", "clerk");
+        // 入力できるのは受注入力の画面を開ける人（定義の `roles: [sales, clerk, manager]`）。
+        Authz.requireAction(definition, user, PAGE, "create");
 
         Map<String, Object> record = accept(body, "create");
         // 受注番号は**入れさせない**（前書きの numbering の答え）。送られてきても捨てる。
@@ -104,7 +105,7 @@ public class OrderWriteController {
             @PathVariable String orderNo,
             @RequestBody Map<String, Object> body) {
         User user = sessions.require(request);
-        Authz.require(user, "sales", "clerk");
+        Authz.requireAction(definition, user, PAGE, "edit");
 
         Map<String, Object> current = orders.header(orderNo);
         if (current == null) {
@@ -165,7 +166,8 @@ public class OrderWriteController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void cancel(HttpServletRequest request, @PathVariable String orderNo) {
         User user = sessions.require(request);
-        Authz.require(user, "clerk");
+        // 1件の取消も、一括の取消と同じ人（定義の bulkCancel の roles）。
+        Authz.requireAction(definition, user, "order_search", "bulkCancel");
         Map<String, Object> current = orders.header(orderNo);
         if (current == null) {
             throw new Errors.NotFound("見つかりません");

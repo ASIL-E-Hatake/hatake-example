@@ -9,7 +9,7 @@ Flutter 版（[`flutter-src/`](../flutter-src/)）と**同じ定義・同じ API
 | ファイル | 何を書いたか |
 |---|---|
 | [`src/main.ts`](src/main.ts) | 定義をどこから読むか・Repository の道・`plugin:` の中身・出す口 |
-| [`src/actions.ts`](src/actions.ts) | `plugin:` と書いたボタンの中身 |
+| [`src/actions.ts`](src/actions.ts) | `plugin:` と書いたボタンの中身（一括の2つだけ。保存は組み込み） |
 | [`src/sinks.ts`](src/sinks.ts) | CSV と印刷の出し先 |
 | [`nginx.conf`](nginx.conf) | 画面と `/api` を同じ所から配る |
 

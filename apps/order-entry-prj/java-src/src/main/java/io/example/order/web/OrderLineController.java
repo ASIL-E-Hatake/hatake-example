@@ -41,17 +41,14 @@ public class OrderLineController {
     public Map<String, Object> list(
             HttpServletRequest request, @RequestParam Map<String, String> params) {
         User user = sessions.require(request);
-        Authz.require(user, "clerk", "manager");
+        // 刷れるのは帳票の画面を開ける人（定義の `roles: [clerk, manager]`）。
+        Authz.requirePage(definition, user, "order_slip");
 
+        // 取り消した受注は刷らない（紙は取引先に送るもの）。0.9.20 まではここに手で足して
+        // いたが、定義の `search.fixed` に書けるようになった＝QueryBuilder が毎回足す。
         QuerySpec spec = QueryBuilder.build(
                 definition.page("order_slip").search(), new LinkedHashMap<>(params));
-        // 取り消した受注は刷らない（紙は取引先に送るもの）。定義には書けない決めごと。
-        Sql.Built built = Sql.of(
-                "v_order_lines",
-                definition.page("order_slip").search(),
-                spec,
-                List.of("order_status <> ?"),
-                List.of("cancelled"));
+        Sql.Built built = Sql.of("v_order_lines", definition.page("order_slip").search(), spec);
         List<Map<String, Object>> rows = db.query(built.rows(), built.rowParams());
         return Map.of("items", rows, "totalCount", db.count(built.count(), built.countParams()));
     }

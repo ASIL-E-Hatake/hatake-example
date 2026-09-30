@@ -8,7 +8,7 @@
 > 「違う」になるし、中身が違っても見た目が似ていれば気づけない）。この3つは
 > **契約**なので、揃っていなければ載せ替えた案件が黙って壊れます。
 
-- 実行日時: 2026-09-30T00:57:46.242Z
+- 実行日時: 2026-09-30T08:09:31.379Z
 - Vue: `http://web-vue:80`
 - React: `http://web-react:80`
 
@@ -16,15 +16,15 @@
 
 | 画面（役割） | 印 | クラス名 | 字数 | 突き合わせ |
 |---|---|---|---|---|
-| combo_form（tester） | 23 | 31 | 85 | 揃っている |
+| combo_form（tester） | 21 | 30 | 82 | 揃っている |
 | press_list（tester） | 56 | 36 | 467 | 揃っている |
-| linked_master（tester） | 64 | 33 | 350 | 揃っている |
-| steps_wizard（tester） | 23 | 34 | 84 | 揃っている |
-| role_crud（admin） | 44 | 34 | 172 | 揃っている |
-| role_crud（tester） | 41 | 33 | 138 | 揃っている |
+| linked_master（tester） | 46 | 33 | 250 | 揃っている |
+| steps_wizard（tester） | 22 | 34 | 81 | 揃っている |
+| role_crud（admin） | 44 | 34 | 174 | 揃っている |
+| role_crud（tester） | 39 | 32 | 135 | 揃っている |
 | card_board（admin） | 30 | 38 | 231 | 揃っている |
 | fold_detail（tester） | 28 | 32 | 148 | 揃っている |
-| sorted_report（admin） | 27 | 35 | 490 | 揃っている |
-| sorted_report（tester） | 24 | 34 | 480 | 揃っている |
+| sorted_report（admin） | 27 | 35 | 496 | 揃っている |
+| sorted_report（tester） | 24 | 34 | 486 | 揃っている |
 
 **どの画面も、印もクラス名も字も一致しました。**

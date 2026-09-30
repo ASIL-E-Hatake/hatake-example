@@ -86,7 +86,11 @@ app:
 
       actions:
         - { id: openDetail, type: navigate, label: 詳細, scope: row, page: order_detail, params: { orderNo: $row.orderNo } }
-        - { id: openEdit, type: navigate, label: 修正, scope: row, page: order_entry, params: { orderNo: $row.orderNo } }
+        # 取り消した・出荷した受注は直せない（サーバが 409 で止める）。画面でも押せなくする
+        # （押してから断られるより、押せない理由が出るほうがいい）。締めた月はサーバだけが
+        # 知っているので、ここには書けない。
+        - { id: openEdit, type: navigate, label: 修正, scope: row, page: order_entry, params: { orderNo: $row.orderNo },
+            enabledWhen: { field: orderStatus, operator: in, value: [draft, confirmed] } }
         - id: bulkCancel
           type: plugin
           plugin: bulkCancel
@@ -114,6 +118,11 @@ app:
       title: 受注入力
       repository: orderRepository
       key: orderNo
+      # 入力できるのは営業・営業事務・管理者（前書き。管理者は「全部」）。**画面の roles**
+      # なので、メニューも・直に開いたときも・サーバ（ServerAccess）も同じこの1行を読む。
+      # 0.9.20 まではサーバに「sales と clerk」と決め打ちしていて、管理者は画面は開けるのに
+      # 保存で 403 になっていた。
+      roles: [sales, clerk, manager]
 
       steps:
         - id: header
@@ -174,6 +183,9 @@ app:
                     repository: productRepository
                     value: productCode
                     label: productName
+                    # 選んだら、単価・税率・商品名を商品マスタの行から写す（0.9.23）。
+                    # 0.9.20 までは入らず、確認の金額が保存するまで分からなかった。
+                    copy: { unitPrice: unitPrice, taxRate: taxRate, productName: productName }
                 - field: quantity
                   label: 数量
                   type: number
@@ -181,14 +193,18 @@ app:
                   validators:
                     - { type: min, value: 1, message: 数量は1以上にしてください }
                     - { type: max, value: 9999 }
+                # 単価と税率は商品マスタから来る（触らせない＝読むだけ。値の正はサーバで、
+                # 保存するときにマスタの値で入れ直す）。軽減税率の商品が混ざるので、
+                # 税率は**行が持つ**（伝票に1つではない）。
                 - field: unitPrice
                   label: 単価
                   type: number
                   required: true
+                  readOnly: true
+                  format: currency
+                  config: { symbol: "¥" }
                   validators:
                     - { type: min, value: 0 }
-                # 単価と税率は商品マスタから来る（触らせない）。軽減税率の商品が混ざるので、
-                # 税率は**行が持つ**（伝票に1つではない）。
                 - { field: taxRate, label: 税率, type: number, readOnly: true, format: percent, config: { ratio: true, decimals: 0 } }
                 # 行内の計算項目: 金額 = 数量 × 単価
                 - { field: amount, label: 金額, computed: { op: product, fields: [quantity, unitPrice] } }
@@ -220,11 +236,11 @@ app:
             # 小計・消費税より後ろに置く（前の結果を使える）。
             - { field: totalAmount, label: 合計, format: currency, config: { symbol: "¥" },
                 computed: { op: sum, fields: [subtotalAmount, taxAmount] } }
-            # 並べて1行にするのは `join`。**畳めるのは行が持っている項目だけ**なので、
-            # 商品名ではなく商品コードを並べる（商品名は一覧の列で、行の入力項目では
-            # ない＝入力中のレコードには入っていない）。
+            # 並べて1行にするのは `join`。**畳めるのは行が持っている項目だけ**で、
+            # 商品名は商品を選んだときに行へ写している（上の `copy`）。0.9.20 までは
+            # 行に無かったので、商品コードを並べていた。
             - { field: orderSummary, label: 商品, type: textarea, readOnly: true,
-                computed: { op: join, field: lines, of: productCode, separator: "、", limit: 5,
+                computed: { op: join, field: lines, of: productName, separator: "、", limit: 5,
                             where: { field: cancelled, operator: notEquals, value: true } } }
 
     # ------------------------------------------------------------------
@@ -282,12 +298,15 @@ app:
       id: order_dashboard
       title: 受注ダッシュボード
       repository: orderRepository
+      # 管理者だけ（メニューのグループにも書いてあるが、URL で直に来られるので画面にも書く）。
+      roles: [manager]
       layout: { columns: 4 }
       # 検索エリアは全カードのクエリに混ざる（期間で board 全体を絞る）。
       search:
         layout: { columns: 3 }
         filters:
-          - { field: orderDate, label: 受注日, type: date, operator: between }
+          # 開いたら**今月**のぶん（要件）。外せば全期間になる。
+          - { field: orderDate, label: 受注日, type: date, operator: between, defaultValue: $thisMonth }
           # 状態でも絞れるようにする。**ついでに「直近の受注」カードの受注状態が
           # コードではなく名前で出る**（カードの一覧は入力欄を持たないので、
           # 名前を引ける相手はこの出力条件しかない）。
@@ -348,6 +367,8 @@ app:
     - type: report
       id: order_slip
       title: 注文請書
+      # 刷るのは営業事務と管理者（メニューと同じ。紙は取引先に送るもの）。
+      roles: [clerk, manager]
       # 明細を1行1件で刷るので、ヘッダではなく明細の出どころを見る。
       repository: orderLineRepository
       search:
@@ -356,6 +377,10 @@ app:
           # 1件ぶんを刷る紙なので、受注番号で1件に絞る。
           - { field: orderNo, label: 受注番号, type: text, operator: equals }
           - { field: orderDate, label: 受注日, type: date, operator: between }
+        # 取り消した受注は刷らない（紙は取引先に送るもの）。画面には出さず、サーバの
+        # QueryBuilder が毎回足す（0.9.23）。0.9.20 まではサーバに手で書いていた。
+        fixed:
+          - { field: orderStatus, operator: notEquals, value: cancelled }
       table:
         columns:
           # 幅は紙の上ではポイント（1/72 inch）。A4 縦は 595.28pt しかないので、

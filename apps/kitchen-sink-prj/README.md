@@ -19,12 +19,15 @@ node tool/check-coverage.mjs --from ../spec/examples/*.yaml \
 ```
 
 ```
-(ノード, キー) は 255 組。書かれている 255 ／ 除外 0 ／ **まだ一度も書かれていない 0**（100.0%）
+(ノード, キー) は 270 組。書かれている 270 ／ 除外 0 ／ **まだ一度も書かれていない 0**（100.0%）
 ```
 
 **キー名ではなく (ノード, キー) の組で数えます。** `roles` は
-項目・列・ボタン・メニュー・カードの5か所に書けるので、1か所で書いても
-残り4か所を試したことにはならないからです。
+項目・列・ボタン・メニュー・カード・画面の6か所に書けるので、1か所で書いても
+残り5か所を試したことにはならないからです。
+
+0.9.23 で増えた 15 組（画面の `roles`・`search.fixed`・絞り込みの `defaultValue`・
+`optionsSource.copy`・列の `optionsSource` など）は、受注入力とこの見本で埋めました。
 
 ## 動かす
 
@@ -49,7 +52,7 @@ API は <http://localhost:3003>（3つとも**同じ API・同じ定義**を見�
 | ファイル | 何を書いたか |
 |---|---|
 | `src/main.*` | 定義をどこから読むか・Repository の道・`plugin:` の中身・出す口 |
-| `src/actions.ts` | `plugin:` と書いたボタンの中身 |
+| `src/actions.ts` | `plugin:` と書いたボタンの中身（一括の2つだけ。保存は組み込み） |
 | `src/sinks.ts` | CSV と印刷の出し先 |
 | `nginx.conf` | 画面と `/api` を同じ所から配る |
 
@@ -58,8 +61,12 @@ DB は要りません（決め打ちの値を返すモック）。**認証も持
 
 | URL | 見えるもの |
 |---|---|
-| `?role=tester` | 一括は押せる。持ち出し（CSV・印刷）は出ない |
+| `?role=tester` | 一括は押せる。持ち出し（CSV・印刷）と「見せる相手で変わる」の新規登録は出ない |
 | `?role=admin` | 全部。区切りも大きい（5 → 8） |
+
+8画面とも画面の `roles` は `[tester, admin]`（どちらも開ける）。閉じると「tester には
+何が出ないか」の証跡が撮れなくなるので、**画面の門が実際に効く所は受注入力**で見ます
+（ダッシュボードは管理者だけ）。
 
 （どの口でも同じです。例: <http://localhost:8085/?role=admin>）
 
@@ -70,12 +77,12 @@ DB は要りません（決め打ちの値を返すモック）。**認証も持
 | 画面 | 確かめたいこと |
 |---|---|
 | 条件の組み合わせ | `all` / `any` / `not` と**入れ子**、`defaultValue` |
-| 押す前に聞く | `prompt` / `batchSize` / `enabledWhen` / `open: tab` / `onSuccess.page` |
-| 選択肢の連動 | `optionsSource.parentKey` / `limit`、`pagination.enabled: false` |
+| 押す前に聞く | `prompt` / `batchSize` / `enabledWhen` / `open: tab` / `onSuccess.page`、いつも掛ける条件（`search.fixed`＝しまったものは出さない） |
+| 選択肢の連動 | `optionsSource.parentKey` / `limit` / `copy`、名前を引く列（列の `optionsSource`）、検索欄の `defaultValue`、`pagination.enabled: false` |
 | 畳み込み | `computed.sort` / `limit` / `overflow`、詳細のボタン |
 | ステップ入力 | ウィザードの `actions`、条件で飛ばすステップ |
 | 帳票（降順） | `report.sort.ascending: false`、持ち出しは `roles` |
-| 見せる相手で変わる | 列・ボタン・項目の `roles`、`readOnlyWhen` / `requiredWhen` |
+| 見せる相手で変わる | 列・ボタン・項目の `roles`（新規登録も admin だけ）、`readOnlyWhen` / `requiredWhen` |
 | カードの盛り合わせ | ダッシュボードのカード3種と `span`、カードごとの `roles`・固定条件 |
 
 ## 3つの Renderer が同じものを出しているか（機械が突き合わせる）
@@ -120,6 +127,13 @@ bash tools/run-tests.sh                      # 値と画面が変わったか
 | 1 | 詳細画面が **`id` という名前の引数しか**鍵として読まなかった（`params: { itemCode: … }` では開いても空。API を1本も投げない） |
 | 2 | `key: [a, b]`（複合キーのつもり）が**検証 exit 0 で素通り**していた |
 
-→ 0.9.12 で直り、助言2つ（`navigate-without-key-param` / `detail-page-in-menu`）も
-足しました。**複合キーは今もありません**（[ロードマップ](../../../dsl-ui/docs/roadmap.ja.md)。
-逃げ道は[レシピ](../../../dsl-ui/docs/cookbook/search-list-detail.ja.md)）。
+→ 0.9.3 で直り、助言2つ（`navigate-without-key-param` / `detail-page-in-menu`）も
+足しました。複合キーはそのあと **0.9.7 で入りました**（`key: [orderNo, lineNo]`）。
+この見本の画面はどれも鍵が1つなので、書いていません。
+
+0.9.23 に上げたときにも、この見本のモックで1件見つけています（枠組みではなく
+こちらの作りの穴）:
+
+| | 何が起きていたか |
+|---|---|
+| 3 | 書き込みの口が**いつも combo_form の入力枠**で受けていた＝選択肢の連動の画面から保存すると、名前もグループも黙って捨てていた。いまは送ってきた項目を一番多く受け取れる画面で受ける（`acceptRecordIn`） |

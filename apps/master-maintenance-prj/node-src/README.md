@@ -27,9 +27,10 @@ DELETE /api/employees/{key}  → 204
 | | どこで | 何が起きるか |
 |---|---|---|
 | 検索できる条件 | `buildQuery(page.search, req.query)` | **定義に無い項目は無視**（`?evilColumn=1` は効かない） |
-| 受け取る項目 | `page.form` | 書いていないキーは捨てる |
+| 受け取る項目 | `acceptRecordIn` | 入力欄に在って・その人に見えて・読むだけでない項目だけ。ほかは捨てる |
 | 必須・桁・項目間 | `FormValidator` | **画面とまったく同じ規則**（`退職日は入社日以降` まで同じ） |
-| 返さない列 | `page.table.columns[].roles` | `viewer` には内線を**返さない**（隠すのではなく返さない） |
+| 返さない項目 | `visibleRecordIn`（列と入力欄の `roles`） | `viewer` には内線を**返さない**（隠すのではなく返さない） |
+| 押せる人 | `canRunActionIn`（新規登録・編集・削除・一括の `roles`） | 直せるのは `admin` / `hr`、取引先は `admin` だけ。**役割名をサーバに書かない** |
 | 一括の件数 | `checkBulkLimit` | `hr` は 20 件、`admin` は 50 件。**定義に書いてある数**をサーバが守る |
 | API の形 | `deriveDto` → `toOpenApi` | `/api/openapi.json?page=<画面id>` |
 
@@ -54,7 +55,7 @@ curl -XPOST localhost:3000/api/employees -H "authorization: Bearer $TOKEN" \
 | | ファイル | 前書きのどこで決めたか |
 |---|---|---|
 | ログイン・資格の確認 | `src/auth.js` `src/routes/auth.js` | `premises`（hatake は認証を持たない） |
-| 役割で**本当に**止める | `src/authz.js` | `authz-server` の答え |
+| 役割で**本当に**止める | `src/authz.js`（定義を読む口を呼ぶだけ） | `authz-server` の答え |
 | 監査（誰が・いつ・何を） | `src/audit.js` | `audit` の答え |
 | 同時更新の弾き方 | `src/routes/masters.js` | `concurrency` の答え（更新日時で見る） |
 | 一括の失敗のあと始末 | `src/routes/bulk.js` | `partial-failure` の答え（1件ずつ確定） |
@@ -62,11 +63,14 @@ curl -XPOST localhost:3000/api/employees -H "authorization: Bearer $TOKEN" \
 | 退職者の扱い | 物理削除しない | `erase` の答え（在籍区分を変えるだけ） |
 
 **画面の `roles` は見せ方だけ**（API を直接叩けばデータは取れる）。`authz.js` が無いと、
-`roles` は「隠しただけ」になる。
+`roles` は「隠しただけ」になる。何を誰に許すかは**定義に書いてある**ので、`authz.js` は
+それを枠組みの口（`canRunActionIn` / `visibleRecordIn`）で読むだけ。0.9.20 までは
+「直せるのは admin と hr」を `server.js` に決め打ちしていて、画面では viewer にも編集が
+出ていた（押すと 403）。
 
 ## 覚えておくと詰まらないこと
 
-- 解析後のモデルは **`keyField` / `kind`**（YAML の `key` / `type` とは名前が違う）
+- 解析後のモデルは **`keyFields`（並び）/ `kind`**（YAML の `key` / `type` とは名前が違う）
 - `updatedAt` は**見せる値ではなく合言葉**。Postgres の `timestamptz` を字のまま往復
   させている（`Date` にすると μ秒が落ちて、**必ず「他の人が先に更新しています」になる**）
 - 検索のクエリは **Express の `req.query` をそのまま**渡してよい（文字列も配列も
