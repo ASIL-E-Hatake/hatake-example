@@ -5,9 +5,10 @@
 //
 // 定義から決まるもの:
 //   ・検索できる条件  … buildQuery（**書いていない項目は無視**＝任意項目での検索を弾く）
-//   ・受け取る項目    … page.form（書いていないキーは捨てる）
+//   ・受け取る項目    … acceptRecordIn（入力欄に在って・見えて・読むだけでない項目だけ）
 //   ・必須・桁・項目間 … FormValidator（画面とまったく同じ規則）
-//   ・返さない列      … page.table.columns[].roles
+//   ・返さない項目    … visibleRecordIn（列か入力欄の roles）
+//   ・押せる人        … canRunActionIn（新規登録・編集・削除の宣言の roles）
 //
 // 返す形は **hatake_http（Flutter の REST アダプタ）の契約**に合わせる:
 //
@@ -21,28 +22,27 @@
 // 手で書かなくていい）。**違う形を返すなら Repository を手で書く**、が本来の分かれ道。
 
 import { Router } from "express";
-import { buildQuery, FormValidator } from "@hatake-fw/api";
+import { acceptRecordIn, buildQuery, FormValidator } from "@hatake-fw/api";
 
 import { record } from "../audit.js";
 import { requireLogin } from "../auth.js";
-import { hideColumns, requireRole } from "../authz.js";
+import { allow, visibleRows } from "../authz.js";
 import { columnOf, pool, query } from "../db.js";
-import { pageOf } from "../definition.js";
+import { document, pageOf } from "../definition.js";
 import { wrap } from "../wrap.js";
 
 const validator = new FormValidator();
 
-/** 定義の入力枠に書いてある項目だけを拾う（書いていないキーは**捨てる**）。 */
-const fieldsOf = (page) =>
-  (page.form?.sections ?? []).flatMap((section) => section.fields ?? []).map((f) => f.field);
-
-const pick = (page, body) => {
-  const allowed = new Set(fieldsOf(page));
-  const out = {};
-  for (const [key, value] of Object.entries(body ?? {})) {
-    if (allowed.has(key)) out[key] = value === "" ? null : value;
-  }
-  return out;
+/**
+ * 受け取ってよい項目だけを拾う（`acceptRecordIn`＝画面の入力欄と同じ定義から）。
+ *
+ * 空の文字は null にする（この案件の決めごと。DB の「未入力」は null）。
+ */
+const pick = (pageId, body, roles) => {
+  const { accepted } = acceptRecordIn(document, pageId, body ?? {}, roles);
+  return Object.fromEntries(
+    Object.entries(accepted).map(([key, value]) => [key, value === "" ? null : value]),
+  );
 };
 
 /** QuerySpec を SQL に落とす。ここは**この案件の都合**（hatake は SQL を知らない）。 */
@@ -88,14 +88,15 @@ function toSql(table, spec, extra = []) {
 /**
  * 1つのマスタぶんのルートを作る。
  *
+ * 直せる役割は**ここには書かない**（定義の新規登録・編集・削除の宣言の `roles`）。
+ *
  * @param {object} options
  * @param {string} options.pageId    定義の画面 id
  * @param {string} options.table     DB の表（書くとき）
  * @param {string} [options.readFrom] 読むとき（部署名のような**他の表から来る列**を
  *                                    足したビュー。既定は table）
- * @param {string[]} options.write   直せる役割
  */
-export function masterRoutes({ pageId, table, readFrom = table, write }) {
+export function masterRoutes({ pageId, table, readFrom = table }) {
   const router = Router();
   const page = pageOf(pageId);
   // 解析後のモデルは `keyFields` / `kind`（YAML の `key` / `type` とは名前が違う）。
@@ -120,7 +121,7 @@ export function masterRoutes({ pageId, table, readFrom = table, write }) {
       pool.query(countSql, countParams),
     ]);
     res.json({
-      items: hideColumns(page, rows, req.user.roles),
+      items: visibleRows(pageId, rows, req.user.roles),
       totalCount: counted.rows[0].total,
     });
   }));
@@ -131,12 +132,12 @@ export function masterRoutes({ pageId, table, readFrom = table, write }) {
       req.params.key,
     ]);
     if (rows.length === 0) return res.status(404).json({ message: "見つかりません" });
-    res.json(hideColumns(page, rows, req.user.roles)[0]);
+    res.json(visibleRows(pageId, rows, req.user.roles)[0]);
   }));
 
   // 登録。**画面とまったく同じ検証**を通す（画面を通らない値が API から入るのを止める）。
-  router.post("/", requireRole(...write), wrap(async (req, res) => {
-    const record_ = pick(page, req.body);
+  router.post("/", allow(pageId, "create"), wrap(async (req, res) => {
+    const record_ = pick(pageId, req.body, req.user.roles);
     const checked = validator.validate(page.form, record_);
     if (!checked.valid) return res.status(400).json({ valid: false, errors: checked.errors });
 
@@ -154,8 +155,8 @@ export function masterRoutes({ pageId, table, readFrom = table, write }) {
   }));
 
   // 修正。**更新日時が変わっていたら弾く**（前書きの concurrency の答え）。
-  router.put("/:key", requireRole(...write), wrap(async (req, res) => {
-    const record_ = pick(page, req.body);
+  router.put("/:key", allow(pageId, "edit"), wrap(async (req, res) => {
+    const record_ = pick(pageId, req.body, req.user.roles);
     const checked = validator.validate(page.form, record_);
     if (!checked.valid) return res.status(400).json({ valid: false, errors: checked.errors });
 
@@ -184,11 +185,11 @@ export function masterRoutes({ pageId, table, readFrom = table, write }) {
     // **直したレコードを返す**（契約。画面はこれで手元を入れ替える）。
     const [updated] = await query(
       `select * from ${readFrom} where "${columnOf(key)}" = $1`, [req.params.key]);
-    res.json(hideColumns(page, [updated], req.user.roles)[0]);
+    res.json(visibleRows(pageId, [updated], req.user.roles)[0]);
   }));
 
   // 削除。**この案件では物理削除しない**（前書きの erase の答え）。
-  router.delete("/:key", requireRole(...write), wrap(async (req, res) => {
+  router.delete("/:key", allow(pageId, "delete"), wrap(async (req, res) => {
     if (table !== "employees") {
       let result;
       try {

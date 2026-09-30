@@ -7,11 +7,11 @@ definitions/app.yaml（app: 8 ページ）を1回で見ました。
 ## 読み返し（そう書いてある）
 機能網羅（kitchen_sink）— 画面 8 枚
 
-  combo_form     条件の組み合わせ    1件の入力。2 枠に項目 8（必須 2）、ボタン 1、条件で出し分け 4 項目、itemRepository から
+  combo_form     条件の組み合わせ    1件の入力。2 枠に項目 8（必須 2）、条件で出し分け 4 項目、itemRepository から
   press_list     押す前に聞く        照会（読み取り専用）。条件 2、列 4、ボタン 4、権限で出し分けあり、itemRepository から
-  linked_master  選択肢の連動        マスタ保守。条件 1、列 4、項目 4（必須 3）、ボタン 1、itemRepository から
+  linked_master  選択肢の連動        マスタ保守。条件 1、列 4、項目 5（必須 3）、ボタン 1、itemRepository から
   fold_detail    畳み込み            1件の照会。3 枠に項目 6、ボタン 1、itemRepository から
-  steps_wizard   ステップ入力        段階入力。ステップ 3（項目 4）、ボタン 2、itemRepository から
+  steps_wizard   ステップ入力        段階入力。ステップ 3（項目 4）、ボタン 1、itemRepository から
   sorted_report  帳票（降順）        帳票。条件 1、列 3、ボタン 2、権限で出し分けあり、lineRepository から
   role_crud      見せる相手で変わる  検索＋一覧＋登録・修正・削除。条件 1、列 3、項目 4（必須 2）、ボタン 2、条件で出し分け 2 項目、権限で出し分けあり、itemRepository から
   card_board     カードの盛り合わせ  数字とグラフ。条件 1、カード 6、itemRepository から

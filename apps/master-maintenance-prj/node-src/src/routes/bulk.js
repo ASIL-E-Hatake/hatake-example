@@ -13,19 +13,20 @@ import { checkBulkLimit } from "@hatake-fw/api";
 
 import { record } from "../audit.js";
 import { requireLogin } from "../auth.js";
-import { requireRole } from "../authz.js";
+import { allow } from "../authz.js";
 import { pool } from "../db.js";
 import { wrap } from "../wrap.js";
 import { document, pageOf } from "../definition.js";
 
 export function bulkRoutes() {
   const router = Router();
-  const page = pageOf("employee_master");
-  const action = page.actions.find((one) => one.id === "bulkRetire");
+  // 起動時に画面が在ることを確かめる（無ければここで落ちる＝あとで気づかない、を防ぐ）。
+  pageOf("employee_master");
 
   router.use(requireLogin);
 
-  router.post("/retire", requireRole(...action.roles), wrap(async (req, res) => {
+  // 押せる人は定義のボタンの roles（`canRunActionIn`）。
+  router.post("/retire", allow("employee_master", "bulkRetire"), wrap(async (req, res) => {
     const keys = Array.isArray(req.body?.keys) ? req.body.keys : [];
     if (keys.length === 0) return res.status(400).json({ message: "行が選ばれていません" });
 

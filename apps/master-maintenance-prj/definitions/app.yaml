@@ -15,6 +15,31 @@ app:
   # 配りうる役割の語彙。ここに無い名前をどこかに書いたら「誰にも見えません」と言われる。
   roles: [admin, hr, viewer]
 
+  # 業務のコード表は**アプリに1回**書いて、使う所は名前で指す（`optionsOf`）。
+  # 0.9.20 までは同じ表を絞り込みと入力欄の2か所ずつに書いていた（片方だけ直すと、
+  # 一覧と入力で違う字が出る）。
+  vocabularies:
+    - name: employmentStatus
+      options:
+        - { value: active, label: 在籍 }
+        - { value: leave, label: 休職 }
+        - { value: retired, label: 退職 }
+    - name: supplierType
+      options:
+        - { value: corp, label: 法人 }
+        - { value: individual, label: 個人 }
+    - name: tradeStatus
+      options:
+        - { value: active, label: 取引中 }
+        - { value: suspended, label: 停止 }
+        - { value: closed, label: 終了 }
+    - name: closingDay
+      options:
+        - { value: 10, label: 10日 }
+        - { value: 15, label: 15日 }
+        - { value: 20, label: 20日 }
+        - { value: 31, label: 末日 }
+
   menu:
     - { id: employees, label: 社員マスタ, icon: people, page: employee_master }
     - { id: departments, label: 部署マスタ, icon: apartment, page: department_master }
@@ -43,14 +68,9 @@ app:
               repository: departmentRepository
               value: departmentCode
               label: departmentName
-          - field: employmentStatus
-            label: 在籍区分
-            type: select
-            operator: equals
-            options:
-              - { value: active, label: 在籍 }
-              - { value: leave, label: 休職 }
-              - { value: retired, label: 退職 }
+          # 一覧は既定で**在籍者だけ**（要件）。最初の一覧もこの条件で読み、利用者は外せる。
+          - { field: employmentStatus, label: 在籍区分, type: select, operator: equals,
+              optionsOf: employmentStatus, defaultValue: active }
 
       table:
         pagination: { pageSize: 50 }
@@ -62,7 +82,7 @@ app:
           - { field: departmentName, label: 所属部署, width: 160 }
           - { field: position, label: 役職, width: 120 }
           - { field: hireDate, label: 入社日, type: date, width: 120, sortable: true }
-          - { field: employmentStatus, label: 在籍区分, type: badge, width: 100 }
+          - { field: employmentStatus, label: 在籍区分, type: badge, width: 100, optionsOf: employmentStatus }
           # 内線は情シスと人事だけ（一般には見せない）。
           - { field: extension, label: 内線, width: 90, roles: [admin, hr] }
 
@@ -75,6 +95,8 @@ app:
                 label: 社員番号
                 type: text
                 required: true
+                # あとから変えない（要件）。編集では読むだけ（サーバも受け取らない）。
+                readOnlyWhen: { mode: edit }
                 validators:
                   - { type: pattern, pattern: "^[0-9]{6}$", message: 社員番号は6桁の数字です }
               - { field: name, label: 氏名, type: text, required: true }
@@ -94,14 +116,7 @@ app:
           - title: 在籍
             layout: { columns: 2 }
             fields:
-              - field: employmentStatus
-                label: 在籍区分
-                type: select
-                required: true
-                options:
-                  - { value: active, label: 在籍 }
-                  - { value: leave, label: 休職 }
-                  - { value: retired, label: 退職 }
+              - { field: employmentStatus, label: 在籍区分, type: select, required: true, optionsOf: employmentStatus }
               - { field: hireDate, label: 入社日, type: date, required: true }
               - field: retireDate
                 label: 退職日
@@ -112,6 +127,18 @@ app:
                   - { type: compare, field: hireDate, operator: gte, message: 退職日は入社日以降にしてください }
 
       actions:
+        # 直せるのは情シスと人事（要件）。**行の編集・削除も宣言して roles を書く**＝
+        # 一般（viewer）にはボタンが出ず、サーバも同じ宣言で止める（canRunActionIn）。
+        - { id: create, type: create, label: 新規登録, roles: [admin, hr] }
+        - { id: edit, type: edit, label: 編集, roles: [admin, hr] }
+        # 社員は消さない（前書きの erase）。削除は「退職にする」で、サーバがそうする。
+        - id: delete
+          type: delete
+          label: 退職にする
+          roles: [admin, hr]
+          confirm:
+            message: この社員を退職にします（データは消しません）。よろしいですか？
+            danger: true
         - id: exportCsv
           type: export
           label: CSV 出力
@@ -165,7 +192,7 @@ app:
           - title: 在籍
             layout: { columns: 2 }
             fields:
-              - { field: employmentStatus, label: 在籍区分 }
+              - { field: employmentStatus, label: 在籍区分, optionsOf: employmentStatus }
               - { field: hireDate, label: 入社日, format: date }
               - { field: retireDate, label: 退職日, format: date }
 
@@ -203,6 +230,7 @@ app:
                 label: 部署コード
                 type: text
                 required: true
+                readOnlyWhen: { mode: edit }
                 validators:
                   - { type: pattern, pattern: "^[A-Za-z0-9]{4}$", message: 部署コードは英数4文字です }
               - { field: departmentName, label: 部署名, type: text, required: true }
@@ -222,6 +250,11 @@ app:
                   - { type: compare, field: validFromDate, operator: gte, message: 終了日は開始日以降にしてください }
 
       actions:
+        - { id: create, type: create, label: 新規登録, roles: [admin, hr] }
+        - { id: edit, type: edit, label: 編集, roles: [admin, hr] }
+        # 使われている部署は DB が止める（消そうとした人に「先にそちらを直して」と返す）。
+        - { id: delete, type: delete, label: 削除, roles: [admin, hr],
+            confirm: { message: この部署を削除します。よろしいですか？, danger: true } }
         - { id: exportCsv, type: export, label: CSV 出力, scope: all, roles: [admin, hr] }
 
     # ------------------------------------------------------------------
@@ -237,33 +270,12 @@ app:
         layout: { columns: 3 }
         filters:
           - { field: supplierName, label: 取引先名, type: text, operator: contains }
-          - field: supplierType
-            label: 区分
-            type: select
-            operator: equals
-            options:
-              - { value: corp, label: 法人 }
-              - { value: individual, label: 個人 }
-          - field: tradeStatus
-            label: 取引状態
-            type: select
-            operator: equals
-            options:
-              - { value: active, label: 取引中 }
-              - { value: suspended, label: 停止 }
-              - { value: closed, label: 終了 }
+          - { field: supplierType, label: 区分, type: select, operator: equals, optionsOf: supplierType }
+          - { field: tradeStatus, label: 取引状態, type: select, operator: equals, optionsOf: tradeStatus }
           # 範囲で絞る（与信限度額 いくら以上 いくら以下）。
           - { field: creditLimit, label: 与信限度額, type: number, operator: between }
           # 複数選べる（締め日 20日 と 末日 の両方、など）。
-          - field: closingDay
-            label: 締め日
-            type: select
-            operator: in
-            options:
-              - { value: 10, label: 10日 }
-              - { value: 15, label: 15日 }
-              - { value: 20, label: 20日 }
-              - { value: 31, label: 末日 }
+          - { field: closingDay, label: 締め日, type: select, operator: in, optionsOf: closingDay }
 
       table:
         pagination: { pageSize: 50 }
@@ -271,11 +283,11 @@ app:
         columns:
           - { field: supplierCode, label: 取引先コード, width: 130, sortable: true }
           - { field: supplierName, label: 取引先名, sortable: true }
-          - { field: supplierType, label: 区分, type: badge, width: 90 }
+          - { field: supplierType, label: 区分, type: badge, width: 90, optionsOf: supplierType }
           - { field: creditLimit, label: 与信限度額, type: number, format: currency, width: 140, sortable: true }
-          - { field: closingDay, label: 締め日, width: 90 }
+          - { field: closingDay, label: 締め日, width: 90, optionsOf: closingDay }
           - { field: paymentSiteDays, label: 支払サイト, width: 110 }
-          - { field: tradeStatus, label: 取引状態, type: badge, width: 100 }
+          - { field: tradeStatus, label: 取引状態, type: badge, width: 100, optionsOf: tradeStatus }
 
       form:
         sections:
@@ -286,17 +298,12 @@ app:
                 label: 取引先コード
                 type: text
                 required: true
+                readOnlyWhen: { mode: edit }
                 validators:
                   - { type: maxLength, value: 10 }
               - { field: supplierName, label: 取引先名, type: text, required: true }
               - { field: supplierNameKana, label: カナ, type: text }
-              - field: supplierType
-                label: 区分
-                type: select
-                required: true
-                options:
-                  - { value: corp, label: 法人 }
-                  - { value: individual, label: 個人 }
+              - { field: supplierType, label: 区分, type: select, required: true, optionsOf: supplierType }
               - field: invoiceNo
                 label: インボイス登録番号
                 type: text
@@ -322,24 +329,12 @@ app:
                 required: true
                 validators:
                   - { type: min, value: 0 }
-              - field: closingDay
-                label: 締め日
-                type: select
-                required: true
-                options:
-                  - { value: 10, label: 10日 }
-                  - { value: 15, label: 15日 }
-                  - { value: 20, label: 20日 }
-                  - { value: 31, label: 末日 }
+              - { field: closingDay, label: 締め日, type: select, required: true, optionsOf: closingDay }
               - { field: paymentSiteDays, label: 支払サイト（日）, type: number, validators: [{ type: min, value: 0 }] }
-              - field: tradeStatus
-                label: 取引状態
-                type: select
-                required: true
-                options:
-                  - { value: active, label: 取引中 }
-                  - { value: suspended, label: 停止 }
-                  - { value: closed, label: 終了 }
+              - { field: tradeStatus, label: 取引状態, type: select, required: true, optionsOf: tradeStatus }
 
       actions:
+        # 取引先を直せるのは情シスだけ（人事は見るだけ＝要件）。
+        - { id: create, type: create, label: 新規登録, roles: [admin] }
+        - { id: edit, type: edit, label: 編集, roles: [admin] }
         - { id: exportCsv, type: export, label: CSV 出力, scope: all, roles: [admin] }

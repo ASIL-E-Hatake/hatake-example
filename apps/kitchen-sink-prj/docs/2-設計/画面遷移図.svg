@@ -54,37 +54,37 @@
   <rect class="box input" x="24" y="190" width="273.3" height="88" rx="8"/>
   <text class="label" x="160.7" y="220" text-anchor="middle">条件の組み合わせ</text>
   <text class="note" x="160.7" y="239" text-anchor="middle">combo_form</text>
-  <text class="body body" x="38.0" y="264">・ 誰でも開ける</text>
+  <text class="body body" x="38.0" y="264">・ admin / tester だけ</text>
   <rect class="box input" x="313.3333333333333" y="190" width="273.3" height="88" rx="8"/>
   <text class="label" x="450.0" y="220" text-anchor="middle">選択肢の連動</text>
   <text class="note" x="450.0" y="239" text-anchor="middle">linked_master</text>
-  <text class="body body" x="327.3" y="264">・ 誰でも開ける</text>
+  <text class="body body" x="327.3" y="264">・ admin / tester だけ</text>
   <rect class="box input" x="602.6666666666666" y="190" width="273.3" height="88" rx="8"/>
   <text class="label" x="739.3" y="220" text-anchor="middle">ステップ入力</text>
   <text class="note" x="739.3" y="239" text-anchor="middle">steps_wizard</text>
-  <text class="body body" x="616.7" y="264">・ 誰でも開ける</text>
+  <text class="body body" x="616.7" y="264">・ admin / tester だけ</text>
   <rect class="box input" x="24" y="288" width="273.3" height="88" rx="8"/>
   <text class="label" x="160.7" y="318" text-anchor="middle">見せる相手で変わる</text>
   <text class="note" x="160.7" y="337" text-anchor="middle">role_crud</text>
-  <text class="body body" x="38.0" y="362">・ 誰でも開ける</text>
+  <text class="body body" x="38.0" y="362">・ admin / tester だけ</text>
   <rect class="box input" x="313.3333333333333" y="288" width="273.3" height="88" rx="8"/>
   <text class="label" x="450.0" y="318" text-anchor="middle">カードの盛り合わせ</text>
   <text class="note" x="450.0" y="337" text-anchor="middle">card_board</text>
-  <text class="body body" x="327.3" y="362">・ 誰でも開ける</text>
+  <text class="body body" x="327.3" y="362">・ admin / tester だけ</text>
   <rect class="box input" x="602.6666666666666" y="288" width="273.3" height="88" rx="8"/>
   <text class="label" x="739.3" y="318" text-anchor="middle">帳票（降順）</text>
   <text class="note" x="739.3" y="337" text-anchor="middle">sorted_report</text>
-  <text class="body body" x="616.7" y="362">・ 誰でも開ける</text>
+  <text class="body body" x="616.7" y="362">・ admin / tester だけ</text>
   <rect class="box input" x="24" y="386" width="273.3" height="88" rx="8"/>
   <text class="label" x="160.7" y="416" text-anchor="middle">押す前に聞く</text>
   <text class="note" x="160.7" y="435" text-anchor="middle">press_list</text>
-  <text class="body body" x="38.0" y="460">・ 誰でも開ける</text>
+  <text class="body body" x="38.0" y="460">・ admin / tester だけ</text>
   <path class="flow link" d="M 160.7 484 V 504.0 H 160.7 V 526" marker-end="url(#tip)"/>
   <text class="edge" x="168.7" y="500.0">詳細</text>
   <rect class="box core" x="24" y="526" width="273.3" height="88" rx="8"/>
   <text class="label" x="160.7" y="556" text-anchor="middle">畳み込み</text>
   <text class="note" x="160.7" y="575" text-anchor="middle">fold_detail</text>
-  <text class="body body" x="38.0" y="600">・ 誰でも開ける</text>
+  <text class="body body" x="38.0" y="600">・ admin / tester だけ</text>
   <text class="caption" x="24" y="638">線にできなかった遷移（同じ段の中・戻り・行が離れているもの）:</text>
   <text class="caption" x="24" y="674">  畳み込み → 押す前に聞く（一覧へ戻る） / ステップ入力 → 押す前に聞く（やめる）</text>
   <text class="caption" x="24" y="710">すべての画面がメニューか遷移からたどれる。</text>

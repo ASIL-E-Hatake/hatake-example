@@ -53,7 +53,7 @@
   <rect class="box input" x="24" y="154" width="273.3" height="88" rx="8"/>
   <text class="label" x="160.7" y="184" text-anchor="middle">受注入力</text>
   <text class="note" x="160.7" y="203" text-anchor="middle">order_entry</text>
-  <text class="body body" x="38.0" y="228">・ 誰でも開ける</text>
+  <text class="body body" x="38.0" y="228">・ clerk / manager / sales だけ</text>
   <rect class="box input" x="313.3333333333333" y="154" width="273.3" height="88" rx="8"/>
   <text class="label" x="450.0" y="184" text-anchor="middle">注文請書</text>
   <text class="note" x="450.0" y="203" text-anchor="middle">order_slip</text>
@@ -75,6 +75,6 @@
   <text class="caption" x="24" y="504">線にできなかった遷移（同じ段の中・戻り・行が離れているもの）:</text>
   <text class="caption" x="24" y="540">  受注照会 → 受注入力（修正） / 受注ダッシュボード → 受注照会（受注照会）</text>
   <text class="caption" x="24" y="576">すべての画面がメニューか遷移からたどれる。</text>
-  <text class="caption" x="24" y="612">出てくる役割: clerk / manager</text>
+  <text class="caption" x="24" y="612">出てくる役割: clerk / manager / sales</text>
   <text class="caption" x="24" y="648">`--role &lt;役割&gt;` を付けると、その役割で通れる道だけの図になる。</text>
 </svg>

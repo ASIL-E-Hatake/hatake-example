@@ -4,11 +4,11 @@
 > **やりとりをそのまま**書き出しています（手で直さない）。
 > 作り直し: `bash tools/run-tests.sh`
 
-- 実行日時: 2026-09-25T08:46:22.641Z
+- 実行日時: 2026-09-30T08:11:50.508Z
 - 対象: `http://localhost:3000/api`
 - 前提: `docker compose up` で DB が初期データの状態
 
-## まとめ（20 / 20 件）
+## まとめ（22 / 22 件）
 
 | 項番 | 内容 | 結果 | HTTP |
 |---|---|---|---|
@@ -32,6 +32,8 @@
 | A-18 | 参照されている部署は消せない（サーバも落ちない） | OK | 409 |
 | A-19 | 画面の定義を配っている | OK | 200 |
 | A-20 | API の形を定義から出せる | OK | 200 |
+| A-21 | viewer は社員を足せない | OK | 403 |
+| A-22 | 取引先は admin でも API から消せない | OK | 403 |
 
 ---
 
@@ -59,7 +61,7 @@ POST http://localhost:3000/api/auth/login
 ```json
 HTTP 200
 {
-  "token": "eyJzdWIiOiJociIsInJvbGVzIjpbImhyIl0sImV4cCI6MTc5MDM1NDc4MjY3NH0.qZjNlPlIJzozb2tjxC7q7lDFyix4rXsg07l5moOO2EI",
+  "token": "eyJzdWIiOiJociIsInJvbGVzIjpbImhyIl0sImV4cCI6MTc5MDc4NDcxMDU0MH0.IEciJhbHSrWDineY2KL17g4aVERHPgMGWBeoGJk8Plg",
   "user": {
     "userId": "hr",
     "displayName": "人事 花子",
@@ -146,7 +148,7 @@ HTTP 200
       "employmentStatus": "leave",
       "hireDate": "2012-04-01",
       "retireDate": null,
-      "updatedAt": "2026-09-25 08:45:43.619482+00",
+      "updatedAt": "2026-09-30 08:11:33.127874+00",
       "departmentName": "人事部"
     },
     {
@@ -160,7 +162,7 @@ HTTP 200
       "employmentStatus": "active",
       "hireDate": "2013-04-01",
       "retireDate": null,
-      "updatedAt": "2026-09-25 08:45:43.619482+00",
+      "updatedAt": "2026-09-30 08:11:33.127874+00",
       "departmentName": "購買部"
     }
   ],
@@ -197,7 +199,7 @@ HTTP 200
       "employmentStatus": "leave",
       "hireDate": "2012-04-01",
       "retireDate": null,
-      "updatedAt": "2026-09-25 08:45:43.619482+00",
+      "updatedAt": "2026-09-30 08:11:33.127874+00",
       "departmentName": "人事部"
     }
   ],
@@ -234,7 +236,7 @@ HTTP 200
       "employmentStatus": "leave",
       "hireDate": "2012-04-01",
       "retireDate": null,
-      "updatedAt": "2026-09-25 08:45:43.619482+00",
+      "updatedAt": "2026-09-30 08:11:33.127874+00",
       "departmentName": "人事部"
     },
     {
@@ -248,7 +250,7 @@ HTTP 200
       "employmentStatus": "active",
       "hireDate": "2024-04-01",
       "retireDate": null,
-      "updatedAt": "2026-09-25 08:45:43.619482+00",
+      "updatedAt": "2026-09-30 08:11:33.127874+00",
       "departmentName": "人事部"
     },
     {
@@ -261,8 +263,8 @@ HTTP 200
       "extension": "4024",
       "employmentStatus": "retired",
       "hireDate": "2022-04-01",
-      "retireDate": "2020-03-31",
-      "updatedAt": "2026-09-25 08:45:43.619482+00",
+      "retireDate": "2025-03-31",
+      "updatedAt": "2026-09-30 08:11:33.127874+00",
       "departmentName": "人事部"
     },
 …（長いので省略）
@@ -299,7 +301,7 @@ HTTP 200
       "closingDay": 31,
       "paymentSiteDays": 30,
       "tradeStatus": "suspended",
-      "updatedAt": "2026-09-25 08:45:43.626563+00"
+      "updatedAt": "2026-09-30 08:11:33.137343+00"
     },
     {
       "supplierCode": "S1008",
@@ -314,7 +316,7 @@ HTTP 200
       "closingDay": 31,
       "paymentSiteDays": 45,
       "tradeStatus": "active",
-      "updatedAt": "2026-09-25 08:45:43.626563+00"
+      "updatedAt": "2026-09-30 08:11:33.137343+00"
     },
     {
       "supplierCode": "S1009",
@@ -359,7 +361,7 @@ HTTP 200
       "employmentStatus": "active",
       "hireDate": "2017-04-01",
       "retireDate": null,
-      "updatedAt": "2026-09-25 08:45:43.619482+00",
+      "updatedAt": "2026-09-30 08:11:33.127874+00",
       "departmentName": "情報システム部"
     },
     {
@@ -373,7 +375,7 @@ HTTP 200
       "employmentStatus": "active",
       "hireDate": "2016-04-01",
       "retireDate": null,
-      "updatedAt": "2026-09-25 08:45:43.619482+00",
+      "updatedAt": "2026-09-30 08:11:33.127874+00",
       "departmentName": "営業2課"
     },
     {
@@ -387,7 +389,7 @@ HTTP 200
       "employmentStatus": "active",
       "hireDate": "2015-04-01",
       "retireDate": null,
-      "updatedAt": "2026-09-25 08:45:43.619482+00",
+      "updatedAt": "2026-09-30 08:11:33.127874+00",
       "departmentName": "営業1課"
     }
   
@@ -422,7 +424,7 @@ HTTP 200
       "employmentStatus": "leave",
       "hireDate": "2012-04-01",
       "retireDate": null,
-      "updatedAt": "2026-09-25 08:45:43.619482+00",
+      "updatedAt": "2026-09-30 08:11:33.127874+00",
       "departmentName": "人事部"
     }
   ],
@@ -459,7 +461,7 @@ HTTP 200
       "employmentStatus": "leave",
       "hireDate": "2012-04-01",
       "retireDate": null,
-      "updatedAt": "2026-09-25 08:45:43.619482+00",
+      "updatedAt": "2026-09-30 08:11:33.127874+00",
       "departmentName": "人事部"
     }
   ],
@@ -546,7 +548,7 @@ HTTP 400
 
 ### A-13 hr は取引先を直せない
 
-- **確かめたいこと**: 定義の `roles: [admin]`（CSV 出力）と同じ線を、書き込みにも引いた
+- **確かめたいこと**: 定義の取引先の新規登録が `roles: [admin]`（サーバは canRunActionIn で同じ宣言を読む）
 - **期待**: 403
 - **結果**: OK
 
@@ -753,7 +755,7 @@ PUT http://localhost:3000/api/employees/100030
   "employmentStatus": "active",
   "hireDate": "2013-04-01",
   "retireDate": null,
-  "updatedAt": "2026-09-25 08:45:43.619482+00",
+  "updatedAt": "2026-09-30 08:11:33.127874+00",
   "departmentName": "情報システム部"
 }
 ```
@@ -822,26 +824,29 @@ app:
   # 配りうる役割の語彙。ここに無い名前をどこかに書いたら「誰にも見えません」と言われる。
   roles: [admin, hr, viewer]
 
-  menu:
-    - { id: employees, label: 社員マスタ, icon: people, page: employee_master }
-    - { id: departments, label: 部署マスタ, icon: apartment, page: department_master }
-    - { id: suppliers, label: 取引先マスタ, icon: store, page: supplier_master }
-
-  pages:
-    # ------------------------------------------------------------------
-    # 社員マスタ（CRUD・権限・一括・CSV）
-    # ------------------------------------------------------------------
-    - type: crud
-      id: employee_master
-      title: 社員マスタ
-      repository: employeeRepository
-      key: employeeNo
-
-      search:
-        layout: { columns: 3 }
-        filters:
-          - { field: employeeNo, label: 社員番号, type: text, operator: equals }
-          - {
+  # 業務のコード表は**アプリに1回**書いて、使う所は名前で指す（`optionsOf`）。
+  # 0.9.20 までは同じ表を絞り込みと入力欄の2か所ずつに書いていた（片方だけ直すと、
+  # 一覧と入力で違う字が出る）。
+  vocabularies:
+    - name: employmentStatus
+      options:
+        - { value: active, label: 在籍 }
+        - { value: leave, label: 休職 }
+        - { value: retired, label: 退職 }
+    - name: supplierType
+      options:
+        - { value: corp, label: 法人 }
+        - { value: individual, label: 個人 }
+    - name: tradeStatus
+      options:
+        - { value: active, label: 取引中 }
+        - { value: suspended, label: 停止 }
+        - { value: closed, label: 終了 }
+    - name: closingDay
+      options:
+        - { value: 10, label: 10日 }
+        - { value: 15, label: 15日 }
+        - { va
 …（長いので省略）
 ```
 
@@ -914,4 +919,55 @@ HTTP 200
           },
       
 …（長いので省略）
+```
+
+### A-21 viewer は社員を足せない
+
+- **確かめたいこと**: 定義の社員の新規登録が `roles: [admin, hr]`。画面にボタンが出ないだけでなく、サーバも同じ宣言で止める（0.9.20 まではサーバに役割名を決め打ちしていた）
+- **期待**: 403
+- **結果**: OK
+
+**投げたもの**
+
+```http
+POST http://localhost:3000/api/employees
+
+{
+  "employeeNo": "999998",
+  "name": "試験",
+  "nameKana": "シケン",
+  "departmentCode": "JINJ",
+  "employmentStatus": "active",
+  "hireDate": "2020-04-01"
+}
+```
+
+**返ってきたもの**
+
+```json
+HTTP 403
+{
+  "message": "この操作は許可されていません"
+}
+```
+
+### A-22 取引先は admin でも API から消せない
+
+- **確かめたいこと**: 取引先の画面は削除を宣言していない（行に並べていない）。**画面に無いボタンは押せない**（canRunActionIn）
+- **期待**: 403
+- **結果**: OK
+
+**投げたもの**
+
+```http
+DELETE http://localhost:3000/api/suppliers/S1001
+```
+
+**返ってきたもの**
+
+```json
+HTTP 403
+{
+  "message": "この操作は許可されていません"
+}
 ```

@@ -8,8 +8,7 @@
   ],
   "plugins": [
     "archive",
-    "reprice",
-    "saveItem"
+    "reprice"
   ],
   "roles": [
     "admin",

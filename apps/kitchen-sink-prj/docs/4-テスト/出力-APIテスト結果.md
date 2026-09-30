@@ -4,13 +4,13 @@
 > **やりとりをそのまま**書き出しています（手で直さない）。
 > 作り直し: `bash tools/run-tests.sh`
 
-- 実行日時: 2026-09-29T01:30:55.751Z
-- 対象: `http://api:3000/api`
+- 実行日時: 2026-09-30T08:05:46.968Z
+- 対象: `http://localhost:3003/api`
 - 前提: `docker compose up` で DB が初期データの状態
 
-> **順番に意味があります。** A-07 と A-08 がデータを変えるので、最後の A-10 で初期状態に戻しています（次に回す人のため）。
+> **順番に意味があります。** A-07・A-08・A-11 がデータを変えるので、最後の A-12 で初期状態に戻しています（次に回す人のため）。A-10 は A-08 でしまった行が消えていることを見ます。
 
-## まとめ（10 / 10 件）
+## まとめ（12 / 12 件）
 
 | 項番 | 内容 | 結果 | HTTP |
 |---|---|---|---|
@@ -23,7 +23,9 @@
 | A-07 | 押す前に聞いた値が届く | OK | 200 |
 | A-08 | 一括は1件ずつ確定し、失敗した行だけ名指しで返す | OK | 200 |
 | A-09 | 持ち出しは admin だけ（役割はサーバでも見る） | OK | 200 |
-| A-10 | 初期状態に戻せる（何度回しても同じ結果になる） | OK | 200 |
+| A-10 | いつも掛ける条件はサーバが足す（しまったものは一覧に出ない） | OK | 200 |
+| A-11 | 読むだけの欄は受け取らない（写してきた子の名前） | OK | 200 |
+| A-12 | 初期状態に戻せる（何度回しても同じ結果になる） | OK | 200 |
 
 ---
 
@@ -38,7 +40,7 @@
 **投げたもの**
 
 ```http
-GET http://api:3000/api/definition.yaml
+GET http://localhost:3003/api/definition.yaml
 ```
 
 **返ってきたもの**
@@ -57,8 +59,8 @@ HTTP 200
 # どの画面かで原因が分かるようにするため。
 #
 #   combo_form    条件の組み合わせ（all / any / not）と既定値
-#   press_list    押す前に聞く・区切って実行・行の有効条件・別タブ・成功後に移動
-#   linked_master 選択肢の連動（親で絞る）とページ送りを切る
+#   press_list    押す前に聞く・区切って実行・行の有効条件・別タブ・成功後に移動・いつも掛ける条件
+#   linked_master 選択肢の連動（親で絞る）・名前を引く列・選んだ行から写す・検索欄の既定値・ページ送りを切る
 #   fold_detail   畳み込みの並べ替え・打ち切り・詳細のボタン
 #   steps_wizard  ウィザードのボタン
 #   sorted_report 帳票の降順
@@ -84,10 +86,7 @@ app:
     density: compact
     fontFamily: "Noto Sans JP"
     radius: 8
-    config: { note: 見た目の追加設定は Renderer にそのまま渡る }
-
-  menu:
-    - { id: comboForm,
+    config: { note: 見た目の追加設定は Renderer にそのまま渡る 
 …（長いので省略）
 ```
 
@@ -100,7 +99,7 @@ app:
 **投げたもの**
 
 ```http
-GET http://api:3000/api/items?itemCode=ITEM-001&pageSize=20
+GET http://localhost:3003/api/items?itemCode=ITEM-001&pageSize=20
 ```
 
 **返ってきたもの**
@@ -147,7 +146,7 @@ HTTP 200
 **投げたもの**
 
 ```http
-GET http://api:3000/api/items?itemName=%E7%B6%B2%E7%BE%85&pageSize=20
+GET http://localhost:3003/api/items?itemName=%E7%B6%B2%E7%BE%85&pageSize=20
 ```
 
 **返ってきたもの**
@@ -226,7 +225,7 @@ HTTP 200
 **投げたもの**
 
 ```http
-GET http://api:3000/api/children?groupCode=G1
+GET http://localhost:3003/api/children?groupCode=G1
 ```
 
 **返ってきたもの**
@@ -259,7 +258,7 @@ HTTP 200
 **投げたもの**
 
 ```http
-GET http://api:3000/api/lines?sortField=itemCode&sortAscending=false
+GET http://localhost:3003/api/lines?sortField=itemCode&sortAscending=false
 ```
 
 **返ってきたもの**
@@ -342,7 +341,7 @@ HTTP 200
 **投げたもの**
 
 ```http
-POST http://api:3000/api/items
+POST http://localhost:3003/api/items
 
 {
   "itemCode": "",
@@ -379,7 +378,7 @@ HTTP 400
 **投げたもの**
 
 ```http
-POST http://api:3000/api/bulk/reprice
+POST http://localhost:3003/api/bulk/reprice
 
 {
   "keys": [
@@ -411,7 +410,7 @@ HTTP 200
 **投げたもの**
 
 ```http
-POST http://api:3000/api/bulk/archive
+POST http://localhost:3003/api/bulk/archive
 
 {
   "keys": [
@@ -452,7 +451,7 @@ HTTP 200
 **投げたもの**
 
 ```http
-GET http://api:3000/api/export-allowed
+GET http://localhost:3003/api/export-allowed
 ```
 
 **返ってきたもの**
@@ -464,7 +463,136 @@ HTTP 200
 }
 ```
 
-### A-10 初期状態に戻せる（何度回しても同じ結果になる）
+### A-10 いつも掛ける条件はサーバが足す（しまったものは一覧に出ない）
+
+- **確かめたいこと**: `search.fixed` は画面に出ない＝**画面からは外せない**。足すのはサーバの buildQuery
+- **期待**: A-08 でしまった2件を除いた10件
+- **結果**: OK
+
+**投げたもの**
+
+```http
+GET http://localhost:3003/api/items?pageSize=20
+```
+
+**返ってきたもの**
+
+```json
+HTTP 200
+{
+  "items": [
+    {
+      "itemCode": "ITEM-001",
+      "itemName": "網羅の 1 件目",
+      "kind": "special",
+      "amount": 777,
+      "unitPrice": 40,
+      "approved": false,
+      "groupCode": "G2",
+      "childCode": "C21",
+      "lines": [
+        {
+          "lineName": "明細 1-1",
+          "lineAmount": 101
+        },
+        {
+          "lineName": "明細 1-2",
+          "lineAmount": 201
+        },
+        {
+          "lineName": "明細 1-3",
+          "lineAmount": 301
+        }
+      ]
+    },
+    {
+      "itemCode": "ITEM-002",
+      "itemName": "網羅の 2 件目",
+      "kind": "trial",
+      "amount": 1000,
+      "unitPrice": 240,
+      "approved": true,
+      "groupCode": "G1",
+      "childCode": "C11",
+      "lines": [
+        {
+          "lineName": "明細 2-1",
+          "lineAmount": 102
+        },
+        {
+          "lineName": "明細 2-2",
+          "lineAmount": 202
+        },
+        {
+          "lineName": "明細 2-3",
+          "lineAmount": 302
+        },
+        {
+          "lineName": "明細 2-4",
+          "lineAmount": 402
+        }
+      ]
+    },
+    {
+      "itemCode": "ITEM-004",
+      "itemName": "網羅の 4 件目",
+      "kind": "special",
+      "amount": 2000,
+      "unitPrice": 480
+…（長いので省略）
+```
+
+### A-11 読むだけの欄は受け取らない（写してきた子の名前）
+
+- **確かめたいこと**: `copy` で入れた値は画面の都合。`acceptRecordIn` は `readOnly` の欄を捨てる
+- **期待**: 名前は変わり、子の名前は保存されない
+- **結果**: OK
+
+**投げたもの**
+
+```http
+PUT http://localhost:3003/api/items/ITEM-001
+
+{
+  "itemCode": "ITEM-001",
+  "itemName": "改名",
+  "groupCode": "G2",
+  "childCode": "C22",
+  "childLabel": "勝手に"
+}
+```
+
+**返ってきたもの**
+
+```json
+HTTP 200
+{
+  "itemCode": "ITEM-001",
+  "itemName": "改名",
+  "kind": "special",
+  "amount": 777,
+  "unitPrice": 40,
+  "approved": false,
+  "groupCode": "G2",
+  "childCode": "C22",
+  "lines": [
+    {
+      "lineName": "明細 1-1",
+      "lineAmount": 101
+    },
+    {
+      "lineName": "明細 1-2",
+      "lineAmount": 201
+    },
+    {
+      "lineName": "明細 1-3",
+      "lineAmount": 301
+    }
+  ]
+}
+```
+
+### A-12 初期状態に戻せる（何度回しても同じ結果になる）
 
 - **確かめたいこと**: 証跡は「何度回しても同じ」でないと使えない
 - **期待**: 200・12件に戻る
@@ -473,7 +601,7 @@ HTTP 200
 **投げたもの**
 
 ```http
-POST http://api:3000/api/reset
+POST http://localhost:3003/api/reset
 ```
 
 **返ってきたもの**

@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
  * <ul>
  *   <li>検索できる条件 … {@link QueryBuilder}（<b>書いていない項目は無視</b>＝
  *       任意の項目で検索されない）</li>
- *   <li>返さない列 … {@code table.columns[].roles}（{@link Authz#hideColumns}）</li>
+ *   <li>返さない項目 … 列と入力欄の {@code roles}（{@link Authz#visible}＝ServerAccess）</li>
  * </ul>
  *
  * <p>返す形は <b>{@code hatake_http}（Flutter の REST アダプタ）の契約</b>に合わせる:
@@ -73,7 +73,7 @@ public class OrderQueryController {
                 "v_orders", definition.page("order_search").search(), spec, extraWhere, extraParams);
         List<Map<String, Object>> rows = db.query(built.rows(), built.rowParams());
         return Map.of(
-                "items", Authz.hideColumns(definition.columnRoles("order_search"), rows, user),
+                "items", Authz.visible(definition, "order_search", rows, user),
                 "totalCount", db.count(built.count(), built.countParams()));
     }
 
@@ -88,8 +88,11 @@ public class OrderQueryController {
                 && !officeOf(user).equals(String.valueOf(record.get("officeCode")))) {
             throw new Errors.Forbidden("ほかの拠点の受注は見られません");
         }
-        return Authz.hideColumns(definition.columnRoles("order_search"), List.of(record), user)
-                .get(0);
+        // 1件は入力画面（修正）と詳細画面の両方が読む。見せない項目は**一覧と同じ線**で
+        // 落とす（order_search）。詳細画面で営業に隠している「最終更新」は、入力画面が
+        // 送り返す楽観ロックの合図なので落とさない（落とすと営業の更新だけ黙って
+        // 「後勝ち」になる）。詳細画面の roles は見せ方として効く。
+        return Authz.visible(definition, "order_search", List.of(record), user).get(0);
     }
 
     /** 拠点はトークンには入れていないので、その都度引く（役割だけが合言葉）。 */

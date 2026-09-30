@@ -69,24 +69,3 @@ export const bulkAction =
       }),
     );
   };
-
-/** `plugin: saveItem` の中身（1件の登録・更新）。 */
-export const saveItem =
-  (baseUrl: string): ActionHandler =>
-  async (context: ActionContext) => {
-    const record = context.record ?? {};
-    const key = record.itemCode;
-    const editing = key !== undefined && key !== null && String(key) !== "";
-    const response = await fetch(
-      editing ? `${baseUrl}/items/${encodeURIComponent(String(key))}` : `${baseUrl}/items`,
-      {
-        method: editing ? "PUT" : "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(record),
-      },
-    );
-    if (!response.ok) {
-      const body = (await response.json().catch(() => ({}))) as Record<string, unknown>;
-      throw new Error(String(body.message ?? "保存できませんでした"));
-    }
-  };

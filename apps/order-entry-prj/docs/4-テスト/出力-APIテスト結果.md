@@ -4,13 +4,13 @@
 > **やりとりをそのまま**書き出しています（手で直さない）。
 > 作り直し: `bash tools/run-tests.sh`
 
-- 実行日時: 2026-09-25T08:48:55.819Z
+- 実行日時: 2026-09-30T08:16:31.249Z
 - 対象: `http://localhost:3001/api`
 - 前提: `docker compose up` で DB が初期データの状態
 
 > **順番に意味があります。** A-16 で作った受注を A-18・A-20・A-23・A-24 が使い回すので、1件ずつ抜き出して回すと落ちます（回す前にデータを初期状態に戻すのはそのため）。
 
-## まとめ（28 / 28 件）
+## まとめ（29 / 29 件）
 
 | 項番 | 内容 | 結果 | HTTP |
 |---|---|---|---|
@@ -42,6 +42,7 @@
 | A-26 | 営業は帳票の口を叩けない | OK | 403 |
 | A-27 | 出荷指示を投げると状態が出荷済になる | OK | 200 |
 | A-28 | 画面の定義を配っている | OK | 200 |
+| A-29 | 管理者も受注を入力できる（入れる人は定義の画面の roles） | OK | 201 |
 
 ---
 
@@ -69,14 +70,14 @@ POST http://localhost:3001/api/auth/login
 ```json
 HTTP 200
 {
-  "token": "dGFuYWthH-eUsOS4rSDlhKrlrZAfY2xlcmsfMTc5MDM1NDkzNQ.lybgVXGECpe_5eprF_lLL8hT2htTH6_xNzAJVZuAnz0",
+  "token": "dGFuYWthH-eUsOS4rSDlhKrlrZAfY2xlcmsfMTc5MDc4NDk5MQ.BKk0s3NvlAP8pt74ZyN1xcrEt_qeRPGgOXsBhCaVRnc",
   "user": {
-    "userId": "tanaka",
+    "officeCode": "TKY",
+    "name": "田中 優子",
     "roles": [
       "clerk"
     ],
-    "name": "田中 優子",
-    "officeCode": "TKY"
+    "userId": "tanaka"
   }
 }
 ```
@@ -862,8 +863,8 @@ HTTP 201
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "tanaka",
-  "createdAt": "2026-09-25 08:48:56.042654+00",
-  "updatedAt": "2026-09-25 08:48:56.042654+00",
+  "createdAt": "2026-09-30 08:16:31.46314+00",
+  "updatedAt": "2026-09-30 08:16:31.46314+00",
   "customerName": "株式会社あおぞら商事",
   "lines": [
     {
@@ -893,7 +894,7 @@ HTTP 201
       "productCode": "P006",
       "productName": "ミネラルウォーター（24本）",
       "quantity": 2,
-
+  
 …（長いので省略）
 ```
 
@@ -949,8 +950,8 @@ HTTP 201
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "tanaka",
-  "createdAt": "2026-09-25 08:48:56.082614+00",
-  "updatedAt": "2026-09-25 08:48:56.082614+00",
+  "createdAt": "2026-09-30 08:16:31.516468+00",
+  "updatedAt": "2026-09-30 08:16:31.516468+00",
   "customerName": "みどり物産株式会社",
   "lines": [
     {
@@ -1180,6 +1181,7 @@ POST http://localhost:3001/api/bulk/cancel
 ```json
 HTTP 200
 {
+  "succeeded": 1,
   "rejected": [
     {
       "key": "SO2026070001",
@@ -1193,8 +1195,7 @@ HTTP 200
       "key": "NOPE",
       "reason": "見つかりません"
     }
-  ],
-  "succeeded": 1
+  ]
 }
 ```
 
@@ -1229,8 +1230,8 @@ HTTP 200
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "tanaka",
-  "createdAt": "2026-09-25 08:48:56.042654+00",
-  "updatedAt": "2026-09-25 08:48:56.155614+00",
+  "createdAt": "2026-09-30 08:16:31.46314+00",
+  "updatedAt": "2026-09-30 08:16:31.596769+00",
   "customerName": "株式会社あおぞら商事",
   "lines": [
     {
@@ -1259,7 +1260,7 @@ HTTP 200
       "customerName": "株式会社あおぞら商事",
       "productCode": "P006",
       "productName": "ミネラルウォーター（24本）",
-      "qu
+      "qua
 …（長いので省略）
 ```
 
@@ -1383,7 +1384,7 @@ HTTP 200
   "lineCount": 2,
   "createdBy": "sato",
   "createdAt": "2026-09-01 00:00:00+00",
-  "updatedAt": "2026-09-25 08:48:56.198923+00",
+  "updatedAt": "2026-09-30 08:16:31.652239+00",
   "customerName": "南商店",
   "lines": [
     {
@@ -1469,5 +1470,90 @@ app:
     - group: 管理
       icon: insights
       role
+…（長いので省略）
+```
+
+### A-29 管理者も受注を入力できる（入れる人は定義の画面の roles）
+
+- **確かめたいこと**: 要件では管理者は「全部できる」。0.9.20 まではサーバに sales と clerk を決め打ちしていて、画面は開けるのに保存で 403 になっていた
+- **期待**: 201
+- **結果**: OK
+
+**投げたもの**
+
+```http
+POST http://localhost:3001/api/orders
+
+{
+  "customerCode": "C003",
+  "orderDate": "2026-09-15",
+  "dueDate": "2026-09-25",
+  "salesPersonName": "田中 優子",
+  "lines": [
+    {
+      "productCode": "P001",
+      "quantity": 10,
+      "unitPrice": 480
+    },
+    {
+      "productCode": "P006",
+      "quantity": 2,
+      "unitPrice": 1580
+    }
+  ]
+}
+```
+
+**返ってきたもの**
+
+```json
+HTTP 201
+{
+  "orderNo": "SO2026090103",
+  "customerCode": "C003",
+  "orderDate": "2026-09-15",
+  "dueDate": "2026-09-25",
+  "orderStatus": "draft",
+  "salesPersonName": "田中 優子",
+  "deliveryPlace": null,
+  "note": null,
+  "officeCode": "TKY",
+  "subtotalAmount": 7960,
+  "taxAmount": 732,
+  "totalAmount": 8692,
+  "lineCount": 2,
+  "createdBy": "yamada",
+  "createdAt": "2026-09-30 08:16:31.675856+00",
+  "updatedAt": "2026-09-30 08:16:31.675856+00",
+  "customerName": "北山フーズ株式会社",
+  "lines": [
+    {
+      "orderNo": "SO2026090103",
+      "lineNo": 1,
+      "orderDate": "2026-09-15",
+      "dueDate": "2026-09-25",
+      "orderStatus": "draft",
+      "customerCode": "C003",
+      "customerName": "北山フーズ株式会社",
+      "productCode": "P001",
+      "productName": "A4コピー用紙（500枚）",
+      "quantity": 10,
+      "unitPrice": 480,
+      "taxRate": 0.1,
+      "amount": 4800,
+      "cancelled": false
+    },
+    {
+      "orderNo": "SO2026090103",
+      "lineNo": 2,
+      "orderDate": "2026-09-15",
+      "dueDate": "2026-09-25",
+      "orderStatus": "draft",
+      "customerCode": "C003",
+      "customerName": "北山フーズ株式会社",
+      "productCode": "P006",
+      "productName": "ミネラルウォーター（24本）",
+      "quantity": 2,
+   
 …（長いので省略）
 ```

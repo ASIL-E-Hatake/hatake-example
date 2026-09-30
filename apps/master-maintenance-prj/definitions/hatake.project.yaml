@@ -147,3 +147,6 @@ questions:
     - id: authz-server
       why: 役割で隠したものはサーバでも止める（画面の roles は親切であって守りではない）
       date: "2026-09-10"
+    - id: state-owner
+      why: "状態で出し分けているのはキーの readOnlyWhen（mode が edit のとき）だけで、業務の状態ではない（新規か編集か）。社員の在籍区分は画面の入力と一括の「退職にする」で変わる"
+      date: "2026-10-01"

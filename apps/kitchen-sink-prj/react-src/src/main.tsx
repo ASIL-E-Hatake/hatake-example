@@ -24,7 +24,7 @@ import { createRoot } from "react-dom/client";
 
 import "@hatake-fw/runtime/hatake.css";
 
-import { bulkAction, newCounter, saveItem } from "./actions.js";
+import { bulkAction, newCounter } from "./actions.js";
 import { downloadCsv, showPrint } from "./sinks.js";
 
 const BASE = "/api";
@@ -101,7 +101,6 @@ async function start(): Promise<void> {
 
     // 定義が `plugin:` と言っている中身。
     actions: new ActionRegistry({
-      saveItem: saveItem(BASE),
       reprice: bulkAction(BASE, "reprice", counter),
       archive: bulkAction(BASE, "archive", counter),
     }),

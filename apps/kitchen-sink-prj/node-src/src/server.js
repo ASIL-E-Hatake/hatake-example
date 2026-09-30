@@ -13,7 +13,8 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import express from 'express';
-import { buildQuery, FormValidator, parseAppSource } from '@hatake-fw/api';
+import { parse as parseYaml } from 'yaml';
+import { acceptRecordIn, buildQuery, FormValidator, parseAppSource } from '@hatake-fw/api';
 
 import { children, freshItems, groups, linesOf } from './data.js';
 
@@ -22,6 +23,8 @@ const SOURCE = join(HERE, '..', '..', 'definitions', 'app.yaml');
 const source = readFileSync(SOURCE, 'utf8');
 const parsed = parseAppSource(source);
 const pages = new Map(parsed.pages.map((page) => [page.id, page]));
+// 素の定義（解析前）。受け取る項目を決める `acceptRecordIn` はこちらを読む。
+const document = parseYaml(source);
 const validator = new FormValidator();
 
 /** 毎回まっさらから始める（証跡が撮り直せる）。 */
@@ -110,6 +113,8 @@ function filtered(pageId, query) {
       if (operator === 'startsWith') return String(at ?? '').startsWith(String(value));
       if (operator === 'contains') return String(at ?? '').includes(String(value));
       if (operator === 'in') return [].concat(value).map(String).includes(String(at));
+      // press_list の `search.fixed`（しまったものは出さない）がこれで届く。
+      if (operator === 'notEquals') return String(at) !== String(value);
       if (operator === 'between') {
         const [from, to] = value;
         return Number(at) >= Number(from) && Number(at) <= Number(to);
@@ -146,25 +151,38 @@ app.get('/api/items/:key', (request, response) => {
   response.json(found);
 });
 
-/** 画面と**同じ定義**で検証する（網羅アプリでもここは省かない）。 */
-function accept(pageId, body, mode) {
-  const page = pages.get(pageId);
-  const form = page.kind === 'wizard'
-    ? { sections: page.steps.map((step) => ({ title: step.title, fields: step.fields })) }
-    : page.form;
-  const allowed = new Set(
-    form.sections.flatMap((section) => section.fields).map((one) => one.field),
-  );
-  const record = {};
-  for (const [key, value] of Object.entries(body ?? {})) {
-    if (allowed.has(key)) record[key] = value === '' ? null : value;
+const formOf = (page) => (page.kind === 'wizard'
+  ? { sections: page.steps.map((step) => ({ title: step.title, fields: step.fields })) }
+  : page.form);
+
+/**
+ * 画面と**同じ定義**で受け取って検証する（網羅アプリでもここは省かない）。
+ *
+ * 書き込みの道も Repository ごとで、どの画面から来たかは届かない。0.9.22 までは
+ * いつも combo_form の入力枠で受けていたので、選択肢の連動の画面（linked_master）
+ * から保存すると、名前もグループも**黙って捨てていた**。いまは**送ってきた項目を
+ * いちばん多く受け取れる画面**で受ける（同点なら定義の上のほう）。
+ *
+ * 受け取る項目は `acceptRecordIn`＝入力欄に在って・その人に見えて・読むだけでない
+ * もの（写してきた「子の名前」のような読むだけの欄は受け取らない）。
+ */
+function accept(body, mode, roles) {
+  let best;
+  for (const [id, page] of pages) {
+    if (page.repository !== 'itemRepository' || formOf(page) === undefined) continue;
+    const { accepted } = acceptRecordIn(document, id, body ?? {}, roles);
+    const hit = Object.keys(accepted).length;
+    if (best === undefined || hit > best.hit) best = { page, accepted, hit };
   }
-  const checked = validator.validate(form, record, mode);
+  const record = Object.fromEntries(
+    Object.entries(best.accepted).map(([key, value]) => [key, value === '' ? null : value]),
+  );
+  const checked = validator.validate(formOf(best.page), record, mode);
   return { record, checked };
 }
 
 app.post('/api/items', (request, response) => {
-  const { record, checked } = accept('combo_form', request.body, 'create');
+  const { record, checked } = accept(request.body, 'create', rolesOf(request));
   if (!checked.valid) return response.status(400).json({ valid: false, errors: checked.errors });
   const made = { lines: [], ...record };
   items = [...items, made];
@@ -174,7 +192,7 @@ app.post('/api/items', (request, response) => {
 app.put('/api/items/:key', (request, response) => {
   const at = items.findIndex((one) => one.itemCode === request.params.key);
   if (at < 0) return response.status(404).json({ message: '見つかりません' });
-  const { record, checked } = accept('combo_form', request.body, 'edit');
+  const { record, checked } = accept(request.body, 'edit', rolesOf(request));
   if (!checked.valid) return response.status(400).json({ valid: false, errors: checked.errors });
   items[at] = { ...items[at], ...record };
   response.json(items[at]);

@@ -5,7 +5,7 @@
 //
 // 定義に**書けない**もの（この案件で外に置いたもの）はここが持つ:
 //   ・ログインと資格の確認     … routes/auth.js
-//   ・役割で本当に止める       … authz.js（画面の roles は見せ方だけ）
+//   ・役割で本当に止める       … authz.js（何を誰に許すかは定義。ここはそれを読むだけ）
 //   ・監査（誰が・いつ・何を）  … audit.js
 //   ・同時更新の弾き方         … routes/masters.js（更新日時で見る）
 //   ・一括の失敗のあと始末      … routes/bulk.js（1件ずつ確定・失敗した行を返す）
@@ -24,17 +24,15 @@ server.use(express.json());
 
 // 画面は別の口（nginx）から配るので、ここは API だけ。
 server.use("/api/auth", authRoutes());
+// 直せる役割は**定義に書いてある**（新規登録・編集・削除の宣言の roles）。0.9.20 までは
+// ここに `write: ["admin", "hr"]` と決め打ちしていて、画面では誰にでも編集が出ていた。
 server.use("/api/employees", masterRoutes({
   pageId: "employee_master", table: "employees", readFrom: "employees_view",
-  write: ["admin", "hr"],
 }));
 server.use("/api/departments", masterRoutes({
   pageId: "department_master", table: "departments", readFrom: "departments_view",
-  write: ["admin", "hr"],
 }));
-server.use("/api/suppliers", masterRoutes({
-  pageId: "supplier_master", table: "suppliers", write: ["admin"],
-}));
+server.use("/api/suppliers", masterRoutes({ pageId: "supplier_master", table: "suppliers" }));
 server.use("/api/bulk", bulkRoutes());
 
 // **画面の定義をそのまま配る。**
