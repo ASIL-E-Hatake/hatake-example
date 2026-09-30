@@ -9,10 +9,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@hatake-fw/api": "https://github.com/ASIL-E-Hatake/hatake/releases/download/v0.9.19/hatake-fw-api-0.9.19.tgz",
-    "@hatake-fw/http": "https://github.com/ASIL-E-Hatake/hatake/releases/download/v0.9.19/hatake-fw-http-0.9.19.tgz",
-    "@hatake-fw/runtime": "https://github.com/ASIL-E-Hatake/hatake/releases/download/v0.9.19/hatake-fw-runtime-0.9.19.tgz",
-    "@hatake-fw/vue3": "https://github.com/ASIL-E-Hatake/hatake/releases/download/v0.9.19/hatake-fw-vue3-0.9.19.tgz",
+    "@hatake-fw/api": "https://github.com/ASIL-E-Hatake/hatake/releases/download/v0.9.20/hatake-fw-api-0.9.20.tgz",
+    "@hatake-fw/http": "https://github.com/ASIL-E-Hatake/hatake/releases/download/v0.9.20/hatake-fw-http-0.9.20.tgz",
+    "@hatake-fw/runtime": "https://github.com/ASIL-E-Hatake/hatake/releases/download/v0.9.20/hatake-fw-runtime-0.9.20.tgz",
+    "@hatake-fw/vue3": "https://github.com/ASIL-E-Hatake/hatake/releases/download/v0.9.20/hatake-fw-vue3-0.9.20.tgz",
     "vue": "^3.5.43"
   },
   "devDependencies": {
