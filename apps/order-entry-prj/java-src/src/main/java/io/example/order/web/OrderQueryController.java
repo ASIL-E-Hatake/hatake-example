@@ -51,8 +51,14 @@ public class OrderQueryController {
     public Map<String, Object> list(
             HttpServletRequest request, @RequestParam Map<String, String> params) {
         User user = sessions.require(request);
+        // 並べ替えは**定義に書いてある名前だけ**。表を渡すと、絞り込みに無くても
+        // `sortable: true` と書いた列（顧客名・納期）で並べられる（0.9.19 から）。
+        // 渡さないと、その列は押せるのに並ばない。
         QuerySpec spec = QueryBuilder.build(
-                definition.page("order_search").search(), asQuery(request, params));
+                definition.page("order_search").search(),
+                asQuery(request, params),
+                50,
+                definition.page("order_search").table());
 
         // **定義の外から足す条件**。営業は自分の拠点のぶんだけ（前書きの決めごと）。
         // 画面にはこの条件が出てこない＝画面で隠すのではなく、**そもそも来ない**。

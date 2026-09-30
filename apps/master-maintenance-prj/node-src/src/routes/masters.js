@@ -108,8 +108,12 @@ export function masterRoutes({ pageId, table, readFrom = table, write }) {
   router.use(requireLogin);
 
   // 一覧（検索）。**条件は定義に書いてあるものだけ**通る。
+  //
+  // 並べ替えも**定義に書いてある名前だけ**。`table` を渡すと、絞り込みに無くても
+  // 表の列で `sortable: true` と書いた項目で並べられる（0.9.19 から）。渡さないと
+  // 「押せるのに並ばない」になる（画面は出る・エラーも出ない）。
   router.get("/", wrap(async (req, res) => {
-    const spec = buildQuery(page.search, normalize(req.query));
+    const spec = buildQuery(page.search, normalize(req.query), { table: page.table });
     const { sql, countSql, params, countParams } = toSql(readFrom, spec);
     const [rows, counted] = await Promise.all([
       query(sql, params),

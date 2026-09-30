@@ -483,11 +483,10 @@ app:
       search:
         filters:
           - { field: groupCode, label: グループ, type: text, operator: equals }
-          # **並べ替えたい項目は、絞り込みにも宣言が要る。**
-          # `buildQuery` は宣言された項目でしか並べ替えを許さない（共有フィクスチャが
-          # 固定している安全側の決まり）。ここに書かないと、下の表の `sort` は
-          # **黙って効かない**（画面は出る・エラーも出ない）。
-          - { field: unitPrice, label: 原価（以上）, type: number, operator: gte }
+          # 下の表のカードの `sort: { field: unitPrice }` は、**サーバが `buildQuery` に
+          # 並べ替えてよい名前を渡す**ことで効く（0.9.19 から）。前は絞り込みにも
+          # `unitPrice` を書かないと黙って効かなかったので、要りもしない「原価（以上）」を
+          # 置いていた。
 
       items:
         # 数（既定は件数）。
