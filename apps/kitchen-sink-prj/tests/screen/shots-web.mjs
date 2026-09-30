@@ -70,7 +70,7 @@ const CASES = [
     id: "02", pageId: "press_list", role: "tester", file: "02-押す前に聞く.png",
     title: "押す前に聞く・区切って実行・行の有効条件",
     why: "`actions:` が3スコープとも描かれているか（0.9.19 で入った所）",
-    expect: "一括が2つ出ていて、**1行も選んでいないので押せない**。行の「詳細」は試用の行だけ灰色。左端に選ぶ列が在る",
+    expect: "題の右に一括が2つ出ていて、**1行も選んでいないので押せない**（札に「（行を選んでください）」）。行の「詳細」は試用の行だけ灰色。左端に選ぶ列が在る。種別は札で出る",
     go: async (page) => press(page, "menu:pressList"),
   },
   {
@@ -154,7 +154,7 @@ const CASES = [
     id: "10", pageId: "role_crud", role: "admin", file: "10-見せる相手で変わる-admin.png",
     title: "見せる相手で変わる（admin）",
     why: "列・ボタン・項目の roles",
-    expect: "「原価」の列が出ている。「CSV 出力」が出ている",
+    expect: "「原価」の列が出ている。「CSV 出力」が出ている。行の「編集」「削除」は絵のボタン（`rowActions` に書いたから出ている）",
     go: async (page) => press(page, "menu:roleCrud"),
   },
   {
@@ -168,7 +168,7 @@ const CASES = [
     id: "12", pageId: "card_board", role: "admin", file: "12-カードの盛り合わせ.png",
     title: "カードの盛り合わせ（数・図・表）",
     why: "dashboard のカード3種と span、カードごとの roles・固定条件",
-    expect: "件数・原価の合計・G1 だけ・平均原価の4枚と、図と表。admin なので「平均原価」が出ている",
+    expect: "1段目に件数・原価の合計・G1 だけ・平均原価の4枚（`layout.columns: 4`）、2段目に棒グラフと表（`span: 2`）。金額は ¥ 付き。admin なので「平均原価」が出ている",
     go: async (page) => press(page, "menu:cardBoard"),
   },
 ];

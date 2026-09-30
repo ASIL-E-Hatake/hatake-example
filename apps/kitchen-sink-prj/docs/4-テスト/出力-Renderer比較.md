@@ -8,7 +8,7 @@
 > 「違う」になるし、中身が違っても見た目が似ていれば気づけない）。この3つは
 > **契約**なので、揃っていなければ載せ替えた案件が黙って壊れます。
 
-- 実行日時: 2026-09-29T07:19:15.967Z
+- 実行日時: 2026-09-30T00:31:14.068Z
 - Vue: `http://web-vue:80`
 - React: `http://web-react:80`
 
@@ -16,15 +16,15 @@
 
 | 画面（役割） | 印 | クラス名 | 字数 | 突き合わせ |
 |---|---|---|---|---|
-| combo_form（tester） | 20 | 19 | 58 | 揃っている |
-| press_list（tester） | 53 | 24 | 436 | 揃っている |
-| linked_master（tester） | 62 | 23 | 418 | 揃っている |
-| steps_wizard（tester） | 20 | 23 | 69 | 揃っている |
-| role_crud（admin） | 42 | 24 | 206 | 揃っている |
-| role_crud（tester） | 39 | 23 | 172 | 揃っている |
-| card_board（admin） | 27 | 25 | 633 | 揃っている |
-| fold_detail（tester） | 25 | 20 | 131 | 揃っている |
-| sorted_report（admin） | 24 | 24 | 492 | 揃っている |
-| sorted_report（tester） | 21 | 23 | 482 | 揃っている |
+| combo_form（tester） | 23 | 31 | 85 | 揃っている |
+| press_list（tester） | 56 | 36 | 467 | 揃っている |
+| linked_master（tester） | 64 | 33 | 350 | 揃っている |
+| steps_wizard（tester） | 23 | 34 | 84 | 揃っている |
+| role_crud（admin） | 44 | 34 | 172 | 揃っている |
+| role_crud（tester） | 41 | 33 | 138 | 揃っている |
+| card_board（admin） | 31 | 38 | 238 | 揃っている |
+| fold_detail（tester） | 28 | 32 | 148 | 揃っている |
+| sorted_report（admin） | 27 | 35 | 490 | 揃っている |
+| sorted_report（tester） | 24 | 34 | 480 | 揃っている |
 
 **どの画面も、印もクラス名も字も一致しました。**
