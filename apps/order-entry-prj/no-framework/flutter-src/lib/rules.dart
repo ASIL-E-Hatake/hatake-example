@@ -19,6 +19,7 @@ class OrderRules {
 
   static const int maxSalesPersonName = 20;
   static const int maxDeliveryPlace = 60;
+  static const int maxCustomerOrderNo = 20;
   static const int maxNote = 200;
   static const int minQuantity = 1;
   static const int maxQuantity = 9999;
@@ -30,6 +31,7 @@ class OrderRules {
     required String? dueDate,
     required String? salesPersonName,
     required String? deliveryPlace,
+    required String? customerOrderNo,
     required String? note,
   }) {
     final errors = <String, String>{};
@@ -44,12 +46,15 @@ class OrderRules {
     if (!_blank(deliveryPlace) && deliveryPlace!.length > maxDeliveryPlace) {
       errors['deliveryPlace'] = '$maxDeliveryPlace文字以内で入力してください';
     }
+    if (!_blank(customerOrderNo) && customerOrderNo!.length > maxCustomerOrderNo) {
+      errors['customerOrderNo'] = '$maxCustomerOrderNo文字以内で入力してください';
+    }
     if (!_blank(note) && note!.length > maxNote) {
       errors['note'] = '$maxNote文字以内で入力してください';
     }
-    // 項目をまたぐ規則（納期 ≧ 受注日）。どちらも `yyyy-MM-dd` なので字のまま比べられる。
-    if (!_blank(orderDate) && !_blank(dueDate) && dueDate!.compareTo(orderDate!) < 0) {
-      errors['dueDate'] = '納期は受注日以降にしてください';
+    // 項目をまたぐ規則（納期 ＞ 受注日）。どちらも `yyyy-MM-dd` なので字のまま比べられる。
+    if (!_blank(orderDate) && !_blank(dueDate) && dueDate!.compareTo(orderDate!) <= 0) {
+      errors['dueDate'] = '納期は受注日の翌日以降にしてください';
     }
     return errors;
   }

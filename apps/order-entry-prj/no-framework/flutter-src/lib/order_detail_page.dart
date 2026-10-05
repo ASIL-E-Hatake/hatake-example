@@ -87,6 +87,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             _row('受注状態', orderStatusLabel(order['orderStatus'])),
             _row('担当', order['salesPersonName']),
             _row('納入先', order['deliveryPlace']),
+            _row('客先注文番号', order['customerOrderNo']),
             _row('備考', order['note']),
           ]),
           const SizedBox(height: 16),

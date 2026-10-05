@@ -69,6 +69,8 @@ app:
             optionsOf: orderStatus
           # 範囲で絞る（いくら以上 いくら以下）。
           - { field: totalAmount, label: 合計, type: number, operator: between }
+          # 客先の書類から引く（頭だけ分かっていれば探せる）。
+          - { field: customerOrderNo, label: 客先注文番号, type: text, operator: startsWith }
 
       table:
         pagination: { pageSize: 50 }
@@ -76,6 +78,7 @@ app:
         columns:
           - { field: orderNo, label: 受注番号, width: 125, sortable: true }
           - { field: customerName, label: 取引先, sortable: true }
+          - { field: customerOrderNo, label: 客先注文番号, width: 120 }
           - { field: orderDate, label: 受注日, type: date, width: 100, sortable: true }
           - { field: dueDate, label: 納期, type: date, width: 100, sortable: true }
           - { field: orderStatus, label: 受注状態, type: badge, width: 85, optionsOf: orderStatus }
@@ -96,8 +99,9 @@ app:
           plugin: bulkCancel
           label: まとめて取り消す
           scope: selection
-          # 取り消せるのは営業事務だけ（営業は自分の受注を直すところまで）。
-          roles: [clerk]
+          # 取り消せるのは営業事務と管理者（営業は自分の受注を直すところまで）。
+          # 1件の取消（DELETE）もサーバが同じこの1行を読む（ServerAccess）。
+          roles: [clerk, manager]
           confirm:
             title: 受注の取消
             message: 選んだ {count} 件を取消にします。よろしいですか？
@@ -144,9 +148,11 @@ app:
               type: date
               required: true
               validators:
-                - { type: compare, field: orderDate, operator: gte, message: 納期は受注日以降にしてください }
+                # 当日納品はやめた（翌日以降）。画面もサーバもこの1行を読む。
+                - { type: compare, field: orderDate, operator: gt, message: 納期は受注日の翌日以降にしてください }
             - { field: salesPersonName, label: 担当, type: text, required: true, validators: [{ type: maxLength, value: 20 }] }
             - { field: deliveryPlace, label: 納入先, type: text, validators: [{ type: maxLength, value: 60 }] }
+            - { field: customerOrderNo, label: 客先注文番号, type: text, validators: [{ type: maxLength, value: 20 }] }
             - { field: note, label: 備考, type: textarea, validators: [{ type: maxLength, value: 200 }] }
 
         # 見出しは付けない: subTable 自身の label がグリッドの見出しになるため。
@@ -264,6 +270,7 @@ app:
               - { field: dueDate, label: 納期, format: date }
               - { field: orderStatus, label: 受注状態, optionsOf: orderStatus }
               - { field: deliveryPlace, label: 納入先 }
+              - { field: customerOrderNo, label: 客先注文番号 }
               - { field: note, label: 備考, type: textarea }
 
           - fields:
@@ -385,8 +392,13 @@ app:
         columns:
           # 幅は紙の上ではポイント（1/72 inch）。A4 縦は 595.28pt しかないので、
           # 画面の px をそのまま書くと全体が縮んで読めなくなる（check が言った）。
+          # 客先注文番号は本当は紙の**見出し**（受注番号の横）に置きたいが、帳票の定義には
+          # 見出しに項目を添える口が無い（ロードマップ「帳票の見出し項目」）。groupBy を
+          # 1段足すと小計が2つ出るので、列で出す（行ごとに同じ値が並ぶ）。紙の幅は増やせ
+          # ないので、商品名を 70pt 詰めた。
+          - { field: customerOrderNo, label: 客先注文番号, width: 70 }
           - { field: productCode, label: 商品コード, width: 80 }
-          - { field: productName, label: 商品名, width: 170 }
+          - { field: productName, label: 商品名, width: 100 }
           - { field: quantity, label: 数量, type: number, width: 50 }
           - { field: unitPrice, label: 単価, type: number, format: currency, config: { symbol: "¥" }, width: 80 }
           - { field: taxRate, label: 税率, type: number, format: percent, config: { ratio: true, decimals: 0 }, width: 50 }

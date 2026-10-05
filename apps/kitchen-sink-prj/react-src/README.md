@@ -4,17 +4,16 @@
 Flutter 版（[`flutter-src/`](../flutter-src/)）・Vue 版（[`vue-src/`](../vue-src/)）と
 **同じ定義・同じ API・同じ証跡の項番**で、違うのは Renderer だけ。
 
-**画面のコードは1行も書いていない。** 案件が書いたのは4つだけ:
+**画面のコードは1行も書いていない。** 案件が書いたのは3つだけ:
 
 | ファイル | 何を書いたか |
 |---|---|
 | [`src/main.tsx`](src/main.tsx) | 定義をどこから読むか・Repository の道・`plugin:` の中身・出す口 |
 | [`src/actions.ts`](src/actions.ts) | `plugin:` と書いたボタンの中身（一括の2つだけ。保存は組み込み） |
-| [`src/sinks.ts`](src/sinks.ts) | CSV と印刷の出し先 |
 | [`nginx.conf`](nginx.conf) | 画面と `/api` を同じ所から配る |
 
-**`actions.ts` と `sinks.ts` は Vue 版と1文字も違わない**（`diff` が通る）。どちらも
-枠組みの型（`ActionHandler` / `ExportSink`）しか見ていないので、描く側が変わっても
+**`actions.ts` は Vue 版と1文字も違わない**（`diff` が通る）。どちらも
+枠組みの型（`ActionHandler`）しか見ていないので、描く側が変わっても
 業務の側は書き直さずに済む —— それがこの見本で確かめたいこと。
 
 違うのは `main.tsx` だけで、そこも**数えるだけの小窓**のぶん（React は「変わった」と

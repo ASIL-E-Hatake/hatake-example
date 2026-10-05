@@ -45,15 +45,14 @@ docker compose up
 
 API は <http://localhost:3003>（3つとも**同じ API・同じ定義**を見ます）。
 
-3つとも**画面のコードは1行も書いていません**。案件が書いたのは4つだけで、
-うち `actions.ts` と `sinks.ts` は **Vue 版と React 版で1文字も違いません**
+3つとも**画面のコードは1行も書いていません**。案件が書いたのは3つだけで、
+うち `actions.ts` は **Vue 版と React 版で1文字も違いません**
 （`diff vue-src/src/actions.ts react-src/src/actions.ts` が通ります）。
 
 | ファイル | 何を書いたか |
 |---|---|
 | `src/main.*` | 定義をどこから読むか・Repository の道・`plugin:` の中身・出す口 |
 | `src/actions.ts` | `plugin:` と書いたボタンの中身（一括の2つだけ。保存は組み込み） |
-| `src/sinks.ts` | CSV と印刷の出し先 |
 | `nginx.conf` | 画面と `/api` を同じ所から配る |
 
 DB は要りません（決め打ちの値を返すモック）。**認証も持ちません** ──
@@ -137,3 +136,9 @@ bash tools/run-tests.sh                      # 値と画面が変わったか
 | | 何が起きていたか |
 |---|---|
 | 3 | 書き込みの口が**いつも combo_form の入力枠**で受けていた＝選択肢の連動の画面から保存すると、名前もグループも黙って捨てていた。いまは送ってきた項目を一番多く受け取れる画面で受ける（`acceptRecordIn`） |
+
+0.9.25 に上げたとき、0.9.24 で入った検証がこの見本の書き間違いを1件見つけました:
+
+| | 何が起きていたか |
+|---|---|
+| 4 | 「見せる相手で変わる」のコードに `readOnlyWhen: { field: $mode, equals: edit }` と書いていた。`equals` は条件に書けない鍵なので**黙って捨てられ**、値の無い equals＝**いつも成り立つ**条件になって、**新規のときもコードが入れられなかった**。`condition-unknown-key` / `condition-mode-as-field` が言った。いまは `{ mode: edit }` |

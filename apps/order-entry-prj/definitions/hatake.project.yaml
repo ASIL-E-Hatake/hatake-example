@@ -15,7 +15,7 @@ system:
   users:
     - 営業（sales・10人）。自分の拠点の受注を入れる・直す
     - 営業事務（clerk・4人）。全拠点の受注を入れる・直す・取り消す
-    - 管理者（manager・1人）。ダッシュボードと帳票も見る
+    - 管理者（manager・1人）。全拠点の受注を取り消す。ダッシュボードと帳票も見る
   premises:
     # **できないこと**を書く場所。書かないと、AI は書ける方に倒す。
     - ログインは hatake の外。社内ポータルの ID を使い、役割もそちらが返す。
@@ -48,6 +48,9 @@ glossary:
     field: orderNo
     avoid: [注文番号, オーダー番号]
     note: サーバが採番する。画面では触らせない
+  - term: 客先注文番号
+    field: customerOrderNo
+    note: 客先が付けた注文番号（受注番号とは別物。こちらは採番しない）
   - term: 取引先
     field: customerCode
     avoid: [得意先, 客先]

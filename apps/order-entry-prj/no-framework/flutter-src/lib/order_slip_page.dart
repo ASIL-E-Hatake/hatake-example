@@ -254,6 +254,7 @@ class _OrderSlipPageState extends State<OrderSlipPage> {
             child: Text(
               '受注番号: ${block.orderNo}'
               '　取引先: ${block.row?['customerName'] ?? ''}'
+              '　客先注文番号: ${block.row?['customerOrderNo'] ?? ''}'
               '　受注日: ${block.row?['orderDate'] ?? ''}',
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),

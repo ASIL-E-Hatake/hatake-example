@@ -57,7 +57,7 @@ public class OrderWriteController {
     public Map<String, Object> create(
             HttpServletRequest request, @RequestBody OrderRequest body) {
         User user = sessions.require(request);
-        ColumnRoles.require(user, "sales", "clerk");
+        ColumnRoles.require(user, "sales", "clerk", "manager");
         reject(CrossFieldRules.checkAll(validator, body));
 
         String orderNo = orders.nextOrderNo();
@@ -66,10 +66,10 @@ public class OrderWriteController {
 
         db.update(
                 "insert into orders (order_no, customer_code, order_date, due_date, order_status,"
-                        + " sales_person_name, delivery_place, note, office_code,"
+                        + " sales_person_name, delivery_place, customer_order_no, note, office_code,"
                         + " subtotal_amount, tax_amount, total_amount, line_count,"
                         + " created_by, created_at, updated_at)"
-                        + " values (?, ?, ?::date, ?::date, 'draft', ?, ?, ?, ?, ?, ?, ?, ?,"
+                        + " values (?, ?, ?::date, ?::date, 'draft', ?, ?, ?, ?, ?, ?, ?, ?, ?,"
                         + " ?, now(), now())",
                 orderNo,
                 body.customerCode(),
@@ -77,6 +77,7 @@ public class OrderWriteController {
                 body.dueDate(),
                 body.salesPersonName(),
                 body.deliveryPlace(),
+                body.customerOrderNo(),
                 body.note(),
                 officeOf(user),
                 totals.subtotalAmount(),
@@ -96,7 +97,7 @@ public class OrderWriteController {
             @PathVariable String orderNo,
             @RequestBody OrderRequest body) {
         User user = sessions.require(request);
-        ColumnRoles.require(user, "sales", "clerk");
+        ColumnRoles.require(user, "sales", "clerk", "manager");
 
         Map<String, Object> current = orders.header(orderNo);
         if (current == null) {
@@ -120,7 +121,7 @@ public class OrderWriteController {
         Object seen = body.updatedAt();
         int changed = db.update(
                 "update orders set customer_code = ?, order_date = ?::date, due_date = ?::date,"
-                        + " sales_person_name = ?, delivery_place = ?, note = ?,"
+                        + " sales_person_name = ?, delivery_place = ?, customer_order_no = ?, note = ?,"
                         + " subtotal_amount = ?, tax_amount = ?, total_amount = ?, line_count = ?,"
                         + " updated_at = now()"
                         + " where order_no = ?"
@@ -130,6 +131,7 @@ public class OrderWriteController {
                 body.dueDate(),
                 body.salesPersonName(),
                 body.deliveryPlace(),
+                body.customerOrderNo(),
                 body.note(),
                 totals.subtotalAmount(),
                 totals.taxAmount(),
@@ -150,7 +152,7 @@ public class OrderWriteController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void cancel(HttpServletRequest request, @PathVariable String orderNo) {
         User user = sessions.require(request);
-        ColumnRoles.require(user, "clerk");
+        ColumnRoles.require(user, "clerk", "manager");
         Map<String, Object> current = orders.header(orderNo);
         if (current == null) {
             throw new Errors.NotFound("見つかりません");

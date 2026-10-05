@@ -7,7 +7,7 @@ import 'totals.dart';
 
 /// 受注照会（フレームワーク**無し**版）。
 ///
-/// hatake 版では定義に `search.filters` 6件・`table.columns` 8件・`actions` 4件を
+/// hatake 版では定義に `search.filters` 7件・`table.columns` 9件・`actions` 4件を
 /// 書くだけで、検索欄も一覧も並べ替えもページ送りも選択のチェックボックスも出た。
 /// この版は<b>その全部を組む</b>。
 ///
@@ -44,6 +44,7 @@ class _OrderSearchPageState extends State<OrderSearchPage> {
   static const _bulkLimitDefault = 50;
 
   final _orderNo = TextEditingController();
+  final _customerOrderNo = TextEditingController();
   final _totalFrom = TextEditingController();
   final _totalTo = TextEditingController();
   String? _customerCode;
@@ -61,7 +62,7 @@ class _OrderSearchPageState extends State<OrderSearchPage> {
   bool _loading = false;
   String? _error;
 
-  bool get _canBulk => widget.session.roles.contains('clerk');
+  bool get _canBulk => widget.session.roles.any({'clerk', 'manager'}.contains);
   bool get _canExport =>
       widget.session.roles.any({'clerk', 'manager'}.contains);
   bool get _canSeeCreatedBy =>
@@ -77,6 +78,7 @@ class _OrderSearchPageState extends State<OrderSearchPage> {
   @override
   void dispose() {
     _orderNo.dispose();
+    _customerOrderNo.dispose();
     _totalFrom.dispose();
     _totalTo.dispose();
     super.dispose();
@@ -97,6 +99,9 @@ class _OrderSearchPageState extends State<OrderSearchPage> {
       'pageSize': ['$_pageSize'],
     };
     if (_orderNo.text.trim().isNotEmpty) params['orderNo'] = [_orderNo.text.trim()];
+    if (_customerOrderNo.text.trim().isNotEmpty) {
+      params['customerOrderNo'] = [_customerOrderNo.text.trim()];
+    }
     if (_customerCode != null) params['customerCode'] = [_customerCode!];
     if (_orderDate != null) {
       params['orderDate'] = [_ymd(_orderDate!.start), _ymd(_orderDate!.end)];
@@ -254,6 +259,7 @@ class _OrderSearchPageState extends State<OrderSearchPage> {
   List<_Column> _columns() => [
         _Column('orderNo', '受注番号', 125, sortable: true),
         _Column('customerName', '取引先', null, sortable: true),
+        _Column('customerOrderNo', '客先注文番号', 120),
         _Column('orderDate', '受注日', 100, sortable: true),
         _Column('dueDate', '納期', 100, sortable: true),
         _Column('orderStatus', '受注状態', 85, text: orderStatusLabel),
@@ -385,6 +391,14 @@ class _OrderSearchPageState extends State<OrderSearchPage> {
                   ),
                 ),
               ],
+            ),
+          ),
+          SizedBox(
+            width: 200,
+            child: TextField(
+              controller: _customerOrderNo,
+              decoration: const InputDecoration(
+                  labelText: '客先注文番号', border: OutlineInputBorder()),
             ),
           ),
           FilledButton.icon(

@@ -7,14 +7,20 @@ definitions/app.yaml（app: 5 ページ）を1回で見ました。
 ## 読み返し（そう書いてある）
 受注管理（order_entry）— 画面 5 枚
 
-  order_search     受注照会            照会（読み取り専用）。条件 6、列 8、ボタン 4、権限で出し分けあり、orderRepository から
-  order_entry      受注入力            段階入力。ステップ 3（項目 12）、orderRepository から
-  order_detail     受注詳細            1件の照会。4 枠に項目 13、権限で出し分けあり、orderRepository から
+  order_search     受注照会            照会（読み取り専用）。条件 7、列 9、ボタン 4、権限で出し分けあり、orderRepository から
+  order_entry      受注入力            段階入力。ステップ 3（項目 13）、orderRepository から
+  order_detail     受注詳細            1件の照会。4 枠に項目 14、権限で出し分けあり、orderRepository から
   order_dashboard  受注ダッシュボード  数字とグラフ。条件 2、カード 7、ボタン 1、orderRepository から
-  order_slip       注文請書            帳票。条件 2、列 6、ボタン 2、権限で出し分けあり、orderLineRepository から
+  order_slip       注文請書            帳票。条件 2、列 7、ボタン 2、権限で出し分けあり、orderLineRepository から
 
 ## 好み（書いていないと不便かも）
-書き足すと良さそうな所が 1 件:
+書き足すと良さそうな所が 3 件:
+  app.pages[0].table.columns.2 [project-glossary-word]
+    こうなる: ラベル「客先注文番号」に「注文番号」が入っています。案件の決めごとでは「受注番号」と呼びます（サーバが採番する。画面では触らせない）。（同じ名前は他に 4 か所）
+    書き足す: 「受注番号」で言い直す。
+  app.pages[0].table.columns.2 [project-glossary-word]
+    こうなる: ラベル「客先注文番号」に「客先」が入っています。案件の決めごとでは「取引先」と呼びます（画面に出すのは取引先名だが、持つのはコード）。（同じ名前は他に 4 か所）
+    書き足す: 「取引先」で言い直す。
   app.pages[1].steps.2.fields.4 [project-glossary-name]
     こうなる: ラベルは「商品」の話なのに、名前 "orderSummary" に用語辞書の名前（productCode）の語 "product" が入っていません。
     書き足す: 辞書の名前に合わせる（「商品」は `productCode`）。別の属性なら "product" で始まる名前にする。
@@ -39,7 +45,7 @@ definitions/app.yaml（app: 5 ページ）を1回で見ました。
   読み返しの全文 … 画面が 5 枚あるので1行ずつにしました（画面を1枚に絞ると、その画面の全文になります）。
 
 ## 次の1手
-  ・好みが 1 件（書いていないと不便かも）。当てるなら hatake advise --apply、案件で要らないと決めたなら物差しの off か定義の印（# advise-off:）。**直さなくても CI は赤くなりません**。
+  ・好みが 3 件（書いていないと不便かも）。当てるなら hatake advise --apply、案件で要らないと決めたなら物差しの off か定義の印（# advise-off:）。**直さなくても CI は赤くなりません**。
   ・人に聞くことが 1 件。**AI が決めて書いてはいけません**（答えは業務の判断で、当てると嘘の設計書ができます）。決まったら前書きの logic に1行足して answers を付けてください。
 
 ※ この紙は hatake validate / explain / advise / ask を1回で回したものです（**欄は混ぜていません**＝終了コードを動かすのは事実の欄だけ）。**動かしてはいません**＝その値でいくらになるか・押せるかは hatake run の担当、画面の外との辻褄（登録していない Repository やプラグイン）は登録済みの一覧を渡したときだけ見ます。人に渡す1枚が要るなら hatake design（あちらは意図の1枚と突き合わせる紙で、合否は言いません）。

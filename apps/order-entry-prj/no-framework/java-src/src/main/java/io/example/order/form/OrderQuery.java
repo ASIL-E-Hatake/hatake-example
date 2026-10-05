@@ -38,7 +38,8 @@ public final class OrderQuery {
             "orderDate", new Rule("order_date", "between", "?::date"),
             "dueDate", new Rule("due_date", "between", "?::date"),
             "orderStatus", new Rule("order_status", "in", "?"),
-            "totalAmount", new Rule("total_amount", "between", "?::numeric"));
+            "totalAmount", new Rule("total_amount", "between", "?::numeric"),
+            "customerOrderNo", new Rule("customer_order_no", "startsWith", "?"));
 
     /** 並べ替えに使ってよい項目 → 列。 */
     private static final Map<String, String> SORTABLE = Map.of(
@@ -76,6 +77,12 @@ public final class OrderQuery {
                 case "contains" -> {
                     values.add("%" + given.get(0) + "%");
                     where.add(column + " ilike ?");
+                }
+                case "startsWith" -> {
+                    String head = given.get(0)
+                            .replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
+                    values.add(head + "%");
+                    where.add(column + " like ? escape '\\'");
                 }
                 case "between" -> {
                     // 片方だけ来ることもある（「以上」だけ入れた、など）。
