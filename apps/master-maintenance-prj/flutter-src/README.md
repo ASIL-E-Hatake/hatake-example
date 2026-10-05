@@ -31,7 +31,7 @@ HatakeApp(app: definition)                           // これで4画面
 一覧は引ける:
 
 ```bash
-npx hatake refs ../definitions/app.yaml --needs-registration
+npx -p @hatake-fw/api hatake refs ../definitions/app.yaml --needs-registration
 ```
 
 | 要求 | 用意した所 |
@@ -58,7 +58,7 @@ npx hatake validate ../definitions/app.yaml --registry ../definitions/hatake-reg
 
 | | なぜ |
 |---|---|
-| ログイン画面 | `npx hatake where 認証` が「枠組みの外」と返す。資格を確かめるのは API |
+| ログイン画面 | `npx -p @hatake-fw/api hatake where 認証` が「枠組みの外」と返す。資格を確かめるのは API |
 | ログアウトと「誰で見ているか」の札 | 定義の側に書く場所が無い＝役割はアプリが配るもの |
 | CSV をどこへ出すか | 枠組みは CSV を**組む**ところまで。届けるのは業務の決めごと |
 | 一括の中身 | 前書きで `where: plugin` と宣言した |

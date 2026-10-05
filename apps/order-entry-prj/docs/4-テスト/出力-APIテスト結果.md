@@ -4,7 +4,7 @@
 > **やりとりをそのまま**書き出しています（手で直さない）。
 > 作り直し: `bash tools/run-tests.sh`
 
-- 実行日時: 2026-10-05T03:11:24.262Z
+- 実行日時: 2026-10-05T07:57:32.746Z
 - 対象: `http://localhost:3001/api`
 - 前提: `docker compose up` で DB が初期データの状態
 
@@ -76,15 +76,15 @@ POST http://localhost:3001/api/auth/login
 ```json
 HTTP 200
 {
+  "token": "dGFuYWthH-eUsOS4rSDlhKrlrZAfY2xlcmsfMTc5MTIxNTg1Mg.bt-6RgZDyFC5AfubBLRqseb9JgfiRJo1UxTpSrtcTEo",
   "user": {
-    "userId": "tanaka",
     "roles": [
       "clerk"
     ],
     "name": "田中 優子",
-    "officeCode": "TKY"
-  },
-  "token": "dGFuYWthH-eUsOS4rSDlhKrlrZAfY2xlcmsfMTc5MTE5ODY4NA.GrK_Yta3zvzDsZ9A5WUBxqhPD75_1Y2S3NcaDGG1B9Y"
+    "officeCode": "TKY",
+    "userId": "tanaka"
+  }
 }
 ```
 
@@ -152,7 +152,6 @@ GET http://localhost:3001/api/orders?orderStatus=draft&pageSize=50
 ```json
 HTTP 200
 {
-  "totalCount": 2,
   "items": [
     {
       "orderNo": "SO2026090003",
@@ -194,7 +193,8 @@ HTTP 200
       "updatedAt": "2026-09-09 23:50:00+00",
       "customerName": "株式会社あおぞら商事"
     }
-  ]
+  ],
+  "totalCount": 2
 }
 ```
 
@@ -215,7 +215,6 @@ GET http://localhost:3001/api/orders?note=%E8%87%B3%E6%80%A5&pageSize=50
 ```json
 HTTP 200
 {
-  "totalCount": 9,
   "items": [
     {
       "orderNo": "SO2026070001",
@@ -258,7 +257,8 @@ HTTP 200
       "customerName": "北山フーズ株式会社"
     },
     {
-      "orderNo"
+      "orderNo": "SO2026080001",
+ 
 …（長いので省略）
 ```
 
@@ -279,7 +279,6 @@ GET http://localhost:3001/api/orders?sortField=orderDate&sortAscending=false&pag
 ```json
 HTTP 200
 {
-  "totalCount": 9,
   "items": [
     {
       "orderNo": "SO2026090004",
@@ -322,7 +321,8 @@ HTTP 200
       "customerName": "北山フーズ株式会社"
     },
     {
-      "orderNo": "SO2
+      "orderNo": "SO2026090002",
+      "
 …（長いので省略）
 ```
 
@@ -343,7 +343,6 @@ GET http://localhost:3001/api/orders?totalAmount=5000&totalAmount=11000&pageSize
 ```json
 HTTP 200
 {
-  "totalCount": 4,
   "items": [
     {
       "orderNo": "SO2026070001",
@@ -386,7 +385,8 @@ HTTP 200
       "customerName": "北山フーズ株式会社"
     },
     {
-      "orderNo"
+      "orderNo": "SO2026080002",
+ 
 …（長いので省略）
 ```
 
@@ -539,7 +539,6 @@ GET http://localhost:3001/api/orders?pageSize=50
 ```json
 HTTP 200
 {
-  "totalCount": 4,
   "items": [
     {
       "orderNo": "SO2026070001",
@@ -582,7 +581,7 @@ HTTP 200
     {
       "orderNo": "SO2026090001",
       "customerCode": "C005",
-      "o
+      "orderDate": "2026-09
 …（長いので省略）
 ```
 
@@ -603,7 +602,6 @@ GET http://localhost:3001/api/orders?pageSize=50
 ```json
 HTTP 200
 {
-  "totalCount": 4,
   "items": [
     {
       "orderNo": "SO2026070001",
@@ -646,7 +644,7 @@ HTTP 200
     {
       "orderNo": "SO2026090001",
       "customerCode": "C005",
-      "o
+      "orderDate": "2026-09
 …（長いので省略）
 ```
 
@@ -686,17 +684,17 @@ POST http://localhost:3001/api/orders
 ```json
 HTTP 400
 {
+  "valid": false,
   "errors": [
     {
-      "message": "納期は受注日の翌日以降にしてください",
-      "field": "dueDate"
+      "field": "dueDate",
+      "message": "納期は受注日の翌日以降にしてください"
     },
     {
-      "message": "必須項目です",
-      "field": "salesPersonName"
+      "field": "salesPersonName",
+      "message": "必須項目です"
     }
-  ],
-  "valid": false
+  ]
 }
 ```
 
@@ -725,13 +723,13 @@ POST http://localhost:3001/api/orders
 ```json
 HTTP 400
 {
+  "valid": false,
   "errors": [
     {
-      "message": "必須項目です",
-      "field": "lines"
+      "field": "lines",
+      "message": "必須項目です"
     }
-  ],
-  "valid": false
+  ]
 }
 ```
 
@@ -771,13 +769,13 @@ POST http://localhost:3001/api/orders
 ```json
 HTTP 400
 {
+  "valid": false,
   "errors": [
     {
-      "message": "同じ商品が複数行にあります",
-      "field": "lines"
+      "field": "lines",
+      "message": "同じ商品が複数行にあります"
     }
-  ],
-  "valid": false
+  ]
 }
 ```
 
@@ -812,13 +810,13 @@ POST http://localhost:3001/api/orders
 ```json
 HTTP 400
 {
+  "valid": false,
   "errors": [
     {
-      "message": "数量は1以上にしてください",
-      "field": "lines[0].quantity"
+      "field": "lines[0].quantity",
+      "message": "数量は1以上にしてください"
     }
-  ],
-  "valid": false
+  ]
 }
 ```
 
@@ -874,8 +872,8 @@ HTTP 201
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "tanaka",
-  "createdAt": "2026-10-05 03:11:24.488297+00",
-  "updatedAt": "2026-10-05 03:11:24.488297+00",
+  "createdAt": "2026-10-05 07:57:32.972324+00",
+  "updatedAt": "2026-10-05 07:57:32.972324+00",
   "customerName": "株式会社あおぞら商事",
   "lines": [
     {
@@ -961,8 +959,8 @@ HTTP 201
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "tanaka",
-  "createdAt": "2026-10-05 03:11:24.525382+00",
-  "updatedAt": "2026-10-05 03:11:24.525382+00",
+  "createdAt": "2026-10-05 07:57:33.010118+00",
+  "updatedAt": "2026-10-05 07:57:33.010118+00",
   "customerName": "みどり物産株式会社",
   "lines": [
     {
@@ -1241,8 +1239,8 @@ HTTP 200
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "tanaka",
-  "createdAt": "2026-10-05 03:11:24.488297+00",
-  "updatedAt": "2026-10-05 03:11:24.592104+00",
+  "createdAt": "2026-10-05 07:57:32.972324+00",
+  "updatedAt": "2026-10-05 07:57:33.083046+00",
   "customerName": "株式会社あおぞら商事",
   "lines": [
     {
@@ -1291,7 +1289,6 @@ GET http://localhost:3001/api/order-lines?orderNo=SO2026090002&pageSize=200
 ```json
 HTTP 200
 {
-  "totalCount": 3,
   "items": [
     {
       "orderNo": "SO2026090002",
@@ -1337,7 +1334,7 @@ HTTP 200
       "customerName": "みどり物産株式会社",
       "customerOrderNo": null,
       "productCode": "P008",
-      "produ
+      "productName": "来客用茶葉（1kg
 …（長いので省略）
 ```
 
@@ -1395,7 +1392,7 @@ HTTP 200
   "lineCount": 2,
   "createdBy": "sato",
   "createdAt": "2026-09-01 00:00:00+00",
-  "updatedAt": "2026-10-05 03:11:24.627658+00",
+  "updatedAt": "2026-10-05 07:57:33.125491+00",
   "customerName": "南商店",
   "lines": [
     {
@@ -1451,7 +1448,7 @@ HTTP 200
 # この定義は **flutter-src と java-src の両方が読む**。画面を描くのも、API が
 # リクエストを検証するのも、同じこの1枚。だから definitions/ は案件の直下に置いてある。
 #
-#   npx hatake check definitions/app.yaml --project definitions/hatake.project.yaml
+#   npx -p @hatake-fw/api hatake check definitions/app.yaml --project definitions/hatake.project.yaml
 dsl_version: "1.0"
 
 app:
@@ -1478,8 +1475,7 @@ app:
     - { id: slip, label: 注文請書, icon: print, page: order_slip, roles: [clerk, manager] }
     # グループの roles は中身にも掛かる。管理者しかメニューから開けない。
     - group: 管理
-      icon: insights
-      role
+      icon: i
 …（長いので省略）
 ```
 
@@ -1534,8 +1530,8 @@ HTTP 201
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "yamada",
-  "createdAt": "2026-10-05 03:11:24.643132+00",
-  "updatedAt": "2026-10-05 03:11:24.643132+00",
+  "createdAt": "2026-10-05 07:57:33.143871+00",
+  "updatedAt": "2026-10-05 07:57:33.143871+00",
   "customerName": "北山フーズ株式会社",
   "lines": [
     {
@@ -1621,8 +1617,8 @@ HTTP 201
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "tanaka",
-  "createdAt": "2026-10-05 03:11:24.657677+00",
-  "updatedAt": "2026-10-05 03:11:24.657677+00",
+  "createdAt": "2026-10-05 07:57:33.161429+00",
+  "updatedAt": "2026-10-05 07:57:33.161429+00",
   "customerName": "株式会社あおぞら商事",
   "lines": [
     {
@@ -1671,7 +1667,6 @@ GET http://localhost:3001/api/orders?customerOrderNo=PO-778&pageSize=50
 ```json
 HTTP 200
 {
-  "totalCount": 1,
   "items": [
     {
       "orderNo": "SO2026100104",
@@ -1689,11 +1684,12 @@ HTTP 200
       "totalAmount": 8692,
       "lineCount": 2,
       "createdBy": "tanaka",
-      "createdAt": "2026-10-05 03:11:24.657677+00",
-      "updatedAt": "2026-10-05 03:11:24.657677+00",
+      "createdAt": "2026-10-05 07:57:33.161429+00",
+      "updatedAt": "2026-10-05 07:57:33.161429+00",
       "customerName": "株式会社あおぞら商事"
     }
-  ]
+  ],
+  "totalCount": 1
 }
 ```
 
@@ -1734,13 +1730,13 @@ POST http://localhost:3001/api/orders
 ```json
 HTTP 400
 {
+  "valid": false,
   "errors": [
     {
-      "message": "20文字以内で入力してください",
-      "field": "customerOrderNo"
+      "field": "customerOrderNo",
+      "message": "20文字以内で入力してください"
     }
-  ],
-  "valid": false
+  ]
 }
 ```
 
@@ -1780,13 +1776,13 @@ POST http://localhost:3001/api/orders
 ```json
 HTTP 400
 {
+  "valid": false,
   "errors": [
     {
-      "message": "納期は受注日の翌日以降にしてください",
-      "field": "dueDate"
+      "field": "dueDate",
+      "message": "納期は受注日の翌日以降にしてください"
     }
-  ],
-  "valid": false
+  ]
 }
 ```
 

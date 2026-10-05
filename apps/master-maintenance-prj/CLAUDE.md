@@ -11,20 +11,20 @@
 - 手順: `手順/` … 人が何を投げたか。同じ形で続ける
 - 工程ごとの成果物: `docs/`
 
-道具は `npx hatake <コマンド>`。仕様書は読まなくていい（**引ける**ようになっている）:
+道具は `npx -p @hatake-fw/api hatake <コマンド>`。仕様書は読まなくていい（**引ける**ようになっている）:
 
 | 迷ったら | 引くもの |
 |---|---|
-| このキーはどこに書く？型は？ | `npx hatake reference <キー名>` |
-| こういう画面の例は？ | `npx hatake examples <やりたいこと>` |
-| この警告は何？ | `npx hatake rules <規則名>` |
-| これは hatake で書ける？ | `npx hatake where <やりたいこと>` |
+| このキーはどこに書く？型は？ | `npx -p @hatake-fw/api hatake reference <キー名>` |
+| こういう画面の例は？ | `npx -p @hatake-fw/api hatake examples <やりたいこと>` |
+| この警告は何？ | `npx -p @hatake-fw/api hatake rules <規則名>` |
+| これは hatake で書ける？ | `npx -p @hatake-fw/api hatake where <やりたいこと>` |
 
 ## 守ること
 
 1. **定義を書いたら必ず `check` を通す。**
    ```bash
-   npx hatake check definitions/app.yaml --project definitions/hatake.project.yaml
+   npx -p @hatake-fw/api hatake check definitions/app.yaml --project definitions/hatake.project.yaml
    ```
    事実（警告）が0件になるまで直す。**助言（好み）は勝手に当てない**（人に聞く）。
 
@@ -61,7 +61,7 @@
 <!-- hatake:project:begin -->
 ## この案件について
 
-> ここは `definitions/hatake.project.yaml` から生成した節です（`npx hatake project --agents`）。
+> ここは `definitions/hatake.project.yaml` から生成した節です（`npx -p @hatake-fw/api hatake project --agents`）。
 > **直すときは前書きを直して貼り直す**（同じことを2か所に書くと必ず食い違う）。
 
 人事部と購買部が使う社内マスタの管理画面。社員・部署・取引先の3つを、情シスに 依頼せず自分たちで直せるようにする。いまは Excel で管理している。
@@ -127,7 +127,7 @@
 
 **定義を書くとき**
 
-- 書けたら `npx hatake advise <定義> --project definitions/hatake.project.yaml` にかける（上の名前と言葉の決めごととの食い違いが出る）
+- 書けたら `npx -p @hatake-fw/api hatake advise <定義> --project definitions/hatake.project.yaml` にかける（上の名前と言葉の決めごととの食い違いが出る）
 - **上の「業務の前提」は機械が見ていない**（読むのはあなた）。前提に反する定義を書いても、道具は何も言わない
 
 <!-- hatake:project:end -->

@@ -52,7 +52,7 @@
 **終わりの判定**:
 
 ```bash
-npx hatake check definitions/app.yaml --project definitions/hatake.project.yaml
+npx -p @hatake-fw/api hatake check definitions/app.yaml --project definitions/hatake.project.yaml
 ```
 
 - 事実（警告）が **0件**
@@ -60,7 +60,7 @@ npx hatake check definitions/app.yaml --project definitions/hatake.project.yaml
 - 助言は0でなくてよい（好みなので、案件の判断で残す）
 - **設計資料がそろっている**（`node tools/build-design-docs.mjs --check` が通る）
 
-> 人に渡す1枚が要るなら `npx hatake design`（意図と突き合わせた設計書を刷る）。
+> 人に渡す1枚が要るなら `npx -p @hatake-fw/api hatake design`（意図と突き合わせた設計書を刷る）。
 
 ---
 

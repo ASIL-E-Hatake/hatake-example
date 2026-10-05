@@ -5,7 +5,7 @@
 # この定義は **flutter-src と node-src の両方が読む**。画面を描くのも、API が
 # リクエストを検証するのも、同じこの1枚。だから definitions/ は案件の直下に置いてある。
 #
-#   npx hatake check definitions/app.yaml --project definitions/hatake.project.yaml
+#   npx -p @hatake-fw/api hatake check definitions/app.yaml --project definitions/hatake.project.yaml
 dsl_version: "1.0"
 
 app:

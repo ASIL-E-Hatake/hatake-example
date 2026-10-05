@@ -49,7 +49,7 @@ Claude Code は**上のフォルダから順に CLAUDE.md を読む**ので、�
 そこへ流し込む:
 
 ```bash
-npx hatake project definitions/hatake.project.yaml --agents --merge CLAUDE.md
+npx -p @hatake-fw/api hatake project definitions/hatake.project.yaml --agents --merge CLAUDE.md
 ```
 
 印の**中だけ**が入れ替わる。印の外に書いたもの（ブランチ名・レビューの回し方）は消えない。
@@ -59,7 +59,7 @@ npx hatake project definitions/hatake.project.yaml --agents --merge CLAUDE.md
 前書きを直したら貼り直す。忘れると **AI が古い決めごとを読む**ので、CI で見る:
 
 ```bash
-npx hatake project definitions/hatake.project.yaml --agents --check --merge CLAUDE.md
+npx -p @hatake-fw/api hatake project definitions/hatake.project.yaml --agents --check --merge CLAUDE.md
 ```
 
 違っていれば終了コード 1。
@@ -78,13 +78,13 @@ hatake の道具は**読むもの**がほとんどなので、毎回確認を求
 {
   "permissions": {
     "allow": [
-      "Bash(npx hatake check:*)",
-      "Bash(npx hatake validate:*)",
-      "Bash(npx hatake ask:*)",
-      "Bash(npx hatake reference:*)"
+      "Bash(npx -p @hatake-fw/api hatake check:*)",
+      "Bash(npx -p @hatake-fw/api hatake validate:*)",
+      "Bash(npx -p @hatake-fw/api hatake ask:*)",
+      "Bash(npx -p @hatake-fw/api hatake reference:*)"
     ],
     "deny": [
-      "Bash(npx hatake fix:* --write)",
+      "Bash(npx -p @hatake-fw/api hatake fix:* --write)",
       "Bash(git commit:*)",
       "Bash(git push:*)"
     ]

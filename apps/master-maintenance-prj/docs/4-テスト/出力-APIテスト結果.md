@@ -4,7 +4,7 @@
 > **やりとりをそのまま**書き出しています（手で直さない）。
 > 作り直し: `bash tools/run-tests.sh`
 
-- 実行日時: 2026-10-05T02:35:06.933Z
+- 実行日時: 2026-10-05T07:54:27.071Z
 - 対象: `http://localhost:3000/api`
 - 前提: `docker compose up` で DB が初期データの状態
 
@@ -61,7 +61,7 @@ POST http://localhost:3000/api/auth/login
 ```json
 HTTP 200
 {
-  "token": "eyJzdWIiOiJociIsInJvbGVzIjpbImhyIl0sImV4cCI6MTc5MTE5NjUwNjk2N30.PsBS_jW-P5kfmD0ncZa0ddXGa5gCdwKPc_iom3r2Oe8",
+  "token": "eyJzdWIiOiJociIsInJvbGVzIjpbImhyIl0sImV4cCI6MTc5MTIxNTY2NzEwN30.jEez-CuxCbhOYHS9jz4kBxcSjB2vI3NmeRaLNeeiRSo",
   "user": {
     "userId": "hr",
     "displayName": "人事 花子",
@@ -148,7 +148,7 @@ HTTP 200
       "employmentStatus": "leave",
       "hireDate": "2012-04-01",
       "retireDate": null,
-      "updatedAt": "2026-10-05 02:34:48.283285+00",
+      "updatedAt": "2026-10-05 07:54:09.357617+00",
       "departmentName": "人事部"
     },
     {
@@ -162,7 +162,7 @@ HTTP 200
       "employmentStatus": "active",
       "hireDate": "2013-04-01",
       "retireDate": null,
-      "updatedAt": "2026-10-05 02:34:48.283285+00",
+      "updatedAt": "2026-10-05 07:54:09.357617+00",
       "departmentName": "購買部"
     }
   ],
@@ -199,7 +199,7 @@ HTTP 200
       "employmentStatus": "leave",
       "hireDate": "2012-04-01",
       "retireDate": null,
-      "updatedAt": "2026-10-05 02:34:48.283285+00",
+      "updatedAt": "2026-10-05 07:54:09.357617+00",
       "departmentName": "人事部"
     }
   ],
@@ -236,7 +236,7 @@ HTTP 200
       "employmentStatus": "leave",
       "hireDate": "2012-04-01",
       "retireDate": null,
-      "updatedAt": "2026-10-05 02:34:48.283285+00",
+      "updatedAt": "2026-10-05 07:54:09.357617+00",
       "departmentName": "人事部"
     },
     {
@@ -250,7 +250,7 @@ HTTP 200
       "employmentStatus": "active",
       "hireDate": "2024-04-01",
       "retireDate": null,
-      "updatedAt": "2026-10-05 02:34:48.283285+00",
+      "updatedAt": "2026-10-05 07:54:09.357617+00",
       "departmentName": "人事部"
     },
     {
@@ -264,7 +264,7 @@ HTTP 200
       "employmentStatus": "retired",
       "hireDate": "2022-04-01",
       "retireDate": "2025-03-31",
-      "updatedAt": "2026-10-05 02:34:48.283285+00",
+      "updatedAt": "2026-10-05 07:54:09.357617+00",
       "departmentName": "人事部"
     },
 …（長いので省略）
@@ -301,7 +301,7 @@ HTTP 200
       "closingDay": 31,
       "paymentSiteDays": 30,
       "tradeStatus": "suspended",
-      "updatedAt": "2026-10-05 02:34:48.295248+00"
+      "updatedAt": "2026-10-05 07:54:09.366771+00"
     },
     {
       "supplierCode": "S1008",
@@ -316,7 +316,7 @@ HTTP 200
       "closingDay": 31,
       "paymentSiteDays": 45,
       "tradeStatus": "active",
-      "updatedAt": "2026-10-05 02:34:48.295248+00"
+      "updatedAt": "2026-10-05 07:54:09.366771+00"
     },
     {
       "supplierCode": "S1009",
@@ -361,7 +361,7 @@ HTTP 200
       "employmentStatus": "active",
       "hireDate": "2017-04-01",
       "retireDate": null,
-      "updatedAt": "2026-10-05 02:34:48.283285+00",
+      "updatedAt": "2026-10-05 07:54:09.357617+00",
       "departmentName": "情報システム部"
     },
     {
@@ -375,7 +375,7 @@ HTTP 200
       "employmentStatus": "active",
       "hireDate": "2016-04-01",
       "retireDate": null,
-      "updatedAt": "2026-10-05 02:34:48.283285+00",
+      "updatedAt": "2026-10-05 07:54:09.357617+00",
       "departmentName": "営業2課"
     },
     {
@@ -389,7 +389,7 @@ HTTP 200
       "employmentStatus": "active",
       "hireDate": "2015-04-01",
       "retireDate": null,
-      "updatedAt": "2026-10-05 02:34:48.283285+00",
+      "updatedAt": "2026-10-05 07:54:09.357617+00",
       "departmentName": "営業1課"
     }
   
@@ -424,7 +424,7 @@ HTTP 200
       "employmentStatus": "leave",
       "hireDate": "2012-04-01",
       "retireDate": null,
-      "updatedAt": "2026-10-05 02:34:48.283285+00",
+      "updatedAt": "2026-10-05 07:54:09.357617+00",
       "departmentName": "人事部"
     }
   ],
@@ -461,7 +461,7 @@ HTTP 200
       "employmentStatus": "leave",
       "hireDate": "2012-04-01",
       "retireDate": null,
-      "updatedAt": "2026-10-05 02:34:48.283285+00",
+      "updatedAt": "2026-10-05 07:54:09.357617+00",
       "departmentName": "人事部"
     }
   ],
@@ -755,7 +755,7 @@ PUT http://localhost:3000/api/employees/100030
   "employmentStatus": "active",
   "hireDate": "2013-04-01",
   "retireDate": null,
-  "updatedAt": "2026-10-05 02:34:48.283285+00",
+  "updatedAt": "2026-10-05 07:54:09.357617+00",
   "departmentName": "情報システム部"
 }
 ```
@@ -814,7 +814,7 @@ HTTP 200
 # この定義は **flutter-src と node-src の両方が読む**。画面を描くのも、API が
 # リクエストを検証するのも、同じこの1枚。だから definitions/ は案件の直下に置いてある。
 #
-#   npx hatake check definitions/app.yaml --project definitions/hatake.project.yaml
+#   npx -p @hatake-fw/api hatake check definitions/app.yaml --project definitions/hatake.project.yaml
 dsl_version: "1.0"
 
 app:
@@ -845,8 +845,7 @@ app:
     - name: closingDay
       options:
         - { value: 10, label: 10日 }
-        - { value: 15, label: 15日 }
-        - { va
+        - { value: 15, label: 15
 …（長いので省略）
 ```
 

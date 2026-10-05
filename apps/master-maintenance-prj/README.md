@@ -27,7 +27,7 @@ docker compose up
 
 > **Flutter SDK も Node も入れなくていい。** 1回目は Flutter Web のビルドで数分
 > かかります（2回目からは速い）。`@hatake-fw/api` と Flutter のパッケージは
-> [v0.9.26 の tag](https://github.com/ASIL-E-Hatake/hatake/releases/tag/v0.9.26)
+> [v0.9.27 の tag](https://github.com/ASIL-E-Hatake/hatake/releases/tag/v0.9.27)
 > から入ります＝**レジストリに出していないものを git だけで配っている**形。
 
 ## 何が入っているか
@@ -51,7 +51,7 @@ docker compose up
 この表は定義から引ける:
 
 ```bash
-npx hatake explain definitions/app.yaml --roles
+npx -p @hatake-fw/api hatake explain definitions/app.yaml --roles
 ```
 
 > **画面の `roles` が止めるのは見せるかどうかだけ。** API を直接叩けばデータは取れるので、
@@ -117,7 +117,7 @@ definitions/
 自分で確かめる:
 
 ```bash
-npx hatake check definitions/app.yaml --project definitions/hatake.project.yaml
+npx -p @hatake-fw/api hatake check definitions/app.yaml --project definitions/hatake.project.yaml
 ```
 
 いまの状態: **警告0・助言0・未決の問い0**。
