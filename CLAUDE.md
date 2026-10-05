@@ -57,10 +57,10 @@ apps/<案件名>-prj/
 ## 道具
 
 ```bash
-npx hatake reference <キー名>    # このキーはどこに書く？型は？
-npx hatake examples <やりたいこと>  # 近い例
-npx hatake where <やりたいこと>    # hatake で書けるか
-npx hatake rules <規則名>         # この警告は何？
+npx -p @hatake-fw/api hatake reference <キー名>    # このキーはどこに書く？型は？
+npx -p @hatake-fw/api hatake examples <やりたいこと>  # 近い例
+npx -p @hatake-fw/api hatake where <やりたいこと>    # hatake で書けるか
+npx -p @hatake-fw/api hatake rules <規則名>         # この警告は何？
 ```
 
 仕様書は読まなくていい（引けるようになっている）。

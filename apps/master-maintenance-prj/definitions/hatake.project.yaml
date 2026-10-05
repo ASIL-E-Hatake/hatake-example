@@ -6,8 +6,8 @@
 # に通して下書きを起こし、**人が直した**もの。下書きはほとんど空だった（資料の見出しから
 # 拾える所しか拾わないので）。育てたのは人。
 #
-#   npx hatake project definitions/hatake.project.yaml        # 読み返す
-#   npx hatake project definitions/hatake.project.yaml --coverage definitions/*.yaml
+#   npx -p @hatake-fw/api hatake project definitions/hatake.project.yaml        # 読み返す
+#   npx -p @hatake-fw/api hatake project definitions/hatake.project.yaml --coverage definitions/*.yaml
 #
 # ブランチ名・コミット規約はここに書かない（定義に現れないので機械が突き合わせられず、
 # 必ず腐る）。
@@ -81,7 +81,7 @@ glossary:
 
 logic:
   # 業務ロジックの**置き場**だけを書く（規則の中身は書かない）。
-  # 区分は `npx hatake where <やりたいこと>` で引いたものをそのまま書く。
+  # 区分は `npx -p @hatake-fw/api hatake where <やりたいこと>` で引いたものをそのまま書く。
   - what: ログインして資格を確かめる
     where: outside
     why: hatake は認証を持たない。画面は作れるが、確かめるのは API と認証基盤
@@ -103,7 +103,7 @@ logic:
     why: 購買部の別システムが正。ここでは記録するだけ
 
   # --- ここから下は `hatake ask` が「決めてください」と言ったものへの答え -------------
-  # 問い（id）は `npx hatake ask --kinds` で引ける。勝手な id を書くと落とされる。
+  # 問い（id）は `npx -p @hatake-fw/api hatake ask --kinds` で引ける。勝手な id を書くと落とされる。
   - what: 同じ1件を2人が同時に直したら、更新日時が変わっていたら弾いて読み直させる
     where: server
     why: 先に保存した人の入力が黙って消えるのを止める。マスタは直す人が少ないので楽観で足りる

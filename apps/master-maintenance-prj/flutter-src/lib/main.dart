@@ -21,7 +21,7 @@ void main() => runApp(MasterMaintenanceApp(session: Session(_baseUrl)));
 ///   ・`HatakeApp(app: <定義>)` … 社員・部署・取引先の4画面はこれで全部
 ///
 /// アプリが用意するのは「定義が要求しているもの」だけで、その一覧は
-/// `npx hatake refs definitions/app.yaml --needs-registration` で引ける
+/// `npx -p @hatake-fw/api hatake refs definitions/app.yaml --needs-registration` で引ける
 /// （Repository 3つ・プラグイン `bulkRetire`・出す口・役割）。
 class MasterMaintenanceApp extends StatefulWidget {
   const MasterMaintenanceApp({super.key, required this.session});

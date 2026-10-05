@@ -18,7 +18,7 @@
 #   role_crud     見せる相手で変わる（列・ボタン・項目の roles）と読み取り専用
 #   card_board    カードの盛り合わせ（数・図・表）とカードごとの見せる相手
 #
-#   npx hatake check definitions/app.yaml --project definitions/hatake.project.yaml
+#   npx -p @hatake-fw/api hatake check definitions/app.yaml --project definitions/hatake.project.yaml
 dsl_version: "1.0"
 
 app:

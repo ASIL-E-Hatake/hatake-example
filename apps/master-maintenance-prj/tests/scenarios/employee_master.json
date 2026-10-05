@@ -1,5 +1,5 @@
 {
-  "$comment": "社員マスタの値の試験（`npx hatake run`）。画面もブラウザも要らない＝**定義に書いた規則がその値でどう効くか**だけを見る。押せるか・出ているかは画面の試験（tests/screen）の担当。名前の頭の S-xx は docs/4-テスト/ケース一覧.md の項番。",
+  "$comment": "社員マスタの値の試験（`npx -p @hatake-fw/api hatake run`）。画面もブラウザも要らない＝**定義に書いた規則がその値でどう効くか**だけを見る。押せるか・出ているかは画面の試験（tests/screen）の担当。名前の頭の S-xx は docs/4-テスト/ケース一覧.md の項番。",
   "page": "employee_master",
   "cases": [
     {

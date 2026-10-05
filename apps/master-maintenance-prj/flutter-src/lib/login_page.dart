@@ -4,7 +4,7 @@ import 'session.dart';
 
 /// ログイン画面。
 ///
-/// **ここだけは定義で作っていない。** `npx hatake where 認証` に聞くと
+/// **ここだけは定義で作っていない。** `npx -p @hatake-fw/api hatake where 認証` に聞くと
 /// 「枠組みの外（hatake は持たない）」と返る＝画面は定義でも作れるが、資格を
 /// 確かめるのは API の担当なので、この案件では画面ごとアプリ側に置いた。
 class LoginPage extends StatefulWidget {

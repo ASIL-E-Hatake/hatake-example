@@ -50,7 +50,7 @@ curl -XPOST localhost:3000/api/employees -H "authorization: Bearer $TOKEN" \
 
 ## 定義に**書けない**もの（この案件で外に置いたもの）
 
-`npx hatake where 認証` に聞くと「枠組みの外」と返る。だからここが持っている:
+`npx -p @hatake-fw/api hatake where 認証` に聞くと「枠組みの外」と返る。だからここが持っている:
 
 | | ファイル | 前書きのどこで決めたか |
 |---|---|---|

@@ -4,7 +4,7 @@
 > **やりとりをそのまま**書き出しています（手で直さない）。
 > 作り直し: `bash tools/run-tests.sh`
 
-- 実行日時: 2026-10-05T02:26:39.807Z
+- 実行日時: 2026-10-05T07:48:40.947Z
 - 対象: `http://localhost:3003/api`
 - 前提: `docker compose up` で DB が初期データの状態
 
@@ -67,7 +67,7 @@ HTTP 200
 #   role_crud     見せる相手で変わる（列・ボタン・項目の roles）と読み取り専用
 #   card_board    カードの盛り合わせ（数・図・表）とカードごとの見せる相手
 #
-#   npx hatake check definitions/app.yaml --project definitions/hatake.project.yaml
+#   npx -p @hatake-fw/api hatake check definitions/app.yaml --project definitions/hatake.project.yaml
 dsl_version: "1.0"
 
 app:
@@ -86,7 +86,7 @@ app:
     density: compact
     fontFamily: "Noto Sans JP"
     radius: 8
-    config: { note: 見た目の追加設定は Renderer にそのまま渡る 
+    config: { note: 見た目の追加設定は
 …（長いので省略）
 ```
 

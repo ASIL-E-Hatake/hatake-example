@@ -41,7 +41,7 @@
 AI に書き始めさせる前に、道具で仕分けます:
 
 ```bash
-npx hatake where --from docs/1-要件定義/案件の説明.md
+npx -p @hatake-fw/api hatake where --from docs/1-要件定義/案件の説明.md
 ```
 
 「これは枠組みの外」と出たものは、定義には書かずに**サーバや別のシステムに置く**と決めます。

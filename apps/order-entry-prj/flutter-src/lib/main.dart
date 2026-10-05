@@ -29,7 +29,7 @@ void main() => runApp(OrderEntryApp(session: Session(_baseUrl)));
 ///   ・`type: print` の出し先（帳票がある案件だけ要る）
 ///
 /// 何を足せばいいかは
-/// `npx hatake refs definitions/app.yaml --needs-registration` で引ける。
+/// `npx -p @hatake-fw/api hatake refs definitions/app.yaml --needs-registration` で引ける。
 class OrderEntryApp extends StatefulWidget {
   const OrderEntryApp({super.key, required this.session});
 

@@ -5,7 +5,7 @@
 # 出どころ: docs/1-要件定義/案件の説明.md（人が書いたメモ）。下書きは
 # `hatake project --draft --from` で起こし、**人が育てた**。
 #
-#   npx hatake project definitions/hatake.project.yaml
+#   npx -p @hatake-fw/api hatake project definitions/hatake.project.yaml
 project_version: "1.0"
 
 system:
@@ -91,7 +91,7 @@ glossary:
 
 logic:
   # 業務ロジックの**置き場**だけを書く（規則の中身は書かない）。
-  # 区分は `npx hatake where <やりたいこと>` で引いたものをそのまま書く。
+  # 区分は `npx -p @hatake-fw/api hatake where <やりたいこと>` で引いたものをそのまま書く。
   - what: ログインして資格を確かめる・役割を配る
     where: outside
     why: hatake は認証を持たない。社内ポータルが ID と役割を返す

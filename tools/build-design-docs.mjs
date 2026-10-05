@@ -41,7 +41,7 @@ const AUTHZ = CONFIG.authz ?? {};
 /**
  * hatake の CLI を叩く（`HATAKE` で差し替えられる＝手元の枠組みで試せる）。
  *
- * 既定は **`hatake.version` の Release から名前を固定して**取る。`npx --yes hatake` と
+ * 既定は **`hatake.version` の Release から名前を固定して**取る。`npx -p @hatake-fw/api hatake` と
  * 名前だけで書くと、手元に入っていない場所では npm の registry の `hatake`（別の人の、
  * 名前が同じだけの道具）を取ってきて走らせる（枠組みは registry に出していない）。
  */
