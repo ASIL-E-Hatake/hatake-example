@@ -4,13 +4,12 @@
 Flutter 版（[`flutter-src/`](../flutter-src/)）と**同じ定義・同じ API・同じ証跡の項番**で、
 違うのは `@hatake-fw/material`（Flutter）か `@hatake-fw/vue3`（ブラウザ）かだけ。
 
-**画面のコードは1行も書いていない。** 案件が書いたのは4つだけ:
+**画面のコードは1行も書いていない。** 案件が書いたのは3つだけ:
 
 | ファイル | 何を書いたか |
 |---|---|
 | [`src/main.ts`](src/main.ts) | 定義をどこから読むか・Repository の道・`plugin:` の中身・出す口 |
 | [`src/actions.ts`](src/actions.ts) | `plugin:` と書いたボタンの中身（一括の2つだけ。保存は組み込み） |
-| [`src/sinks.ts`](src/sinks.ts) | CSV と印刷の出し先 |
 | [`nginx.conf`](nginx.conf) | 画面と `/api` を同じ所から配る |
 
 ## 動かす

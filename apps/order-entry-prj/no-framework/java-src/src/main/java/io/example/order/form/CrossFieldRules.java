@@ -16,7 +16,7 @@ import java.util.Set;
  * 注釈は「その項目1つ」しか見ないので、
  *
  * <ul>
- *   <li>納期 ≧ 受注日 … 2つの項目を比べる</li>
+ *   <li>納期 ＞ 受注日 … 2つの項目を比べる</li>
  *   <li>同じ商品を2行に入れない … <b>行をまたいで</b>見る</li>
  * </ul>
  *
@@ -25,7 +25,7 @@ import java.util.Set;
  * 素直に書いたほうが短い。
  *
  * <p>hatake 版ではどちらも定義に1行ずつ書いてあり
- * （`{ type: compare, field: orderDate, operator: gte }` と `{ type: unique, of: productCode }`）、
+ * （`{ type: compare, field: orderDate, operator: gt }` と `{ type: unique, of: productCode }`）、
  * <b>画面もサーバも同じその1行を読む</b>。この版では、同じ規則を画面側にもう一度書く。
  */
 public final class CrossFieldRules {
@@ -74,7 +74,7 @@ public final class CrossFieldRules {
         return errors;
     }
 
-    /** 納期は受注日以降。 */
+    /** 納期は受注日の翌日以降（当日納品はしない）。 */
     private static void checkDueDate(OrderRequest order, List<Error> errors) {
         String from = order.orderDate();
         String to = order.dueDate();
@@ -82,8 +82,8 @@ public final class CrossFieldRules {
             return; // 空は `@NotBlank` の担当（二重に言わない）
         }
         // どちらも `yyyy-MM-dd` なので、文字のまま比べて順序が合う。
-        if (to.compareTo(from) < 0) {
-            errors.add(new Error("dueDate", "納期は受注日以降にしてください"));
+        if (to.compareTo(from) <= 0) {
+            errors.add(new Error("dueDate", "納期は受注日の翌日以降にしてください"));
         }
     }
 

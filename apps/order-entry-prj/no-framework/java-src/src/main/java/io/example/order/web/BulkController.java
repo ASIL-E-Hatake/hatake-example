@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class BulkController {
 
     /** 押せる役割。 */
-    private static final List<String> ALLOWED = List.of("clerk");
+    private static final List<String> ALLOWED = List.of("clerk", "manager");
 
     /** 1回で動かせる行数。役割ごとの指定が優先。 */
     private static final int DEFAULT_LIMIT = 50;

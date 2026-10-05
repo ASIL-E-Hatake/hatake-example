@@ -9,23 +9,22 @@
 //   ・定義をどこから読むか（ここではサーバ。画面側にコピーを持たない）
 //   ・どの Repository がどの道か（`restRepositories`）
 //   ・`plugin:` と書いたボタンの中身（`actions.ts`）
-//   ・出す口（CSV と印刷。`sinks.ts`）
+//   ・出す口（CSV と印刷。出来合いの `downloadCsv` / `downloadPdf` を登録するだけ）
 //
-// **`actions.ts` と `sinks.ts` は Vue 版と1文字も違わない**（`diff` が通る）。
-// どちらも枠組みの型（`ActionHandler` / `ExportSink`）しか見ていないので、描く側が
+// **`actions.ts` は Vue 版と1文字も違わない**（`diff` が通る）。
+// 枠組みの型（`ActionHandler`）しか見ていないので、描く側が
 // 変わっても業務の側は書き直さずに済む —— それがこの見本で確かめたいこと。
 
 import { parseAppPagesYaml, parseAppYaml } from "@hatake-fw/api";
 import { fetchSend, restRepositories } from "@hatake-fw/http";
 import { HatakeApp, HatakeScope } from "@hatake-fw/react19";
-import { ActionRegistry, RepositoryRegistry } from "@hatake-fw/runtime";
+import { ActionRegistry, downloadCsv, downloadPdf, RepositoryRegistry } from "@hatake-fw/runtime";
 import { useSyncExternalStore } from "react";
 import { createRoot } from "react-dom/client";
 
 import "@hatake-fw/runtime/hatake.css";
 
 import { bulkAction, newCounter } from "./actions.js";
-import { downloadCsv, showPrint } from "./sinks.js";
 
 const BASE = "/api";
 
@@ -105,8 +104,11 @@ async function start(): Promise<void> {
       archive: bulkAction(BASE, "archive", counter),
     }),
 
+    // 出す口は**出来合い**（0.9.25）。CSV はそのまま保存、帳票は PDF にして保存する。
+    // 0.9.24 までは自前の `sinks.ts` で、刷っても PDF ができなかった（`window` に紙を
+    // 置くだけ）。保存先が違うアプリ（社内へ送る等）は、ここに自分の口を書く。
     exportSink: downloadCsv,
-    printSink: showPrint,
+    printSink: downloadPdf,
 
     // このアプリが配りうる役割の**語彙**（いま見ている人の役割ではない）。
     knownRoles: ["tester", "admin"],

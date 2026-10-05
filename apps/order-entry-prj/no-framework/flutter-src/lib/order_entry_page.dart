@@ -34,6 +34,7 @@ class OrderEntryPage extends StatefulWidget {
 class _OrderEntryPageState extends State<OrderEntryPage> {
   final _salesPersonName = TextEditingController();
   final _deliveryPlace = TextEditingController();
+  final _customerOrderNo = TextEditingController();
   final _note = TextEditingController();
   String? _customerCode;
   String? _orderDate;
@@ -61,6 +62,7 @@ class _OrderEntryPageState extends State<OrderEntryPage> {
   void dispose() {
     _salesPersonName.dispose();
     _deliveryPlace.dispose();
+    _customerOrderNo.dispose();
     _note.dispose();
     super.dispose();
   }
@@ -84,6 +86,7 @@ class _OrderEntryPageState extends State<OrderEntryPage> {
           _dueDate = order['dueDate']?.toString();
           _salesPersonName.text = order['salesPersonName']?.toString() ?? '';
           _deliveryPlace.text = order['deliveryPlace']?.toString() ?? '';
+          _customerOrderNo.text = order['customerOrderNo']?.toString() ?? '';
           _note.text = order['note']?.toString() ?? '';
           _updatedAt = order['updatedAt']?.toString();
           _lines
@@ -107,6 +110,7 @@ class _OrderEntryPageState extends State<OrderEntryPage> {
         dueDate: _dueDate,
         salesPersonName: _salesPersonName.text,
         deliveryPlace: _deliveryPlace.text,
+        customerOrderNo: _customerOrderNo.text,
         note: _note.text,
       );
 
@@ -133,6 +137,7 @@ class _OrderEntryPageState extends State<OrderEntryPage> {
       'dueDate': _dueDate,
       'salesPersonName': _salesPersonName.text,
       'deliveryPlace': _deliveryPlace.text,
+      'customerOrderNo': _customerOrderNo.text,
       'note': _note.text,
       if (_updatedAt != null) 'updatedAt': _updatedAt,
       'lines': [
@@ -277,6 +282,7 @@ class _OrderEntryPageState extends State<OrderEntryPage> {
                   (value) => setState(() => _dueDate = value)),
               _textField('担当 *', _salesPersonName, 'salesPersonName', width: 240),
               _textField('納入先', _deliveryPlace, 'deliveryPlace', width: 320),
+              _textField('客先注文番号', _customerOrderNo, 'customerOrderNo', width: 240),
               _textField('備考', _note, 'note', width: 480, lines: 3),
             ],
           ),

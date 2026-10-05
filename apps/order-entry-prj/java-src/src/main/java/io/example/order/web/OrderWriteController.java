@@ -74,10 +74,10 @@ public class OrderWriteController {
 
         db.update(
                 "insert into orders (order_no, customer_code, order_date, due_date, order_status,"
-                        + " sales_person_name, delivery_place, note, office_code,"
+                        + " sales_person_name, delivery_place, customer_order_no, note, office_code,"
                         + " subtotal_amount, tax_amount, total_amount, line_count,"
                         + " created_by, created_at, updated_at)"
-                        + " values (?, ?, ?::date, ?::date, 'draft', ?, ?, ?, ?, ?, ?, ?, ?,"
+                        + " values (?, ?, ?::date, ?::date, 'draft', ?, ?, ?, ?, ?, ?, ?, ?, ?,"
                         + " ?, now(), now())",
                 orderNo,
                 record.get("customerCode"),
@@ -85,6 +85,7 @@ public class OrderWriteController {
                 record.get("dueDate"),
                 record.get("salesPersonName"),
                 record.get("deliveryPlace"),
+                record.get("customerOrderNo"),
                 record.get("note"),
                 officeOf(user),
                 totals.subtotalAmount(),
@@ -131,7 +132,7 @@ public class OrderWriteController {
         Object seen = body.get("updatedAt");
         int changed = db.update(
                 "update orders set customer_code = ?, order_date = ?::date, due_date = ?::date,"
-                        + " sales_person_name = ?, delivery_place = ?, note = ?,"
+                        + " sales_person_name = ?, delivery_place = ?, customer_order_no = ?, note = ?,"
                         + " subtotal_amount = ?, tax_amount = ?, total_amount = ?, line_count = ?,"
                         + " updated_at = now()"
                         + " where order_no = ?"
@@ -141,6 +142,7 @@ public class OrderWriteController {
                 record.get("dueDate"),
                 record.get("salesPersonName"),
                 record.get("deliveryPlace"),
+                record.get("customerOrderNo"),
                 record.get("note"),
                 totals.subtotalAmount(),
                 totals.taxAmount(),

@@ -61,6 +61,12 @@ public final class Sql {
                     params.add(range.get(1));
                     where.add(column + " between " + mark + " and " + mark);
                 }
+                // 前方一致。0.9.24 までは無く、`startsWith` と書いても**黙って完全一致**に
+                // なっていた（下の default に落ちる）。項目を1つ足して初めて見つかった。
+                case "startsWith" -> {
+                    params.add(likeEscaped(String.valueOf(one.value())) + "%");
+                    where.add(column + " like ? escape '\\'");
+                }
                 case "notEquals" -> {
                     params.add(one.value());
                     where.add(column + " <> " + mark);
@@ -114,5 +120,10 @@ public final class Sql {
             casts.put(filter.field(), cast);
         }
         return casts;
+    }
+
+    /** `like` の印（`%` `_` `\`）を字として扱う（利用者が打った `%` で全件が引けないように）。 */
+    private static String likeEscaped(String value) {
+        return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
     }
 }

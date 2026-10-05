@@ -467,11 +467,15 @@ app:
             fields:
               # **作るときだけ入れられる。** 直すときは読み取り専用＝鍵は後から
               # 変えられない（変えると別の1件になる）。
+              # 0.9.23 までは `{ field: $mode, equals: edit }` と書いていて、`equals` は
+              # 黙って捨てられ、**新規のときもコードが入れられなかった**（値の無い equals
+              # ＝いつも成り立つ）。0.9.24 の `condition-unknown-key` /
+              # `condition-mode-as-field` が見つけた。新規か編集かは `{ mode: … }` で書く。
               - field: itemCode
                 label: コード
                 type: text
                 required: true
-                readOnlyWhen: { field: $mode, equals: edit }
+                readOnlyWhen: { mode: edit }
               - { field: itemName, label: 名前, type: text, required: true }
               # **原価を入れるのは admin だけ。** 見えない人には空のまま通す。
               - { field: unitPrice, label: 原価, type: number, roles: [admin] }

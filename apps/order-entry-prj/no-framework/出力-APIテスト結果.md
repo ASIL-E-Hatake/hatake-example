@@ -4,13 +4,13 @@
 > **やりとりをそのまま**書き出しています（手で直さない）。
 > 作り直し: `bash tools/run-tests.sh`
 
-- 実行日時: 2026-09-17T09:25:06.884Z
+- 実行日時: 2026-10-05T00:16:53.536Z
 - 対象: `http://localhost:3002/api`
 - 前提: `docker compose up` で DB が初期データの状態
 
 > **順番に意味があります。** A-16 で作った受注を A-18・A-20・A-23・A-24 が使い回すので、1件ずつ抜き出して回すと落ちます（回す前にデータを初期状態に戻すのはそのため）。
 
-## まとめ（27 / 28 件）
+## まとめ（34 / 35 件）
 
 | 項番 | 内容 | 結果 | HTTP |
 |---|---|---|---|
@@ -42,6 +42,13 @@
 | A-26 | 営業は帳票の口を叩けない | OK | 403 |
 | A-27 | 出荷指示を投げると状態が出荷済になる | OK | 200 |
 | A-28 | 画面の定義を配っている | **NG** | 404 |
+| A-29 | 管理者も受注を入力できる（入れる人は定義の画面の roles） | OK | 201 |
+| A-30 | 客先注文番号を入れて保存でき、読み直すと返ってくる | OK | 201 |
+| A-31 | 客先注文番号は頭だけで探せる（前方一致） | OK | 200 |
+| A-32 | 客先注文番号は20文字まで（サーバでも止める） | OK | 400 |
+| A-33 | 納期が受注日と同じ日なら保存できない（当日納品はやめた） | OK | 400 |
+| A-34 | 管理者もまとめて取り消せる | OK | 200 |
+| A-35 | 管理者も1件ずつ取り消せる | OK | 204 |
 
 ---
 
@@ -69,7 +76,7 @@ POST http://localhost:3002/api/auth/login
 ```json
 HTTP 200
 {
-  "token": "dGFuYWthH-eUsOS4rSDlhKrlrZAfY2xlcmsfMTc4OTY2NTkwNg.qsFFgdOrLjVQQMBMm96B67YIZAEbowGSdmqxeckTQY8",
+  "token": "dGFuYWthH-eUsOS4rSDlhKrlrZAfY2xlcmsfMTc5MTE4ODIxMw.MWkRei6KXRUSFqSY28YqQChyPyqeroXh4sPhy439zUQ",
   "user": {
     "officeCode": "TKY",
     "name": "田中 優子",
@@ -155,6 +162,7 @@ HTTP 200
       "orderStatus": "draft",
       "salesPersonName": "田中 優子",
       "deliveryPlace": null,
+      "customerOrderNo": null,
       "note": "数量確認中",
       "officeCode": "TKY",
       "subtotalAmount": 6680,
@@ -174,6 +182,7 @@ HTTP 200
       "orderStatus": "draft",
       "salesPersonName": "佐藤 健一",
       "deliveryPlace": "本社総務部",
+      "customerOrderNo": null,
       "note": null,
       "officeCode": "OSA",
       "subtotalAmount": 2160,
@@ -216,6 +225,7 @@ HTTP 200
       "orderStatus": "shipped",
       "salesPersonName": "佐藤 健一",
       "deliveryPlace": "本社総務部",
+      "customerOrderNo": null,
       "note": null,
       "officeCode": "OSA",
       "subtotalAmount": 6360,
@@ -235,6 +245,7 @@ HTTP 200
       "orderStatus": "shipped",
       "salesPersonName": "鈴木 花",
       "deliveryPlace": "川崎センター",
+      "customerOrderNo": null,
       "note": "定期便",
       "officeCode": "TKY",
       "subtotalAmount": 9700,
@@ -247,9 +258,7 @@ HTTP 200
       "customerName": "北山フーズ株式会社"
     },
     {
-      "orderNo": "SO2026080001",
-      "customerCode": "C002",
-      "orderDa
+      "orderNo"
 …（長いので省略）
 ```
 
@@ -280,6 +289,7 @@ HTTP 200
       "orderStatus": "draft",
       "salesPersonName": "佐藤 健一",
       "deliveryPlace": "本社総務部",
+      "customerOrderNo": null,
       "note": null,
       "officeCode": "OSA",
       "subtotalAmount": 2160,
@@ -299,6 +309,7 @@ HTTP 200
       "orderStatus": "draft",
       "salesPersonName": "田中 優子",
       "deliveryPlace": null,
+      "customerOrderNo": null,
       "note": "数量確認中",
       "officeCode": "TKY",
       "subtotalAmount": 6680,
@@ -311,9 +322,7 @@ HTTP 200
       "customerName": "北山フーズ株式会社"
     },
     {
-      "orderNo": "SO2026090002",
-      "customerCode": "C002",
-      "orderDate": "
+      "orderNo": "SO2
 …（長いので省略）
 ```
 
@@ -344,6 +353,7 @@ HTTP 200
       "orderStatus": "shipped",
       "salesPersonName": "佐藤 健一",
       "deliveryPlace": "本社総務部",
+      "customerOrderNo": null,
       "note": null,
       "officeCode": "OSA",
       "subtotalAmount": 6360,
@@ -363,6 +373,7 @@ HTTP 200
       "orderStatus": "shipped",
       "salesPersonName": "鈴木 花",
       "deliveryPlace": "川崎センター",
+      "customerOrderNo": null,
       "note": "定期便",
       "officeCode": "TKY",
       "subtotalAmount": 9700,
@@ -375,9 +386,7 @@ HTTP 200
       "customerName": "北山フーズ株式会社"
     },
     {
-      "orderNo": "SO2026080002",
-      "customerCode": "C001",
-      "orderDa
+      "orderNo"
 …（長いので省略）
 ```
 
@@ -405,6 +414,7 @@ HTTP 200
   "orderStatus": "confirmed",
   "salesPersonName": "鈴木 花",
   "deliveryPlace": "本社",
+  "customerOrderNo": null,
   "note": null,
   "officeCode": "TKY",
   "subtotalAmount": 10520,
@@ -424,6 +434,7 @@ HTTP 200
       "orderStatus": "confirmed",
       "customerCode": "C002",
       "customerName": "みどり物産株式会社",
+      "customerOrderNo": null,
       "productCode": "P004",
       "productName": "デスクマット",
       "quantity": 1,
@@ -440,10 +451,8 @@ HTTP 200
       "orderStatus": "confirmed",
       "customerCode": "C002",
       "customerName": "みどり物産株式会社",
-      "productCode": "P002",
-      "productName": "ボールペン 黒（10本）",
-      "quantity": 4,
-      "unitPr
+      "customerOrderNo": null,
+      "prod
 …（長いので省略）
 ```
 
@@ -471,6 +480,7 @@ HTTP 200
   "orderStatus": "confirmed",
   "salesPersonName": "鈴木 花",
   "deliveryPlace": "本社",
+  "customerOrderNo": null,
   "note": null,
   "officeCode": "TKY",
   "subtotalAmount": 10520,
@@ -490,6 +500,7 @@ HTTP 200
       "orderStatus": "confirmed",
       "customerCode": "C002",
       "customerName": "みどり物産株式会社",
+      "customerOrderNo": null,
       "productCode": "P004",
       "productName": "デスクマット",
       "quantity": 1,
@@ -506,10 +517,8 @@ HTTP 200
       "orderStatus": "confirmed",
       "customerCode": "C002",
       "customerName": "みどり物産株式会社",
-      "productCode": "P002",
-      "productName": "ボールペン 黒（10本）",
-      "quantity": 4,
-      "unitPr
+      "customerOrderNo": null,
+      "prod
 …（長いので省略）
 ```
 
@@ -540,6 +549,7 @@ HTTP 200
       "orderStatus": "shipped",
       "salesPersonName": "佐藤 健一",
       "deliveryPlace": "本社総務部",
+      "customerOrderNo": null,
       "note": null,
       "officeCode": "OSA",
       "subtotalAmount": 6360,
@@ -558,6 +568,7 @@ HTTP 200
       "orderStatus": "confirmed",
       "salesPersonName": "佐藤 健一",
       "deliveryPlace": "第二倉庫",
+      "customerOrderNo": null,
       "note": "至急",
       "officeCode": "OSA",
       "subtotalAmount": 5180,
@@ -571,9 +582,7 @@ HTTP 200
     {
       "orderNo": "SO2026090001",
       "customerCode": "C005",
-      "orderDate": "2026-09-01",
-      "dueDate": "2026-09-08",
-      
+      "o
 …（長いので省略）
 ```
 
@@ -604,6 +613,7 @@ HTTP 200
       "orderStatus": "shipped",
       "salesPersonName": "佐藤 健一",
       "deliveryPlace": "本社総務部",
+      "customerOrderNo": null,
       "note": null,
       "officeCode": "OSA",
       "subtotalAmount": 6360,
@@ -622,6 +632,7 @@ HTTP 200
       "orderStatus": "confirmed",
       "salesPersonName": "佐藤 健一",
       "deliveryPlace": "第二倉庫",
+      "customerOrderNo": null,
       "note": "至急",
       "officeCode": "OSA",
       "subtotalAmount": 5180,
@@ -635,9 +646,7 @@ HTTP 200
     {
       "orderNo": "SO2026090001",
       "customerCode": "C005",
-      "orderDate": "2026-09-01",
-      "dueDate": "2026-09-08",
-      
+      "o
 …（長いので省略）
 ```
 
@@ -684,7 +693,7 @@ HTTP 400
     },
     {
       "field": "dueDate",
-      "message": "納期は受注日以降にしてください"
+      "message": "納期は受注日の翌日以降にしてください"
     }
   ],
   "valid": false
@@ -850,13 +859,14 @@ POST http://localhost:3002/api/orders
 ```json
 HTTP 201
 {
-  "orderNo": "SO2026090101",
+  "orderNo": "SO2026100101",
   "customerCode": "C001",
   "orderDate": "2026-09-15",
   "dueDate": "2026-09-25",
   "orderStatus": "draft",
   "salesPersonName": "田中 優子",
   "deliveryPlace": null,
+  "customerOrderNo": null,
   "note": null,
   "officeCode": "TKY",
   "subtotalAmount": 7960,
@@ -864,18 +874,19 @@ HTTP 201
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "tanaka",
-  "createdAt": "2026-09-17 09:25:07.284922+00",
-  "updatedAt": "2026-09-17 09:25:07.284922+00",
+  "createdAt": "2026-10-05 00:16:53.988397+00",
+  "updatedAt": "2026-10-05 00:16:53.988397+00",
   "customerName": "株式会社あおぞら商事",
   "lines": [
     {
-      "orderNo": "SO2026090101",
+      "orderNo": "SO2026100101",
       "lineNo": 1,
       "orderDate": "2026-09-15",
       "dueDate": "2026-09-25",
       "orderStatus": "draft",
       "customerCode": "C001",
       "customerName": "株式会社あおぞら商事",
+      "customerOrderNo": null,
       "productCode": "P001",
       "productName": "A4コピー用紙（500枚）",
       "quantity": 10,
@@ -885,16 +896,14 @@ HTTP 201
       "cancelled": false
     },
     {
-      "orderNo": "SO2026090101",
+      "orderNo": "SO2026100101",
       "lineNo": 2,
       "orderDate": "2026-09-15",
       "dueDate": "2026-09-25",
       "orderStatus": "draft",
       "customerCode": "C001",
       "customerName": "株式会社あおぞら商事",
-      "productCode": "P006",
-      "productName": "ミネラルウォーター（24本）",
-      "quantity": 2,
+      "customerOrderNo": null,
 
 …（長いので省略）
 ```
@@ -937,13 +946,14 @@ POST http://localhost:3002/api/orders
 ```json
 HTTP 201
 {
-  "orderNo": "SO2026090102",
+  "orderNo": "SO2026100102",
   "customerCode": "C002",
   "orderDate": "2026-09-15",
   "dueDate": "2026-09-25",
   "orderStatus": "draft",
   "salesPersonName": "田中 優子",
   "deliveryPlace": null,
+  "customerOrderNo": null,
   "note": null,
   "officeCode": "TKY",
   "subtotalAmount": 7960,
@@ -951,18 +961,19 @@ HTTP 201
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "tanaka",
-  "createdAt": "2026-09-17 09:25:07.322977+00",
-  "updatedAt": "2026-09-17 09:25:07.322977+00",
+  "createdAt": "2026-10-05 00:16:54.038086+00",
+  "updatedAt": "2026-10-05 00:16:54.038086+00",
   "customerName": "みどり物産株式会社",
   "lines": [
     {
-      "orderNo": "SO2026090102",
+      "orderNo": "SO2026100102",
       "lineNo": 1,
       "orderDate": "2026-09-15",
       "dueDate": "2026-09-25",
       "orderStatus": "draft",
       "customerCode": "C002",
       "customerName": "みどり物産株式会社",
+      "customerOrderNo": null,
       "productCode": "P001",
       "productName": "A4コピー用紙（500枚）",
       "quantity": 10,
@@ -972,16 +983,14 @@ HTTP 201
       "cancelled": false
     },
     {
-      "orderNo": "SO2026090102",
+      "orderNo": "SO2026100102",
       "lineNo": 2,
       "orderDate": "2026-09-15",
       "dueDate": "2026-09-25",
       "orderStatus": "draft",
       "customerCode": "C002",
       "customerName": "みどり物産株式会社",
-      "productCode": "P006",
-      "productName": "ミネラルウォーター（24本）",
-      "quantity": 2,
+      "customerOrderNo": null,
    
 …（長いので省略）
 ```
@@ -995,7 +1004,7 @@ HTTP 201
 **投げたもの**
 
 ```http
-PUT http://localhost:3002/api/orders/SO2026090101
+PUT http://localhost:3002/api/orders/SO2026100101
 
 {
   "customerCode": "C001",
@@ -1069,14 +1078,14 @@ HTTP 409
 
 ### A-20 営業は受注を取り消せない
 
-- **確かめたいこと**: 取り消せるのは営業事務だけ（定義の `roles: [clerk]`）。画面から消しても口は開いている
+- **確かめたいこと**: 取り消せるのは営業事務と管理者（定義の `roles: [clerk, manager]`）。画面から消しても口は開いている
 - **期待**: 403
 - **結果**: OK
 
 **投げたもの**
 
 ```http
-DELETE http://localhost:3002/api/orders/SO2026090101
+DELETE http://localhost:3002/api/orders/SO2026100101
 ```
 
 **返ってきたもの**
@@ -1169,7 +1178,7 @@ POST http://localhost:3002/api/bulk/cancel
 
 {
   "keys": [
-    "SO2026090101",
+    "SO2026100101",
     "SO2026070001",
     "SO2026080003",
     "NOPE"
@@ -1209,7 +1218,7 @@ HTTP 200
 **投げたもの**
 
 ```http
-GET http://localhost:3002/api/orders/SO2026090101
+GET http://localhost:3002/api/orders/SO2026100101
 ```
 
 **返ってきたもの**
@@ -1217,13 +1226,14 @@ GET http://localhost:3002/api/orders/SO2026090101
 ```json
 HTTP 200
 {
-  "orderNo": "SO2026090101",
+  "orderNo": "SO2026100101",
   "customerCode": "C001",
   "orderDate": "2026-09-15",
   "dueDate": "2026-09-25",
   "orderStatus": "cancelled",
   "salesPersonName": "田中 優子",
   "deliveryPlace": null,
+  "customerOrderNo": null,
   "note": null,
   "officeCode": "TKY",
   "subtotalAmount": 7960,
@@ -1231,18 +1241,19 @@ HTTP 200
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "tanaka",
-  "createdAt": "2026-09-17 09:25:07.284922+00",
-  "updatedAt": "2026-09-17 09:25:07.401149+00",
+  "createdAt": "2026-10-05 00:16:53.988397+00",
+  "updatedAt": "2026-10-05 00:16:54.099017+00",
   "customerName": "株式会社あおぞら商事",
   "lines": [
     {
-      "orderNo": "SO2026090101",
+      "orderNo": "SO2026100101",
       "lineNo": 1,
       "orderDate": "2026-09-15",
       "dueDate": "2026-09-25",
       "orderStatus": "cancelled",
       "customerCode": "C001",
       "customerName": "株式会社あおぞら商事",
+      "customerOrderNo": null,
       "productCode": "P001",
       "productName": "A4コピー用紙（500枚）",
       "quantity": 10,
@@ -1252,16 +1263,14 @@ HTTP 200
       "cancelled": false
     },
     {
-      "orderNo": "SO2026090101",
+      "orderNo": "SO2026100101",
       "lineNo": 2,
       "orderDate": "2026-09-15",
       "dueDate": "2026-09-25",
       "orderStatus": "cancelled",
       "customerCode": "C001",
       "customerName": "株式会社あおぞら商事",
-      "productCode": "P006",
-      "productName": "ミネラルウォーター（24本）",
-      "qu
+      "customerOrde
 …（長いので省略）
 ```
 
@@ -1292,6 +1301,7 @@ HTTP 200
       "orderStatus": "confirmed",
       "customerCode": "C002",
       "customerName": "みどり物産株式会社",
+      "customerOrderNo": null,
       "productCode": "P004",
       "productName": "デスクマット",
       "quantity": 1,
@@ -1308,6 +1318,7 @@ HTTP 200
       "orderStatus": "confirmed",
       "customerCode": "C002",
       "customerName": "みどり物産株式会社",
+      "customerOrderNo": null,
       "productCode": "P002",
       "productName": "ボールペン 黒（10本）",
       "quantity": 4,
@@ -1324,12 +1335,9 @@ HTTP 200
       "orderStatus": "confirmed",
       "customerCode": "C002",
       "customerName": "みどり物産株式会社",
+      "customerOrderNo": null,
       "productCode": "P008",
-      "productName": "来客用茶葉（1kg）",
-      "quantity": 1,
-      "unitPrice": 4200,
-      "taxRate": 0.08,
- 
+      "produ
 …（長いので省略）
 ```
 
@@ -1378,6 +1386,7 @@ HTTP 200
   "orderStatus": "shipped",
   "salesPersonName": "佐藤 健一",
   "deliveryPlace": null,
+  "customerOrderNo": null,
   "note": null,
   "officeCode": "OSA",
   "subtotalAmount": 4060,
@@ -1386,7 +1395,7 @@ HTTP 200
   "lineCount": 2,
   "createdBy": "sato",
   "createdAt": "2026-09-01 00:00:00+00",
-  "updatedAt": "2026-09-17 09:25:07.448379+00",
+  "updatedAt": "2026-10-05 00:16:54.139637+00",
   "customerName": "南商店",
   "lines": [
     {
@@ -1397,6 +1406,7 @@ HTTP 200
       "orderStatus": "shipped",
       "customerCode": "C005",
       "customerName": "南商店",
+      "customerOrderNo": null,
       "productCode": "P006",
       "productName": "ミネラルウォーター（24本）",
       "quantity": 1,
@@ -1413,10 +1423,8 @@ HTTP 200
       "orderStatus": "shipped",
       "customerCode": "C005",
       "customerName": "南商店",
-      "productCode": "P007",
-      "productName": "ドリップコーヒー（50袋）",
-      "quantity": 1,
-      "unitPrice": 2480
+      "customerOrderNo": null,
+      "productCode": "
 …（長いので省略）
 ```
 
@@ -1437,9 +1445,363 @@ GET http://localhost:3002/api/definition.yaml
 ```json
 HTTP 404
 {
-  "timestamp": "2026-09-17T09:25:07.467+00:00",
+  "timestamp": "2026-10-05T00:16:54.161+00:00",
   "status": 404,
   "error": "Not Found",
   "path": "/api/definition.yaml"
 }
+```
+
+### A-29 管理者も受注を入力できる（入れる人は定義の画面の roles）
+
+- **確かめたいこと**: 要件では管理者は「全部できる」。0.9.20 まではサーバに sales と clerk を決め打ちしていて、画面は開けるのに保存で 403 になっていた
+- **期待**: 201
+- **結果**: OK
+
+**投げたもの**
+
+```http
+POST http://localhost:3002/api/orders
+
+{
+  "customerCode": "C003",
+  "orderDate": "2026-09-15",
+  "dueDate": "2026-09-25",
+  "salesPersonName": "田中 優子",
+  "lines": [
+    {
+      "productCode": "P001",
+      "quantity": 10,
+      "unitPrice": 480
+    },
+    {
+      "productCode": "P006",
+      "quantity": 2,
+      "unitPrice": 1580
+    }
+  ]
+}
+```
+
+**返ってきたもの**
+
+```json
+HTTP 201
+{
+  "orderNo": "SO2026100103",
+  "customerCode": "C003",
+  "orderDate": "2026-09-15",
+  "dueDate": "2026-09-25",
+  "orderStatus": "draft",
+  "salesPersonName": "田中 優子",
+  "deliveryPlace": null,
+  "customerOrderNo": null,
+  "note": null,
+  "officeCode": "TKY",
+  "subtotalAmount": 7960,
+  "taxAmount": 732,
+  "totalAmount": 8692,
+  "lineCount": 2,
+  "createdBy": "yamada",
+  "createdAt": "2026-10-05 00:16:54.198697+00",
+  "updatedAt": "2026-10-05 00:16:54.198697+00",
+  "customerName": "北山フーズ株式会社",
+  "lines": [
+    {
+      "orderNo": "SO2026100103",
+      "lineNo": 1,
+      "orderDate": "2026-09-15",
+      "dueDate": "2026-09-25",
+      "orderStatus": "draft",
+      "customerCode": "C003",
+      "customerName": "北山フーズ株式会社",
+      "customerOrderNo": null,
+      "productCode": "P001",
+      "productName": "A4コピー用紙（500枚）",
+      "quantity": 10,
+      "unitPrice": 480,
+      "taxRate": 0.1,
+      "amount": 4800,
+      "cancelled": false
+    },
+    {
+      "orderNo": "SO2026100103",
+      "lineNo": 2,
+      "orderDate": "2026-09-15",
+      "dueDate": "2026-09-25",
+      "orderStatus": "draft",
+      "customerCode": "C003",
+      "customerName": "北山フーズ株式会社",
+      "customerOrderNo": null,
+   
+…（長いので省略）
+```
+
+### A-30 客先注文番号を入れて保存でき、読み直すと返ってくる
+
+- **確かめたいこと**: 項目を1つ足したとき、受け取る・残す・返す、のどこかを忘れると黙って消える（保存は成功する）
+- **期待**: 201・読み直すと PO-7781-A
+- **結果**: OK
+- **補足**: この直後に読み直して確かめる
+
+**投げたもの**
+
+```http
+POST http://localhost:3002/api/orders
+
+{
+  "customerCode": "C001",
+  "orderDate": "2026-09-15",
+  "dueDate": "2026-09-25",
+  "salesPersonName": "田中 優子",
+  "lines": [
+    {
+      "productCode": "P001",
+      "quantity": 10,
+      "unitPrice": 480
+    },
+    {
+      "productCode": "P006",
+      "quantity": 2,
+      "unitPrice": 1580
+    }
+  ],
+  "customerOrderNo": "PO-7781-A"
+}
+```
+
+**返ってきたもの**
+
+```json
+HTTP 201
+{
+  "orderNo": "SO2026100104",
+  "customerCode": "C001",
+  "orderDate": "2026-09-15",
+  "dueDate": "2026-09-25",
+  "orderStatus": "draft",
+  "salesPersonName": "田中 優子",
+  "deliveryPlace": null,
+  "customerOrderNo": "PO-7781-A",
+  "note": null,
+  "officeCode": "TKY",
+  "subtotalAmount": 7960,
+  "taxAmount": 732,
+  "totalAmount": 8692,
+  "lineCount": 2,
+  "createdBy": "tanaka",
+  "createdAt": "2026-10-05 00:16:54.22145+00",
+  "updatedAt": "2026-10-05 00:16:54.22145+00",
+  "customerName": "株式会社あおぞら商事",
+  "lines": [
+    {
+      "orderNo": "SO2026100104",
+      "lineNo": 1,
+      "orderDate": "2026-09-15",
+      "dueDate": "2026-09-25",
+      "orderStatus": "draft",
+      "customerCode": "C001",
+      "customerName": "株式会社あおぞら商事",
+      "customerOrderNo": "PO-7781-A",
+      "productCode": "P001",
+      "productName": "A4コピー用紙（500枚）",
+      "quantity": 10,
+      "unitPrice": 480,
+      "taxRate": 0.1,
+      "amount": 4800,
+      "cancelled": false
+    },
+    {
+      "orderNo": "SO2026100104",
+      "lineNo": 2,
+      "orderDate": "2026-09-15",
+      "dueDate": "2026-09-25",
+      "orderStatus": "draft",
+      "customerCode": "C001",
+      "customerName": "株式会社あおぞら商事",
+      "customerOrde
+…（長いので省略）
+```
+
+### A-31 客先注文番号は頭だけで探せる（前方一致）
+
+- **確かめたいこと**: 客先の書類から引くとき、番号の頭しか分からないことがある。完全一致に落ちていると0件になる
+- **期待**: PO-778 で探すと A-30 の受注が出る
+- **結果**: OK
+
+**投げたもの**
+
+```http
+GET http://localhost:3002/api/orders?customerOrderNo=PO-778&pageSize=50
+```
+
+**返ってきたもの**
+
+```json
+HTTP 200
+{
+  "totalCount": 1,
+  "items": [
+    {
+      "orderNo": "SO2026100104",
+      "customerCode": "C001",
+      "orderDate": "2026-09-15",
+      "dueDate": "2026-09-25",
+      "orderStatus": "draft",
+      "salesPersonName": "田中 優子",
+      "deliveryPlace": null,
+      "customerOrderNo": "PO-7781-A",
+      "note": null,
+      "officeCode": "TKY",
+      "subtotalAmount": 7960,
+      "taxAmount": 732,
+      "totalAmount": 8692,
+      "lineCount": 2,
+      "createdBy": "tanaka",
+      "createdAt": "2026-10-05 00:16:54.22145+00",
+      "updatedAt": "2026-10-05 00:16:54.22145+00",
+      "customerName": "株式会社あおぞら商事"
+    }
+  ]
+}
+```
+
+### A-32 客先注文番号は20文字まで（サーバでも止める）
+
+- **確かめたいこと**: 画面の検証は親切であって守りではない
+- **期待**: 400・customerOrderNo の誤り
+- **結果**: OK
+
+**投げたもの**
+
+```http
+POST http://localhost:3002/api/orders
+
+{
+  "customerCode": "C001",
+  "orderDate": "2026-09-15",
+  "dueDate": "2026-09-25",
+  "salesPersonName": "田中 優子",
+  "lines": [
+    {
+      "productCode": "P001",
+      "quantity": 10,
+      "unitPrice": 480
+    },
+    {
+      "productCode": "P006",
+      "quantity": 2,
+      "unitPrice": 1580
+    }
+  ],
+  "customerOrderNo": "XXXXXXXXXXXXXXXXXXXXX"
+}
+```
+
+**返ってきたもの**
+
+```json
+HTTP 400
+{
+  "errors": [
+    {
+      "field": "customerOrderNo",
+      "message": "20文字以内で入力してください"
+    }
+  ],
+  "valid": false
+}
+```
+
+### A-33 納期が受注日と同じ日なら保存できない（当日納品はやめた）
+
+- **確かめたいこと**: 規則を変えたとき、画面だけ・サーバだけを直すと、API を直接叩けば前の規則で通る
+- **期待**: 400・dueDate の誤り
+- **結果**: OK
+
+**投げたもの**
+
+```http
+POST http://localhost:3002/api/orders
+
+{
+  "customerCode": "C001",
+  "orderDate": "2026-09-15",
+  "dueDate": "2026-09-15",
+  "salesPersonName": "田中 優子",
+  "lines": [
+    {
+      "productCode": "P001",
+      "quantity": 10,
+      "unitPrice": 480
+    },
+    {
+      "productCode": "P006",
+      "quantity": 2,
+      "unitPrice": 1580
+    }
+  ]
+}
+```
+
+**返ってきたもの**
+
+```json
+HTTP 400
+{
+  "errors": [
+    {
+      "field": "dueDate",
+      "message": "納期は受注日の翌日以降にしてください"
+    }
+  ],
+  "valid": false
+}
+```
+
+### A-34 管理者もまとめて取り消せる
+
+- **確かめたいこと**: 権限を広げたとき、画面のボタンだけ出してサーバが 403 のまま、が起きやすい
+- **期待**: 200・1件取り消した
+- **結果**: OK
+
+**投げたもの**
+
+```http
+POST http://localhost:3002/api/bulk/cancel
+
+{
+  "keys": [
+    "SO2026100104"
+  ]
+}
+```
+
+**返ってきたもの**
+
+```json
+HTTP 200
+{
+  "succeeded": 1,
+  "rejected": []
+}
+```
+
+### A-35 管理者も1件ずつ取り消せる
+
+- **確かめたいこと**: 一括と1件の口は別。片方だけ直すと、もう片方は前の権限のまま
+- **期待**: 204
+- **結果**: OK
+
+**投げたもの**
+
+```http
+DELETE http://localhost:3002/api/orders/SO2026090004
+```
+
+**返ってきたもの**
+
+```json
+HTTP 204
+null
 ```

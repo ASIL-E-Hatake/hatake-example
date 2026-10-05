@@ -44,6 +44,8 @@ const goodOrder = (overrides = {}) => ({
 
 /** 後ろのケースで使う、この実行で作った受注の番号。 */
 let madeOrderNo = null;
+/** 客先注文番号を付けて作った受注の番号（A-30 で作って A-31 が探す）。 */
+let madeWithPo = null;
 
 const CASES = [
   {
@@ -286,7 +288,7 @@ const CASES = [
   {
     id: "A-20",
     title: "営業は受注を取り消せない",
-    why: "取り消せるのは営業事務だけ（定義の `roles: [clerk]`）。画面から消しても口は開いている",
+    why: "取り消せるのは営業事務と管理者（定義の `roles: [clerk, manager]`）。画面から消しても口は開いている",
     expect: "403",
     run: () => call({ who: "sato", method: "DELETE", path: `/orders/${madeOrderNo}` }),
     check: (r) => r.status === 403,
@@ -382,6 +384,86 @@ const CASES = [
     run: () =>
       call({ who: "yamada", method: "POST", path: "/orders", body: goodOrder({ customerCode: "C003" }) }),
     check: (r) => r.status === 201,
+  },
+  {
+    id: "A-30",
+    title: "客先注文番号を入れて保存でき、読み直すと返ってくる",
+    why: "項目を1つ足したとき、受け取る・残す・返す、のどこかを忘れると黙って消える（保存は成功する）",
+    expect: "201・読み直すと PO-7781-A",
+    run: async () => {
+      const made = await call({
+        who: "tanaka",
+        method: "POST",
+        path: "/orders",
+        body: goodOrder({ customerOrderNo: "PO-7781-A" }),
+      });
+      madeWithPo = made.response?.orderNo ?? null;
+      return { ...made, note: "この直後に読み直して確かめる" };
+    },
+    check: async (r) => {
+      if (r.status !== 201 || madeWithPo === null) return false;
+      const again = await call({ who: "tanaka", path: `/orders/${madeWithPo}` });
+      return again.response.customerOrderNo === "PO-7781-A";
+    },
+  },
+  {
+    id: "A-31",
+    title: "客先注文番号は頭だけで探せる（前方一致）",
+    why: "客先の書類から引くとき、番号の頭しか分からないことがある。完全一致に落ちていると0件になる",
+    expect: "PO-778 で探すと A-30 の受注が出る",
+    run: () => call({ who: "tanaka", path: "/orders?customerOrderNo=PO-778&pageSize=50" }),
+    check: (r) =>
+      r.status === 200 &&
+      r.response.items.some((one) => one.orderNo === madeWithPo) &&
+      r.response.items.every((one) => String(one.customerOrderNo ?? "").startsWith("PO-778")),
+  },
+  {
+    id: "A-32",
+    title: "客先注文番号は20文字まで（サーバでも止める）",
+    why: "画面の検証は親切であって守りではない",
+    expect: "400・customerOrderNo の誤り",
+    run: () =>
+      call({
+        who: "tanaka",
+        method: "POST",
+        path: "/orders",
+        body: goodOrder({ customerOrderNo: "X".repeat(21) }),
+      }),
+    check: (r) =>
+      r.status === 400 &&
+      JSON.stringify(r.response).includes("customerOrderNo"),
+  },
+  {
+    id: "A-33",
+    title: "納期が受注日と同じ日なら保存できない（当日納品はやめた）",
+    why: "規則を変えたとき、画面だけ・サーバだけを直すと、API を直接叩けば前の規則で通る",
+    expect: "400・dueDate の誤り",
+    run: () =>
+      call({
+        who: "tanaka",
+        method: "POST",
+        path: "/orders",
+        body: goodOrder({ orderDate: "2026-09-15", dueDate: "2026-09-15" }),
+      }),
+    check: (r) =>
+      r.status === 400 && r.response.errors.some((one) => one.field === "dueDate"),
+  },
+  {
+    id: "A-34",
+    title: "管理者もまとめて取り消せる",
+    why: "権限を広げたとき、画面のボタンだけ出してサーバが 403 のまま、が起きやすい",
+    expect: "200・1件取り消した",
+    run: () =>
+      call({ who: "yamada", method: "POST", path: "/bulk/cancel", body: { keys: [madeWithPo] } }),
+    check: (r) => r.status === 200 && r.response.succeeded === 1,
+  },
+  {
+    id: "A-35",
+    title: "管理者も1件ずつ取り消せる",
+    why: "一括と1件の口は別。片方だけ直すと、もう片方は前の権限のまま",
+    expect: "204",
+    run: () => call({ who: "yamada", method: "DELETE", path: "/orders/SO2026090004" }),
+    check: (r) => r.status === 204,
   },
 ];
 

@@ -41,6 +41,9 @@ public record OrderRequest(
         @Size(max = 60, message = "60文字以内で入力してください")
         String deliveryPlace,
 
+        @Size(max = 20, message = "20文字以内で入力してください")
+        String customerOrderNo,
+
         @Size(max = 200, message = "200文字以内で入力してください")
         String note,
 

@@ -9,10 +9,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@hatake-fw/api": "https://github.com/ASIL-E-Hatake/hatake/releases/download/v0.9.23/hatake-fw-api-0.9.23.tgz",
-    "@hatake-fw/http": "https://github.com/ASIL-E-Hatake/hatake/releases/download/v0.9.23/hatake-fw-http-0.9.23.tgz",
-    "@hatake-fw/react19": "https://github.com/ASIL-E-Hatake/hatake/releases/download/v0.9.23/hatake-fw-react19-0.9.23.tgz",
-    "@hatake-fw/runtime": "https://github.com/ASIL-E-Hatake/hatake/releases/download/v0.9.23/hatake-fw-runtime-0.9.23.tgz",
+    "@hatake-fw/api": "https://github.com/ASIL-E-Hatake/hatake/releases/download/v0.9.25/hatake-fw-api-0.9.25.tgz",
+    "@hatake-fw/http": "https://github.com/ASIL-E-Hatake/hatake/releases/download/v0.9.25/hatake-fw-http-0.9.25.tgz",
+    "@hatake-fw/react19": "https://github.com/ASIL-E-Hatake/hatake/releases/download/v0.9.25/hatake-fw-react19-0.9.25.tgz",
+    "@hatake-fw/runtime": "https://github.com/ASIL-E-Hatake/hatake/releases/download/v0.9.25/hatake-fw-runtime-0.9.25.tgz",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

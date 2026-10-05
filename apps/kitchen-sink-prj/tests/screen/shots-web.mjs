@@ -47,6 +47,16 @@ async function press(page, mark) {
   await settle(900);
 }
 
+/**
+ * 画面が保存させたファイル（`URL.createObjectURL` に渡った Blob）の型と頭の数バイト。
+ *
+ * 刷るボタンは**押して PDF が落ちてくる**まで見ないと、口に届いたかどうか分からない
+ * （0.9.24 までの見本は、刷っても `window` に紙を置くだけで PDF ができなかった）。
+ */
+async function savedFiles(page) {
+  return page.evaluate(() => window.__hatakeSaved ?? []);
+}
+
 /** その画面が出ているのを待つ。**撮る前に必ず通す。** */
 async function waitPage(page, pageId) {
   await page
@@ -131,12 +141,18 @@ const CASES = [
   {
     id: "08", pageId: "sorted_report", role: "admin", file: "08-帳票-降順.png",
     title: "帳票の降順・持ち出しは admin だけ",
-    why: "report.sort.ascending と、`export` / `print` が口に届くか",
-    expect: "コードが**降順**（ITEM-012 が先頭）。「CSV 出力」「印刷」が出ている",
+    why: "report.sort.ascending と、`print` を押すと**本当に PDF が落ちる**か",
+    expect: "コードが**降順**（ITEM-012 が先頭）。「CSV 出力」「印刷」が出ている（撮る前に印刷を押している。PDF ができたかは道具が中身＝`%PDF-` で始まるかで確かめていて、できなければ撮らずに落とす）",
     go: async (page) => {
       await press(page, "menu:sortedReport");
       await press(page, "search:submit");
       await settle(1200);
+      await press(page, "action:printPdf");
+      await settle(800);
+      const pdf = (await savedFiles(page)).find((one) => one.type === "application/pdf");
+      if (pdf === undefined || !pdf.head.startsWith("%PDF-") || pdf.size < 1000) {
+        throw new Error(`印刷を押しても PDF が出ませんでした（${JSON.stringify(await savedFiles(page))}）`);
+      }
     },
   },
   {
@@ -189,6 +205,19 @@ const main = async () => {
   });
   const page = await browser.newPage();
   await page.setViewport({ width: 1600, height: 900 });
+  // 保存させたものを覚える（ブラウザの保存そのものは起こさない）。
+  await page.evaluateOnNewDocument(() => {
+    window.__hatakeSaved = [];
+    const original = URL.createObjectURL.bind(URL);
+    URL.createObjectURL = (blob) => {
+      const entry = { type: blob.type, size: blob.size, head: "" };
+      window.__hatakeSaved.push(entry);
+      blob.slice(0, 8).text().then((head) => {
+        entry.head = head;
+      });
+      return original(blob);
+    };
+  });
 
   let taken = 0;
   const rows = [];

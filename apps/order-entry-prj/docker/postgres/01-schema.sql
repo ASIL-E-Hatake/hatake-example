@@ -53,6 +53,8 @@ create table orders (
   order_status      text not null default 'draft',
   sales_person_name text not null,
   delivery_place    text,
+  -- 客先が付けた注文番号（任意。客先の書類と突き合わせるため）。
+  customer_order_no text,
   note              text,
   office_code       text not null,
   -- 金額は**サーバが計算した値**を持つ（画面も同じ数を出すが、正はこちら）。
@@ -108,6 +110,7 @@ select
   o.order_status,
   o.customer_code,
   c.customer_name,
+  o.customer_order_no,
   l.product_code,
   p.product_name,
   l.quantity,

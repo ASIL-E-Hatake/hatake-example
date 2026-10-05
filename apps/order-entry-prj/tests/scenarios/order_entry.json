@@ -55,11 +55,11 @@
         "lines": [{ "productCode": "P001", "quantity": 1, "unitPrice": 480, "taxRate": 0.1 }]
       },
       "expect": {
-        "errors": [{ "field": "dueDate", "message": "納期は受注日以降にしてください" }]
+        "errors": [{ "field": "dueDate", "message": "納期は受注日の翌日以降にしてください" }]
       }
     },
     {
-      "name": "S-05 納期が受注日と同じ日なら通る（当日出荷）",
+      "name": "S-05 納期が受注日と同じ日なら止まる（当日納品はやめた）",
       "record": {
         "customerCode": "C001",
         "orderDate": "2026-09-15",
@@ -67,7 +67,9 @@
         "salesPersonName": "佐藤 健一",
         "lines": [{ "productCode": "P001", "quantity": 1, "unitPrice": 480, "taxRate": 0.1 }]
       },
-      "expect": { "errors": [] }
+      "expect": {
+        "errors": [{ "field": "dueDate", "message": "納期は受注日の翌日以降にしてください" }]
+      }
     },
     {
       "name": "S-06 担当が空",
