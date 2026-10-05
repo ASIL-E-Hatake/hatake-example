@@ -1,0 +1,64 @@
+# はじめての hatake（30分サンプル）の定義。
+#
+# **この1枚が画面のすべて**です。検索欄・一覧・並べ替え・新規登録・編集・削除・
+# 入力の検証は、どれもここに書いてあるだけで、画面のコードは1行もありません。
+#
+# 書き換えたら、ブラウザを再読み込みするだけで画面が変わります（作り直しは要りません。
+# この1枚を nginx がそのまま配っているので）。書き間違えると、画面に理由が出ます。
+
+dsl_version: "1.0"
+
+app:
+  id: starter
+  title: はじめての hatake
+  home: customers
+
+  # 選択肢は1か所に書いて、使う所は名前で指す（列・絞り込み・入力欄で同じものを使う）。
+  vocabularies:
+    - name: customerKind
+      options:
+        - { value: corporate, label: 法人 }
+        - { value: personal, label: 個人 }
+
+  menu:
+    - { id: customers, label: 顧客マスタ, icon: people, page: customer_master }
+
+  pages:
+    - type: crud
+      id: customer_master
+      title: 顧客マスタ
+      repository: customerRepository
+      key: customerCode
+
+      search:
+        filters:
+          - { field: customerName, label: 顧客名, type: text, operator: contains }
+          - { field: kind, label: 区分, type: select, operator: equals, optionsOf: customerKind }
+
+      table:
+        pagination: { pageSize: 10 }
+        rowActions: [edit, delete]
+        columns:
+          - { field: customerCode, label: コード, width: 110, sortable: true }
+          - { field: customerName, label: 顧客名, sortable: true }
+          - { field: kind, label: 区分, type: badge, width: 90, optionsOf: customerKind }
+
+      form:
+        sections:
+          - fields:
+              # コードは作るときだけ入れられる（直すときは読み取り専用）。
+              - field: customerCode
+                label: コード
+                type: text
+                required: true
+                readOnlyWhen: { mode: edit }
+                validators:
+                  - { type: maxLength, value: 10 }
+              - { field: customerName, label: 顧客名, type: text, required: true, validators: [{ type: maxLength, value: 60 }] }
+              - { field: kind, label: 区分, type: select, required: true, optionsOf: customerKind }
+
+      actions:
+        - { id: create, type: create, label: 新規登録 }
+        - { id: edit, type: edit, label: 編集 }
+        - { id: delete, type: delete, label: 削除,
+            confirm: { message: この顧客を削除します。よろしいですか？, danger: true } }

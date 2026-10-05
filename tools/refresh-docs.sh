@@ -13,7 +13,15 @@
 #   tools/refresh-docs.sh --check  … 古くなっていないか見るだけ（違えば 1。CI 用）
 set -euo pipefail
 
-HATAKE="${HATAKE:-npx --yes hatake}"
+# hatake の CLI。既定は **`hatake.version` の Release から名前を固定して**取る。
+#
+# `npx --yes hatake` と名前だけで書くと、手元に入っていない場所では **npm の registry の
+# `hatake`**（別の人の、名前が同じだけの道具）を取ってきて走らせる。枠組みの
+# `@hatake-fw/api` は registry に出していないので、名前だけでは当たらない。
+# 手元の枠組みで試すときは `HATAKE="node <dsl-ui>/typescript/dist/cli.js"` を渡す。
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+HATAKE_TAG="$(tr -d '[:space:]' < "$ROOT_DIR/hatake.version")"
+HATAKE="${HATAKE:-npx --yes --package=https://github.com/ASIL-E-Hatake/hatake/releases/download/${HATAKE_TAG}/hatake-fw-api-${HATAKE_TAG#v}.tgz hatake}"
 DEF=definitions/app.yaml
 PRJ=definitions/hatake.project.yaml
 MEMO=docs/1-要件定義/案件の説明.md

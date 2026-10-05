@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "hatake": {
+      "command": "docker",
+      "args": ["compose", "run", "--rm", "-T", "--entrypoint", "hatake-mcp", "hatake"]
+    }
+  }
+}
