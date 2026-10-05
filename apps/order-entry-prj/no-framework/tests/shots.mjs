@@ -4,7 +4,7 @@
 // 隣（hatake 版）の `tests/screen/shots.mjs` とほぼ同じ作り。違うのは座標だけ
 // ── 画面を手で組んでいるので、部品の位置が変わる。
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join, relative } from "node:path";
 import puppeteer from "puppeteer";
 
 const argv = process.argv.slice(2);
@@ -107,7 +107,7 @@ const main = async () => {
       }
       const blank = shot.length < BLANK_LIMIT;
       if (!blank) taken += 1;
-      rows.push(`| ${one.id} | ${one.title} | ${blank ? "**真っ白**" : "OK"} | ![](${SHOTS}/${one.file}) |`);
+      rows.push(`| ${one.id} | ${one.title} | ${blank ? "**真っ白**" : "OK"} | ![](${relative(dirname(OUT), join(SHOTS, one.file)).replaceAll("\\", "/")}) |`);
     } catch (e) {
       rows.push(`| ${one.id} | ${one.title} | **NG** ${e.message} | |`);
     }

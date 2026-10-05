@@ -19,6 +19,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const CHECK = process.argv.includes("--check");
 
@@ -37,12 +38,24 @@ const OUTSIDE = CONFIG.outside ?? [];
 const PATHS = CONFIG.paths ?? {};
 const AUTHZ = CONFIG.authz ?? {};
 
-/** hatake の CLI を叩く（`HATAKE` で差し替えられる＝手元の枠組みで試せる）。 */
-const HATAKE = (process.env.HATAKE ?? "npx --yes hatake").split(" ");
+/**
+ * hatake の CLI を叩く（`HATAKE` で差し替えられる＝手元の枠組みで試せる）。
+ *
+ * 既定は **`hatake.version` の Release から名前を固定して**取る。`npx --yes hatake` と
+ * 名前だけで書くと、手元に入っていない場所では npm の registry の `hatake`（別の人の、
+ * 名前が同じだけの道具）を取ってきて走らせる（枠組みは registry に出していない）。
+ */
+const TAG = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "hatake.version"), "utf8").trim();
+const HATAKE = (
+  process.env.HATAKE ??
+  `npx --yes --package=https://github.com/ASIL-E-Hatake/hatake/releases/download/${TAG}/hatake-fw-api-${TAG.replace(/^v/, "")}.tgz hatake`
+).split(" ");
 const hatake = (...args) =>
   execFileSync(HATAKE[0], [...HATAKE.slice(1), ...args], {
     encoding: "utf8",
     maxBuffer: 32 * 1024 * 1024,
+    // Windows の npx は .cmd なので、シェルを通さないと起動できない。
+    shell: process.platform === "win32",
   });
 
 const stale = [];
@@ -198,7 +211,11 @@ const KIND = {
       "",
       "> **これは見せ方の話だけ。** 画面の `roles` は隠すだけで、API を直接叩けば",
       `> データは取れる。本当の遮断は API 側（\`${AUTHZ.file ?? `${IMPL}/`}\`）で、`,
-      `> そちらは[テスト](../4-テスト/ケース一覧.md)の ${AUTHZ.cases ?? "権限のケース"} で確かめている。`,
+      // ケースの一覧を持っている案件はそちらへ、無ければ API の試験の記録へ（どちらも
+      // 在る紙を指す。0.9.25 までは全部の案件で「ケース一覧」を指していて、2本で切れていた）。
+      `> そちらは[テスト](../4-テスト/${
+        existsSync(join(OUT, "..", "4-テスト", "ケース一覧.md")) ? "ケース一覧.md" : "出力-APIテスト結果.md"
+      })の ${AUTHZ.cases ?? "権限のケース"} で確かめている。`,
     ].join("\n"),
   );
 }

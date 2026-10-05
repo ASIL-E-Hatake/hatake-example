@@ -1,0 +1,26 @@
+# はじめての hatake（30分サンプル）。
+#
+#   docker compose up            … 画面が http://localhost:8090 に出る
+#   docker compose run --rm hatake check definitions/app.yaml   … 定義を検査する
+#
+# 定義（definitions/）は手元のフォルダをそのまま配る＝書き換えて再読み込みすれば画面が変わる。
+name: starter-prj
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+    ports:
+      - "8090:80"
+    volumes:
+      - ./definitions:/usr/share/nginx/html/definitions:ro
+
+  # 道具。`docker compose up` では上がらない（run で叩く）。
+  hatake:
+    build:
+      context: .
+      dockerfile: docker/hatake.Dockerfile
+    profiles: ["tools"]
+    volumes:
+      - ./definitions:/work/definitions
