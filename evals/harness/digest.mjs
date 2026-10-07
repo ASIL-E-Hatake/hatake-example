@@ -116,7 +116,16 @@ const bareNpx = calls.filter((one) => one.tool === "Bash" && BARE_NPX.test(Strin
 // 版ごとに比べたい数（成績表の「前の版との比較」に出す）。
 const mcpCalls = calls.filter((one) => one.tool.startsWith("mcp__hatake__"));
 const refusedArgs = mcpCalls.filter((one) => one.error && /知らない引数/.test(one.result)).length;
-const fileArgs = mcpCalls.filter((one) => one.tool !== "mcp__hatake__hatake_examples" && typeof one.input.file === "string").length;
+// ファイルの道で渡した回数（0.9.28 は `file`、0.9.29 から `file_path`）。
+const fileArgs = mcpCalls.filter(
+  (one) => one.tool !== "mcp__hatake__hatake_examples" && (typeof one.input.file === "string" || typeof one.input.file_path === "string"),
+).length;
+// Claude Code 自身の道具に hatake の引数名を渡して断られた回数（0.9.28 で `Write` に `file`）。
+const wrongToolArg = calls.filter(
+  (one) => ["Write", "Read", "Edit"].includes(one.tool) && one.error && /unexpected parameter `file`/.test(one.result),
+).length;
+// 断られたときに「近い名前」が添えられた回数（0.9.29 から）。
+const nearHints = mcpCalls.filter((one) => one.error && /近い名前/.test(one.result)).length;
 const whereMisses = mcpCalls.filter((one) => one.tool === "mcp__hatake__hatake_where" && /載っていません/.test(one.result)).length;
 const examplesMisses = mcpCalls.filter((one) => one.tool === "mcp__hatake__hatake_examples" && /近い例はありません/.test(one.result)).length;
 const checkVia = {
@@ -146,6 +155,8 @@ const digest = {
   bareNpx,
   refusedArgs,
   fileArgs,
+  wrongToolArg,
+  nearHints,
   whereMisses,
   examplesMisses,
   checkVia,

@@ -169,6 +169,7 @@ const trialsWith = (pick) => clean.filter((one) => (pick(one.digest) ?? 0) > 0).
 const summary = {
   tag: meta.tag ?? "?",
   model: meta.model ?? "?",
+  claude: meta.claude ?? "?",
   trials: clean.length,
   passed: clean.filter(passed).length,
   byTask: Object.fromEntries(
@@ -183,6 +184,8 @@ const summary = {
     "名前だけの npx（のべ）": sum((d) => (d.bareNpx ?? []).length),
     "断られた引数（のべ）": sum((d) => d.refusedArgs),
     "file で渡した（のべ）": sum((d) => d.fileArgs),
+    "Claude Code の Write に file を渡した（のべ）": sum((d) => d.wrongToolArg),
+    "近い名前が添えられた（のべ）": sum((d) => d.nearHints),
     "check を MCP で（のべ）": sum((d) => d.checkVia?.mcp),
     "check を CLI で（のべ）": sum((d) => d.checkVia?.cli),
     "where が載っていないと言った（のべ）": sum((d) => d.whereMisses),
@@ -208,7 +211,14 @@ if (previous !== undefined) {
   compare.push(
     `## 前の版（${previous}）との比較`,
     "",
-    before.model === summary.model ? "" : `> モデルが違う（${before.model} → ${summary.model}）ので、差は道具だけのせいではない。\n`,
+    ...[
+      before.model === summary.model ? "" : `> モデルが違う（${before.model} → ${summary.model}）ので、差は hatake だけのせいではない。`,
+      (before.claude ?? "?") === summary.claude
+        ? ""
+        : `> Claude Code の版が違う（${before.claude ?? "?"} → ${summary.claude}）ので、差は hatake だけのせいではない。`,
+    ]
+      .filter(Boolean)
+      .flatMap((one) => [one, ""]),
     `| | ${previous} | ${summary.tag} |`,
     "|---|---|---|",
     `| 合格 | ${before.passed} / ${before.trials} | ${summary.passed} / ${summary.trials} |`,
@@ -217,7 +227,7 @@ if (previous !== undefined) {
   );
 }
 const at = lines.indexOf("## 試行ごと");
-if (compare.length > 0 && at >= 0) lines.splice(at, 0, ...compare.filter((one, i) => one !== "" || i !== 2));
+if (compare.length > 0 && at >= 0) lines.splice(at, 0, ...compare);
 
 mkdirSync(dirname(TO), { recursive: true });
 writeFileSync(TO, `${lines.join("\n")}\n`);
