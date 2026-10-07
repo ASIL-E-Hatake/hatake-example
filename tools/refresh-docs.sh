@@ -22,6 +22,9 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 HATAKE_TAG="$(tr -d '[:space:]' < "$ROOT_DIR/hatake.version")"
 HATAKE="${HATAKE:-npx --yes --package=https://github.com/ASIL-E-Hatake/hatake/releases/download/${HATAKE_TAG}/hatake-fw-api-${HATAKE_TAG#v}.tgz hatake}"
+# 道具の出力は標準エラーごと紙に写すので、npm の「新しい版があります」を止める。
+# 出たり出なかったりするので、混ざると同じ定義でも紙が変わる（0.9.28 で踏んだ）。
+export NPM_CONFIG_UPDATE_NOTIFIER=false
 DEF=definitions/app.yaml
 PRJ=definitions/hatake.project.yaml
 MEMO=docs/1-要件定義/案件の説明.md

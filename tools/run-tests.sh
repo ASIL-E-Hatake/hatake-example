@@ -34,6 +34,9 @@ set -uo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 HATAKE_TAG="$(tr -d '[:space:]' < "$ROOT_DIR/hatake.version")"
 HATAKE="${HATAKE:-npx --yes --package=https://github.com/ASIL-E-Hatake/hatake/releases/download/${HATAKE_TAG}/hatake-fw-api-${HATAKE_TAG#v}.tgz hatake}"
+# 道具の出力は標準エラーごと紙に写すので、npm の「新しい版があります」を止める。
+# 出たり出なかったりするので、混ざると同じ定義でも紙が変わる（0.9.28 で踏んだ）。
+export NPM_CONFIG_UPDATE_NOTIFIER=false
 DEF=definitions/app.yaml
 OUT="docs/4-テスト"
 WHAT="${1:-all}"
@@ -105,7 +108,15 @@ reset_data() {
   done
   # API は起動時に DB を掴んでいるので、繋ぎ直させる。
   docker compose restart api >/dev/null 2>&1
-  sleep 5
+  # **口が応えるまで待つ**（何か返れば立ち上がっている。404 でもよい）。前は決め打ちで
+  # 5 秒待っていて、Java の API が間に合わない日は1本目が ECONNRESET で落ちた
+  # （0.9.28 の受注入力。0.9.27 まではたまたま間に合っていた）。
+  [ -n "${API_BASE:-}" ] || { sleep 5; return 0; }
+  for _ in $(seq 1 60); do
+    curl -s -o /dev/null "$API_BASE" && return 0
+    sleep 1
+  done
+  echo "   API が 60 秒たっても応えません（$API_BASE）。" >&2
 }
 
 run_api() {

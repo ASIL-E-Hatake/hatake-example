@@ -163,6 +163,63 @@ if (dirty.length > 0) {
   say("");
 }
 
+// 版ごとに比べる数（summary.json に残し、前の版の summary.json が在れば並べる）。
+const sum = (pick) => clean.reduce((a, one) => a + (pick(one.digest) ?? 0), 0);
+const trialsWith = (pick) => clean.filter((one) => (pick(one.digest) ?? 0) > 0).length;
+const summary = {
+  tag: meta.tag ?? "?",
+  model: meta.model ?? "?",
+  trials: clean.length,
+  passed: clean.filter(passed).length,
+  byTask: Object.fromEntries(
+    [...new Set(clean.map((one) => one.task))].map((task) => {
+      const mine = clean.filter((one) => one.task === task);
+      return [task, { passed: mine.filter(passed).length, trials: mine.length }];
+    }),
+  ),
+  stuck: {
+    "答えが大きすぎた試行": trialsWith((d) => (d.overflow ?? []).length),
+    "名前だけの npx を打った試行": trialsWith((d) => (d.bareNpx ?? []).length),
+    "名前だけの npx（のべ）": sum((d) => (d.bareNpx ?? []).length),
+    "断られた引数（のべ）": sum((d) => d.refusedArgs),
+    "file で渡した（のべ）": sum((d) => d.fileArgs),
+    "check を MCP で（のべ）": sum((d) => d.checkVia?.mcp),
+    "check を CLI で（のべ）": sum((d) => d.checkVia?.cli),
+    "where が載っていないと言った（のべ）": sum((d) => d.whereMisses),
+    "examples が空振り（のべ）": sum((d) => d.examplesMisses),
+    "中身を読みに行った試行": trialsWith((d) => (d.internals ?? []).length),
+    "往復（平均）": clean.length === 0 ? 0 : Math.round(sum((d) => d.turns) / clean.length),
+  },
+};
+const semver = (tag) => (tag.match(/\d+/g) ?? []).map(Number);
+const older = (a, b) => {
+  const [x, y] = [semver(a), semver(b)];
+  for (let i = 0; i < 3; i++) if ((x[i] ?? 0) !== (y[i] ?? 0)) return (x[i] ?? 0) < (y[i] ?? 0);
+  return false;
+};
+const RESULTS = dirname(dirname(TO));
+const previous = (existsSync(RESULTS) ? readdirSync(RESULTS) : [])
+  .filter((one) => /^v\d+\.\d+\.\d+$/.test(one) && older(one, summary.tag) && existsSync(join(RESULTS, one, "summary.json")))
+  .sort((a, b) => (older(a, b) ? -1 : 1))
+  .pop();
+const compare = [];
+if (previous !== undefined) {
+  const before = JSON.parse(readFileSync(join(RESULTS, previous, "summary.json"), "utf8"));
+  compare.push(
+    `## 前の版（${previous}）との比較`,
+    "",
+    before.model === summary.model ? "" : `> モデルが違う（${before.model} → ${summary.model}）ので、差は道具だけのせいではない。\n`,
+    `| | ${previous} | ${summary.tag} |`,
+    "|---|---|---|",
+    `| 合格 | ${before.passed} / ${before.trials} | ${summary.passed} / ${summary.trials} |`,
+    ...Object.keys(summary.stuck).map((key) => `| ${key} | ${before.stuck?.[key] ?? "—"} | ${summary.stuck[key]} |`),
+    "",
+  );
+}
+const at = lines.indexOf("## 試行ごと");
+if (compare.length > 0 && at >= 0) lines.splice(at, 0, ...compare.filter((one, i) => one !== "" || i !== 2));
+
 mkdirSync(dirname(TO), { recursive: true });
 writeFileSync(TO, `${lines.join("\n")}\n`);
+writeFileSync(join(dirname(TO), "summary.json"), `${JSON.stringify(summary, null, 2)}\n`);
 console.log(`書きました: ${TO}（${clean.length} 試行${dirty.length > 0 ? `、汚染で外した ${dirty.length}` : ""}）`);
