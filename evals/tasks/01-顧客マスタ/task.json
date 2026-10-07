@@ -1,0 +1,76 @@
+{
+  "$comment": "採点の表。AI には見せない（作業場に置かない）。頼んだ文（brief.md）の1行ずつに、動かして確かめる所を当てている。項目名はデータの置き場（web/src/customers.ts）の名前。",
+  "page": { "$comment": "どの画面を採点するか（この項目を入力欄に持つ画面）", "hasField": "customerCode" },
+  "values": [
+    {
+      "name": "正しく入れたら通る",
+      "asks": "登録・修正・削除ができること",
+      "mode": "create",
+      "record": { "customerCode": "C100", "customerName": "テスト商事", "kind": "corporate" },
+      "noErrors": true
+    },
+    {
+      "name": "コード10桁は通る",
+      "asks": "コードは10桁まで",
+      "mode": "create",
+      "record": { "customerCode": "C123456789", "customerName": "テスト商事", "kind": "corporate" },
+      "noErrorsOn": ["customerCode"]
+    },
+    {
+      "name": "コード11桁は止まる",
+      "asks": "コードは10桁まで",
+      "mode": "create",
+      "record": { "customerCode": "C1234567890", "customerName": "テスト商事", "kind": "corporate" },
+      "errorsOn": ["customerCode"]
+    },
+    {
+      "name": "コードが空なら止まる",
+      "asks": "項目はコード・顧客名・区分",
+      "mode": "create",
+      "record": { "customerCode": "", "customerName": "テスト商事", "kind": "corporate" },
+      "errorsOn": ["customerCode"]
+    },
+    {
+      "name": "顧客名が空なら止まる",
+      "asks": "項目はコード・顧客名・区分",
+      "mode": "create",
+      "record": { "customerCode": "C100", "customerName": "", "kind": "corporate" },
+      "errorsOn": ["customerName"]
+    },
+    {
+      "name": "区分が空なら止まる",
+      "asks": "項目はコード・顧客名・区分",
+      "mode": "create",
+      "record": { "customerCode": "C100", "customerName": "テスト商事", "kind": "" },
+      "errorsOn": ["kind"]
+    }
+  ],
+  "queries": [
+    {
+      "$comment": "どう探すか（一部か・前方か）は画面ではなくサーバの仕事。ブラウザの作り物の Repository はいつも部分一致で見るので、画面では採点できない。サーバが使う buildQuery の条件で見る。",
+      "name": "顧客名の一部で探す条件になる",
+      "asks": "顧客名の一部で探したい",
+      "params": { "customerName": "商事" },
+      "want": { "field": "customerName", "operator": ["contains"] }
+    },
+    {
+      "name": "区分で探す条件になる",
+      "asks": "区分で探したい",
+      "params": { "kind": "personal" },
+      "want": { "field": "kind", "operator": ["equals", "in"] }
+    }
+  ],
+  "screen": {
+    "rows": 10,
+    "columns": ["customerCode", "customerName", "kind"],
+    "searches": [
+      { "name": "画面で顧客名を絞り込める", "asks": "顧客名の一部で探したい", "filter": "customerName", "type": "商事", "rows": 1 },
+      { "name": "画面で区分を絞り込める", "asks": "区分で探したい", "filter": "kind", "select": "personal", "rows": 3 }
+    ],
+    "createFields": ["customerCode", "customerName", "kind"],
+    "selectLabels": { "kind": ["法人", "個人"] },
+    "cellLabels": { "kind": ["法人", "個人"] },
+    "readOnlyOnEdit": { "key": "C001", "field": "customerCode" },
+    "deleteAsks": "C001"
+  }
+}
