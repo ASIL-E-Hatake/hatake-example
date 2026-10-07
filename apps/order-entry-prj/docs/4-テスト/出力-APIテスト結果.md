@@ -4,7 +4,7 @@
 > **やりとりをそのまま**書き出しています（手で直さない）。
 > 作り直し: `bash tools/run-tests.sh`
 
-- 実行日時: 2026-10-05T07:57:32.746Z
+- 実行日時: 2026-10-07T03:19:39.398Z
 - 対象: `http://localhost:3001/api`
 - 前提: `docker compose up` で DB が初期データの状態
 
@@ -76,15 +76,15 @@ POST http://localhost:3001/api/auth/login
 ```json
 HTTP 200
 {
-  "token": "dGFuYWthH-eUsOS4rSDlhKrlrZAfY2xlcmsfMTc5MTIxNTg1Mg.bt-6RgZDyFC5AfubBLRqseb9JgfiRJo1UxTpSrtcTEo",
   "user": {
+    "userId": "tanaka",
+    "officeCode": "TKY",
+    "name": "田中 優子",
     "roles": [
       "clerk"
-    ],
-    "name": "田中 優子",
-    "officeCode": "TKY",
-    "userId": "tanaka"
-  }
+    ]
+  },
+  "token": "dGFuYWthH-eUsOS4rSDlhKrlrZAfY2xlcmsfMTc5MTM3MTk3OQ.5cilw9lpNjcSRmwtFNosvTQ2lUnMQvncercZ56gx06M"
 }
 ```
 
@@ -152,6 +152,7 @@ GET http://localhost:3001/api/orders?orderStatus=draft&pageSize=50
 ```json
 HTTP 200
 {
+  "totalCount": 2,
   "items": [
     {
       "orderNo": "SO2026090003",
@@ -193,8 +194,7 @@ HTTP 200
       "updatedAt": "2026-09-09 23:50:00+00",
       "customerName": "株式会社あおぞら商事"
     }
-  ],
-  "totalCount": 2
+  ]
 }
 ```
 
@@ -215,6 +215,7 @@ GET http://localhost:3001/api/orders?note=%E8%87%B3%E6%80%A5&pageSize=50
 ```json
 HTTP 200
 {
+  "totalCount": 9,
   "items": [
     {
       "orderNo": "SO2026070001",
@@ -257,8 +258,7 @@ HTTP 200
       "customerName": "北山フーズ株式会社"
     },
     {
-      "orderNo": "SO2026080001",
- 
+      "orderNo"
 …（長いので省略）
 ```
 
@@ -279,6 +279,7 @@ GET http://localhost:3001/api/orders?sortField=orderDate&sortAscending=false&pag
 ```json
 HTTP 200
 {
+  "totalCount": 9,
   "items": [
     {
       "orderNo": "SO2026090004",
@@ -321,8 +322,7 @@ HTTP 200
       "customerName": "北山フーズ株式会社"
     },
     {
-      "orderNo": "SO2026090002",
-      "
+      "orderNo": "SO2
 …（長いので省略）
 ```
 
@@ -343,6 +343,7 @@ GET http://localhost:3001/api/orders?totalAmount=5000&totalAmount=11000&pageSize
 ```json
 HTTP 200
 {
+  "totalCount": 4,
   "items": [
     {
       "orderNo": "SO2026070001",
@@ -385,8 +386,7 @@ HTTP 200
       "customerName": "北山フーズ株式会社"
     },
     {
-      "orderNo": "SO2026080002",
- 
+      "orderNo"
 …（長いので省略）
 ```
 
@@ -539,6 +539,7 @@ GET http://localhost:3001/api/orders?pageSize=50
 ```json
 HTTP 200
 {
+  "totalCount": 4,
   "items": [
     {
       "orderNo": "SO2026070001",
@@ -581,7 +582,7 @@ HTTP 200
     {
       "orderNo": "SO2026090001",
       "customerCode": "C005",
-      "orderDate": "2026-09
+      "o
 …（長いので省略）
 ```
 
@@ -602,6 +603,7 @@ GET http://localhost:3001/api/orders?pageSize=50
 ```json
 HTTP 200
 {
+  "totalCount": 4,
   "items": [
     {
       "orderNo": "SO2026070001",
@@ -644,7 +646,7 @@ HTTP 200
     {
       "orderNo": "SO2026090001",
       "customerCode": "C005",
-      "orderDate": "2026-09
+      "o
 …（長いので省略）
 ```
 
@@ -684,17 +686,17 @@ POST http://localhost:3001/api/orders
 ```json
 HTTP 400
 {
-  "valid": false,
   "errors": [
     {
-      "field": "dueDate",
-      "message": "納期は受注日の翌日以降にしてください"
+      "message": "納期は受注日の翌日以降にしてください",
+      "field": "dueDate"
     },
     {
-      "field": "salesPersonName",
-      "message": "必須項目です"
+      "message": "必須項目です",
+      "field": "salesPersonName"
     }
-  ]
+  ],
+  "valid": false
 }
 ```
 
@@ -723,13 +725,13 @@ POST http://localhost:3001/api/orders
 ```json
 HTTP 400
 {
-  "valid": false,
   "errors": [
     {
-      "field": "lines",
-      "message": "必須項目です"
+      "message": "必須項目です",
+      "field": "lines"
     }
-  ]
+  ],
+  "valid": false
 }
 ```
 
@@ -769,13 +771,13 @@ POST http://localhost:3001/api/orders
 ```json
 HTTP 400
 {
-  "valid": false,
   "errors": [
     {
-      "field": "lines",
-      "message": "同じ商品が複数行にあります"
+      "message": "同じ商品が複数行にあります",
+      "field": "lines"
     }
-  ]
+  ],
+  "valid": false
 }
 ```
 
@@ -810,13 +812,13 @@ POST http://localhost:3001/api/orders
 ```json
 HTTP 400
 {
-  "valid": false,
   "errors": [
     {
-      "field": "lines[0].quantity",
-      "message": "数量は1以上にしてください"
+      "message": "数量は1以上にしてください",
+      "field": "lines[0].quantity"
     }
-  ]
+  ],
+  "valid": false
 }
 ```
 
@@ -872,8 +874,8 @@ HTTP 201
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "tanaka",
-  "createdAt": "2026-10-05 07:57:32.972324+00",
-  "updatedAt": "2026-10-05 07:57:32.972324+00",
+  "createdAt": "2026-10-07 03:19:39.611936+00",
+  "updatedAt": "2026-10-07 03:19:39.611936+00",
   "customerName": "株式会社あおぞら商事",
   "lines": [
     {
@@ -959,8 +961,8 @@ HTTP 201
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "tanaka",
-  "createdAt": "2026-10-05 07:57:33.010118+00",
-  "updatedAt": "2026-10-05 07:57:33.010118+00",
+  "createdAt": "2026-10-07 03:19:39.642251+00",
+  "updatedAt": "2026-10-07 03:19:39.642251+00",
   "customerName": "みどり物産株式会社",
   "lines": [
     {
@@ -1189,6 +1191,7 @@ POST http://localhost:3001/api/bulk/cancel
 ```json
 HTTP 200
 {
+  "succeeded": 1,
   "rejected": [
     {
       "key": "SO2026070001",
@@ -1202,8 +1205,7 @@ HTTP 200
       "key": "NOPE",
       "reason": "見つかりません"
     }
-  ],
-  "succeeded": 1
+  ]
 }
 ```
 
@@ -1239,8 +1241,8 @@ HTTP 200
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "tanaka",
-  "createdAt": "2026-10-05 07:57:32.972324+00",
-  "updatedAt": "2026-10-05 07:57:33.083046+00",
+  "createdAt": "2026-10-07 03:19:39.611936+00",
+  "updatedAt": "2026-10-07 03:19:39.697524+00",
   "customerName": "株式会社あおぞら商事",
   "lines": [
     {
@@ -1289,6 +1291,7 @@ GET http://localhost:3001/api/order-lines?orderNo=SO2026090002&pageSize=200
 ```json
 HTTP 200
 {
+  "totalCount": 3,
   "items": [
     {
       "orderNo": "SO2026090002",
@@ -1334,7 +1337,7 @@ HTTP 200
       "customerName": "みどり物産株式会社",
       "customerOrderNo": null,
       "productCode": "P008",
-      "productName": "来客用茶葉（1kg
+      "produ
 …（長いので省略）
 ```
 
@@ -1392,7 +1395,7 @@ HTTP 200
   "lineCount": 2,
   "createdBy": "sato",
   "createdAt": "2026-09-01 00:00:00+00",
-  "updatedAt": "2026-10-05 07:57:33.125491+00",
+  "updatedAt": "2026-10-07 03:19:39.731066+00",
   "customerName": "南商店",
   "lines": [
     {
@@ -1530,8 +1533,8 @@ HTTP 201
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "yamada",
-  "createdAt": "2026-10-05 07:57:33.143871+00",
-  "updatedAt": "2026-10-05 07:57:33.143871+00",
+  "createdAt": "2026-10-07 03:19:39.746318+00",
+  "updatedAt": "2026-10-07 03:19:39.746318+00",
   "customerName": "北山フーズ株式会社",
   "lines": [
     {
@@ -1617,8 +1620,8 @@ HTTP 201
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "tanaka",
-  "createdAt": "2026-10-05 07:57:33.161429+00",
-  "updatedAt": "2026-10-05 07:57:33.161429+00",
+  "createdAt": "2026-10-07 03:19:39.758903+00",
+  "updatedAt": "2026-10-07 03:19:39.758903+00",
   "customerName": "株式会社あおぞら商事",
   "lines": [
     {
@@ -1667,6 +1670,7 @@ GET http://localhost:3001/api/orders?customerOrderNo=PO-778&pageSize=50
 ```json
 HTTP 200
 {
+  "totalCount": 1,
   "items": [
     {
       "orderNo": "SO2026100104",
@@ -1684,12 +1688,11 @@ HTTP 200
       "totalAmount": 8692,
       "lineCount": 2,
       "createdBy": "tanaka",
-      "createdAt": "2026-10-05 07:57:33.161429+00",
-      "updatedAt": "2026-10-05 07:57:33.161429+00",
+      "createdAt": "2026-10-07 03:19:39.758903+00",
+      "updatedAt": "2026-10-07 03:19:39.758903+00",
       "customerName": "株式会社あおぞら商事"
     }
-  ],
-  "totalCount": 1
+  ]
 }
 ```
 
@@ -1730,13 +1733,13 @@ POST http://localhost:3001/api/orders
 ```json
 HTTP 400
 {
-  "valid": false,
   "errors": [
     {
-      "field": "customerOrderNo",
-      "message": "20文字以内で入力してください"
+      "message": "20文字以内で入力してください",
+      "field": "customerOrderNo"
     }
-  ]
+  ],
+  "valid": false
 }
 ```
 
@@ -1776,13 +1779,13 @@ POST http://localhost:3001/api/orders
 ```json
 HTTP 400
 {
-  "valid": false,
   "errors": [
     {
-      "field": "dueDate",
-      "message": "納期は受注日の翌日以降にしてください"
+      "message": "納期は受注日の翌日以降にしてください",
+      "field": "dueDate"
     }
-  ]
+  ],
+  "valid": false
 }
 ```
 
@@ -1809,8 +1812,8 @@ POST http://localhost:3001/api/bulk/cancel
 ```json
 HTTP 200
 {
-  "rejected": [],
-  "succeeded": 1
+  "succeeded": 1,
+  "rejected": []
 }
 ```
 

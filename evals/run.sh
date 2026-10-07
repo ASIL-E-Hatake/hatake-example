@@ -5,7 +5,7 @@
 #   evals/run.sh start <課題> <回>      … 1回ぶんを置いて回す（コンテナは置いたまま返る）
 #   evals/run.sh status                … 回っている試行
 #   evals/run.sh grade <課題> <回>      … 終わった試行を採点する
-#   evals/run.sh report                … 成績表を書く（evals/results/<版>/成績表.md）
+#   evals/run.sh report [<版>]         … 成績表を書く（evals/results/<版>/成績表.md・前の版との比較つき）
 #   evals/run.sh selftest              … 答えの定義で採点の道具を試す（AI は呼ばない）
 #
 # 鍵: ~/.hatake-evals.env に `CLAUDE_CODE_OAUTH_TOKEN=…`（`claude setup-token` で取る）。
@@ -158,9 +158,12 @@ grade() {
     console.log(`${web === "" ? "OK" : "NG"}  [殻] 画面のコードを触っていない${web === "" ? "" : `（${web.split("\n")[0]}）`}`);'
 }
 
+# 版を渡すと、その版の試行から書き直す（既定は hatake.version の版）。前の版の
+# summary.json が在れば「前の版との比較」が付く。
 report() {
-  docker run --rm -v "$(win "$HERE/harness"):/harness:ro" -v "$(win "$RUNS"):/runs:ro" -v "$(win "$HERE/results"):/results" \
-    "$IMAGE" node /harness/report.mjs /runs "/results/$TAG/成績表.md"
+  local tag="${1:-$TAG}"
+  docker run --rm -v "$(win "$HERE/harness"):/harness:ro" -v "$(win "$HERE/.runs/$tag"):/runs:ro" -v "$(win "$HERE/results"):/results" \
+    "hatake-eval:$tag" node /harness/report.mjs /runs "/results/$tag/成績表.md"
 }
 
 # 採点の道具を試す（AI は呼ばない）。30分サンプルの定義（＝答え）と、それを**わざと崩した**
@@ -204,7 +207,7 @@ case "${1:-}" in
   start) start "$2" "$3" ;;
   status) status ;;
   grade) grade "$2" "$3" ;;
-  report) report ;;
+  report) report "${2:-}" ;;
   selftest) selftest ;;
   *) sed -n '2,20p' "$0"; exit 1 ;;
 esac

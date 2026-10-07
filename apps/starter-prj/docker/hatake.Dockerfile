@@ -5,7 +5,7 @@
 # 手元に Node を入れなくても叩けるように、コンテナに入れてある。
 FROM node:22-slim
 RUN npm install -g --no-audit --no-fund \
-    https://github.com/ASIL-E-Hatake/hatake/releases/download/v0.9.27/hatake-fw-api-0.9.27.tgz
+    https://github.com/ASIL-E-Hatake/hatake/releases/download/v0.9.28/hatake-fw-api-0.9.28.tgz
 WORKDIR /work
 ENTRYPOINT ["hatake"]
 CMD ["--help"]

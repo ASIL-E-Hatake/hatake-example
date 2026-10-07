@@ -113,6 +113,17 @@ const overflow = calls
 const BARE_NPX = new RegExp(`\\bnpx\\s+(?:--yes\\s+|-y\\s+)?${"hat"}ake(?:-mcp)?\\b`);
 const bareNpx = calls.filter((one) => one.tool === "Bash" && BARE_NPX.test(String(one.input.command ?? ""))).map((one) => ({ n: one.n, what: short(one) }));
 
+// 版ごとに比べたい数（成績表の「前の版との比較」に出す）。
+const mcpCalls = calls.filter((one) => one.tool.startsWith("mcp__hatake__"));
+const refusedArgs = mcpCalls.filter((one) => one.error && /知らない引数/.test(one.result)).length;
+const fileArgs = mcpCalls.filter((one) => one.tool !== "mcp__hatake__hatake_examples" && typeof one.input.file === "string").length;
+const whereMisses = mcpCalls.filter((one) => one.tool === "mcp__hatake__hatake_where" && /載っていません/.test(one.result)).length;
+const examplesMisses = mcpCalls.filter((one) => one.tool === "mcp__hatake__hatake_examples" && /近い例はありません/.test(one.result)).length;
+const checkVia = {
+  mcp: mcpCalls.filter((one) => /hatake_(check|validate)$/.test(one.tool)).length,
+  cli: calls.filter((one) => hatakeCli(one) && /^(check|validate)$/.test((String(one.input.command).match(CLI) ?? [])[1] ?? "")).length,
+};
+
 const count = (list) => Object.entries(list.reduce((acc, one) => ({ ...acc, [one]: (acc[one] ?? 0) + 1 }), {})).sort((a, b) => b[1] - a[1]);
 
 const digest = {
@@ -133,6 +144,11 @@ const digest = {
   internals: internals.map((one) => ({ n: one.n, what: short(one) })),
   overflow,
   bareNpx,
+  refusedArgs,
+  fileArgs,
+  whereMisses,
+  examplesMisses,
+  checkVia,
   contaminated: outside.map((one) => ({ n: one.n, what: short(one) })),
   sequence: calls.map((one) => `${one.n}. ${short(one)}${one.error ? " ✗" : ""}`),
 };
