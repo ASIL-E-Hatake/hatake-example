@@ -7,8 +7,8 @@
 // 404 で止まる）。
 //
 // 見る所: 手引き・CLAUDE.md・`.claude/` の許可と依頼文・道具・コードのコメント。
-// 見ない所: 移行の記録の地の文（起きたことの記録）と、危なさを説明している行（同じ行に
-// `registry` か正しい書き方が在る）。
+// 見ない所: 移行の記録の地の文（起きたことの記録）・初見試験の成績表（AI が打ったものの記録）と、
+// 危なさを説明している行（同じ行に `registry` か正しい書き方が在る）。
 //
 // 使い方: node tools/check-npx.mjs        （見つかれば終了コード 1）
 
@@ -17,7 +17,10 @@ import { basename, dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const SKIP = new Set(["node_modules", ".git", "build", "dist", ".dart_tool", ".gradle"]);
+// `.runs` は初見試験の試行（git に入れない）。
+const SKIP = new Set(["node_modules", ".git", "build", "dist", ".dart_tool", ".gradle", ".runs"]);
+// 初見試験の成績表は **AI が打ったものの記録**（名前だけの書き方を数えて載せている）。
+const RECORDS = /^evals\/results\//;
 const TEXT = /\.(md|txt|ts|tsx|mjs|js|json|ya?ml|dart|java|sh)$/;
 // この道具自身の字に当たらないよう、つないで作る。
 const BARE = new RegExp(`\\bnpx\\s+(?:--yes\\s+|-y\\s+)?${"hat"}ake(?:-mcp)?\\b`);
@@ -35,7 +38,7 @@ function walk(dir, out = []) {
 const found = [];
 for (const file of walk(ROOT)) {
   const rel = relative(ROOT, file).replace(/\\/g, "/");
-  if (rel === "tools/check-npx.mjs") continue;
+  if (rel === "tools/check-npx.mjs" || RECORDS.test(rel)) continue;
   const history = basename(file).startsWith("移行-");
   readFileSync(file, "utf8")
     .split("\n")
