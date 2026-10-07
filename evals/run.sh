@@ -158,12 +158,12 @@ grade() {
     console.log(`${web === "" ? "OK" : "NG"}  [殻] 画面のコードを触っていない${web === "" ? "" : `（${web.split("\n")[0]}）`}`);'
 }
 
-# 版を渡すと、その版の試行から書き直す（既定は hatake.version の版）。前の版の
+# 版を渡すと、その版の試行から書き直す（既定は hatake.version の版。書く道具は今の版の部屋）。前の版の
 # summary.json が在れば「前の版との比較」が付く。
 report() {
   local tag="${1:-$TAG}"
   docker run --rm -v "$(win "$HERE/harness"):/harness:ro" -v "$(win "$HERE/.runs/$tag"):/runs:ro" -v "$(win "$HERE/results"):/results" \
-    "hatake-eval:$tag" node /harness/report.mjs /runs "/results/$tag/成績表.md"
+    "$IMAGE" node /harness/report.mjs /runs "/results/$tag/成績表.md"
 }
 
 # 採点の道具を試す（AI は呼ばない）。30分サンプルの定義（＝答え）と、それを**わざと崩した**

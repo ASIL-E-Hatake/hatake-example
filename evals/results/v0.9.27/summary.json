@@ -1,6 +1,7 @@
 {
   "tag": "v0.9.27",
   "model": "claude-sonnet-5-5",
+  "claude": "2.1.292 (Claude Code)",
   "trials": 6,
   "passed": 6,
   "byTask": {
@@ -19,6 +20,8 @@
     "名前だけの npx（のべ）": 11,
     "断られた引数（のべ）": 0,
     "file で渡した（のべ）": 0,
+    "Claude Code の Write に file を渡した（のべ）": 0,
+    "近い名前が添えられた（のべ）": 0,
     "check を MCP で（のべ）": 1,
     "check を CLI で（のべ）": 10,
     "where が載っていないと言った（のべ）": 6,

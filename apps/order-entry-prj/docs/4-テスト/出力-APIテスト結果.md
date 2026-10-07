@@ -4,7 +4,7 @@
 > **やりとりをそのまま**書き出しています（手で直さない）。
 > 作り直し: `bash tools/run-tests.sh`
 
-- 実行日時: 2026-10-07T03:19:39.398Z
+- 実行日時: 2026-10-07T06:07:56.089Z
 - 対象: `http://localhost:3001/api`
 - 前提: `docker compose up` で DB が初期データの状態
 
@@ -77,14 +77,14 @@ POST http://localhost:3001/api/auth/login
 HTTP 200
 {
   "user": {
-    "userId": "tanaka",
-    "officeCode": "TKY",
-    "name": "田中 優子",
     "roles": [
       "clerk"
-    ]
+    ],
+    "userId": "tanaka",
+    "officeCode": "TKY",
+    "name": "田中 優子"
   },
-  "token": "dGFuYWthH-eUsOS4rSDlhKrlrZAfY2xlcmsfMTc5MTM3MTk3OQ.5cilw9lpNjcSRmwtFNosvTQ2lUnMQvncercZ56gx06M"
+  "token": "dGFuYWthH-eUsOS4rSDlhKrlrZAfY2xlcmsfMTc5MTM4MjA3Ng.rih_4ElF4u2pD2ggIeZucuMoOyzq6OIit_dy-XatjeU"
 }
 ```
 
@@ -688,12 +688,12 @@ HTTP 400
 {
   "errors": [
     {
-      "message": "納期は受注日の翌日以降にしてください",
-      "field": "dueDate"
+      "field": "dueDate",
+      "message": "納期は受注日の翌日以降にしてください"
     },
     {
-      "message": "必須項目です",
-      "field": "salesPersonName"
+      "field": "salesPersonName",
+      "message": "必須項目です"
     }
   ],
   "valid": false
@@ -727,8 +727,8 @@ HTTP 400
 {
   "errors": [
     {
-      "message": "必須項目です",
-      "field": "lines"
+      "field": "lines",
+      "message": "必須項目です"
     }
   ],
   "valid": false
@@ -773,8 +773,8 @@ HTTP 400
 {
   "errors": [
     {
-      "message": "同じ商品が複数行にあります",
-      "field": "lines"
+      "field": "lines",
+      "message": "同じ商品が複数行にあります"
     }
   ],
   "valid": false
@@ -814,8 +814,8 @@ HTTP 400
 {
   "errors": [
     {
-      "message": "数量は1以上にしてください",
-      "field": "lines[0].quantity"
+      "field": "lines[0].quantity",
+      "message": "数量は1以上にしてください"
     }
   ],
   "valid": false
@@ -874,8 +874,8 @@ HTTP 201
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "tanaka",
-  "createdAt": "2026-10-07 03:19:39.611936+00",
-  "updatedAt": "2026-10-07 03:19:39.611936+00",
+  "createdAt": "2026-10-07 06:07:56.428211+00",
+  "updatedAt": "2026-10-07 06:07:56.428211+00",
   "customerName": "株式会社あおぞら商事",
   "lines": [
     {
@@ -961,8 +961,8 @@ HTTP 201
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "tanaka",
-  "createdAt": "2026-10-07 03:19:39.642251+00",
-  "updatedAt": "2026-10-07 03:19:39.642251+00",
+  "createdAt": "2026-10-07 06:07:56.481989+00",
+  "updatedAt": "2026-10-07 06:07:56.481989+00",
   "customerName": "みどり物産株式会社",
   "lines": [
     {
@@ -1191,7 +1191,6 @@ POST http://localhost:3001/api/bulk/cancel
 ```json
 HTTP 200
 {
-  "succeeded": 1,
   "rejected": [
     {
       "key": "SO2026070001",
@@ -1205,7 +1204,8 @@ HTTP 200
       "key": "NOPE",
       "reason": "見つかりません"
     }
-  ]
+  ],
+  "succeeded": 1
 }
 ```
 
@@ -1241,8 +1241,8 @@ HTTP 200
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "tanaka",
-  "createdAt": "2026-10-07 03:19:39.611936+00",
-  "updatedAt": "2026-10-07 03:19:39.697524+00",
+  "createdAt": "2026-10-07 06:07:56.428211+00",
+  "updatedAt": "2026-10-07 06:07:56.575132+00",
   "customerName": "株式会社あおぞら商事",
   "lines": [
     {
@@ -1395,7 +1395,7 @@ HTTP 200
   "lineCount": 2,
   "createdBy": "sato",
   "createdAt": "2026-09-01 00:00:00+00",
-  "updatedAt": "2026-10-07 03:19:39.731066+00",
+  "updatedAt": "2026-10-07 06:07:56.645484+00",
   "customerName": "南商店",
   "lines": [
     {
@@ -1533,8 +1533,8 @@ HTTP 201
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "yamada",
-  "createdAt": "2026-10-07 03:19:39.746318+00",
-  "updatedAt": "2026-10-07 03:19:39.746318+00",
+  "createdAt": "2026-10-07 06:07:56.672686+00",
+  "updatedAt": "2026-10-07 06:07:56.672686+00",
   "customerName": "北山フーズ株式会社",
   "lines": [
     {
@@ -1620,8 +1620,8 @@ HTTP 201
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "tanaka",
-  "createdAt": "2026-10-07 03:19:39.758903+00",
-  "updatedAt": "2026-10-07 03:19:39.758903+00",
+  "createdAt": "2026-10-07 06:07:56.702799+00",
+  "updatedAt": "2026-10-07 06:07:56.702799+00",
   "customerName": "株式会社あおぞら商事",
   "lines": [
     {
@@ -1688,8 +1688,8 @@ HTTP 200
       "totalAmount": 8692,
       "lineCount": 2,
       "createdBy": "tanaka",
-      "createdAt": "2026-10-07 03:19:39.758903+00",
-      "updatedAt": "2026-10-07 03:19:39.758903+00",
+      "createdAt": "2026-10-07 06:07:56.702799+00",
+      "updatedAt": "2026-10-07 06:07:56.702799+00",
       "customerName": "株式会社あおぞら商事"
     }
   ]
@@ -1735,8 +1735,8 @@ HTTP 400
 {
   "errors": [
     {
-      "message": "20文字以内で入力してください",
-      "field": "customerOrderNo"
+      "field": "customerOrderNo",
+      "message": "20文字以内で入力してください"
     }
   ],
   "valid": false
@@ -1781,8 +1781,8 @@ HTTP 400
 {
   "errors": [
     {
-      "message": "納期は受注日の翌日以降にしてください",
-      "field": "dueDate"
+      "field": "dueDate",
+      "message": "納期は受注日の翌日以降にしてください"
     }
   ],
   "valid": false
@@ -1812,8 +1812,8 @@ POST http://localhost:3001/api/bulk/cancel
 ```json
 HTTP 200
 {
-  "succeeded": 1,
-  "rejected": []
+  "rejected": [],
+  "succeeded": 1
 }
 ```
 
