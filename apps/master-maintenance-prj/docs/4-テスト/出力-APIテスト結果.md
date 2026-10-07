@@ -4,7 +4,7 @@
 > **やりとりをそのまま**書き出しています（手で直さない）。
 > 作り直し: `bash tools/run-tests.sh`
 
-- 実行日時: 2026-10-07T06:04:05.885Z
+- 実行日時: 2026-10-07T07:33:59.415Z
 - 対象: `http://localhost:3000/api`
 - 前提: `docker compose up` で DB が初期データの状態
 
@@ -61,7 +61,7 @@ POST http://localhost:3000/api/auth/login
 ```json
 HTTP 200
 {
-  "token": "eyJzdWIiOiJociIsInJvbGVzIjpbImhyIl0sImV4cCI6MTc5MTM4MTg0NTk1Mn0.i_gy4DsNAPEO3DvcJidOfuCF0yYsflc8H-v0BoOztvs",
+  "token": "eyJzdWIiOiJociIsInJvbGVzIjpbImhyIl0sImV4cCI6MTc5MTM4NzIzOTQ0OX0.f4038M8uhK-Sx5ZZXNsx1ZKsm86WVCL-PB1VG_O17Zc",
   "user": {
     "userId": "hr",
     "displayName": "人事 花子",
@@ -148,7 +148,7 @@ HTTP 200
       "employmentStatus": "leave",
       "hireDate": "2012-04-01",
       "retireDate": null,
-      "updatedAt": "2026-10-07 06:03:49.944216+00",
+      "updatedAt": "2026-10-07 07:33:45.648294+00",
       "departmentName": "人事部"
     },
     {
@@ -162,7 +162,7 @@ HTTP 200
       "employmentStatus": "active",
       "hireDate": "2013-04-01",
       "retireDate": null,
-      "updatedAt": "2026-10-07 06:03:49.944216+00",
+      "updatedAt": "2026-10-07 07:33:45.648294+00",
       "departmentName": "購買部"
     }
   ],
@@ -199,7 +199,7 @@ HTTP 200
       "employmentStatus": "leave",
       "hireDate": "2012-04-01",
       "retireDate": null,
-      "updatedAt": "2026-10-07 06:03:49.944216+00",
+      "updatedAt": "2026-10-07 07:33:45.648294+00",
       "departmentName": "人事部"
     }
   ],
@@ -236,7 +236,7 @@ HTTP 200
       "employmentStatus": "leave",
       "hireDate": "2012-04-01",
       "retireDate": null,
-      "updatedAt": "2026-10-07 06:03:49.944216+00",
+      "updatedAt": "2026-10-07 07:33:45.648294+00",
       "departmentName": "人事部"
     },
     {
@@ -250,7 +250,7 @@ HTTP 200
       "employmentStatus": "active",
       "hireDate": "2024-04-01",
       "retireDate": null,
-      "updatedAt": "2026-10-07 06:03:49.944216+00",
+      "updatedAt": "2026-10-07 07:33:45.648294+00",
       "departmentName": "人事部"
     },
     {
@@ -264,7 +264,7 @@ HTTP 200
       "employmentStatus": "retired",
       "hireDate": "2022-04-01",
       "retireDate": "2025-03-31",
-      "updatedAt": "2026-10-07 06:03:49.944216+00",
+      "updatedAt": "2026-10-07 07:33:45.648294+00",
       "departmentName": "人事部"
     },
 …（長いので省略）
@@ -301,7 +301,7 @@ HTTP 200
       "closingDay": 31,
       "paymentSiteDays": 30,
       "tradeStatus": "suspended",
-      "updatedAt": "2026-10-07 06:03:49.953945+00"
+      "updatedAt": "2026-10-07 07:33:45.655264+00"
     },
     {
       "supplierCode": "S1008",
@@ -316,7 +316,7 @@ HTTP 200
       "closingDay": 31,
       "paymentSiteDays": 45,
       "tradeStatus": "active",
-      "updatedAt": "2026-10-07 06:03:49.953945+00"
+      "updatedAt": "2026-10-07 07:33:45.655264+00"
     },
     {
       "supplierCode": "S1009",
@@ -361,7 +361,7 @@ HTTP 200
       "employmentStatus": "active",
       "hireDate": "2017-04-01",
       "retireDate": null,
-      "updatedAt": "2026-10-07 06:03:49.944216+00",
+      "updatedAt": "2026-10-07 07:33:45.648294+00",
       "departmentName": "情報システム部"
     },
     {
@@ -375,7 +375,7 @@ HTTP 200
       "employmentStatus": "active",
       "hireDate": "2016-04-01",
       "retireDate": null,
-      "updatedAt": "2026-10-07 06:03:49.944216+00",
+      "updatedAt": "2026-10-07 07:33:45.648294+00",
       "departmentName": "営業2課"
     },
     {
@@ -389,7 +389,7 @@ HTTP 200
       "employmentStatus": "active",
       "hireDate": "2015-04-01",
       "retireDate": null,
-      "updatedAt": "2026-10-07 06:03:49.944216+00",
+      "updatedAt": "2026-10-07 07:33:45.648294+00",
       "departmentName": "営業1課"
     }
   
@@ -424,7 +424,7 @@ HTTP 200
       "employmentStatus": "leave",
       "hireDate": "2012-04-01",
       "retireDate": null,
-      "updatedAt": "2026-10-07 06:03:49.944216+00",
+      "updatedAt": "2026-10-07 07:33:45.648294+00",
       "departmentName": "人事部"
     }
   ],
@@ -461,7 +461,7 @@ HTTP 200
       "employmentStatus": "leave",
       "hireDate": "2012-04-01",
       "retireDate": null,
-      "updatedAt": "2026-10-07 06:03:49.944216+00",
+      "updatedAt": "2026-10-07 07:33:45.648294+00",
       "departmentName": "人事部"
     }
   ],
@@ -755,7 +755,7 @@ PUT http://localhost:3000/api/employees/100030
   "employmentStatus": "active",
   "hireDate": "2013-04-01",
   "retireDate": null,
-  "updatedAt": "2026-10-07 06:03:49.944216+00",
+  "updatedAt": "2026-10-07 07:33:45.648294+00",
   "departmentName": "情報システム部"
 }
 ```

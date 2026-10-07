@@ -190,6 +190,7 @@ const summary = {
     "check を CLI で（のべ）": sum((d) => d.checkVia?.cli),
     "where が載っていないと言った（のべ）": sum((d) => d.whereMisses),
     "examples が空振り（のべ）": sum((d) => d.examplesMisses),
+    "reference が空振り（のべ）": sum((d) => d.referenceMisses),
     "中身を読みに行った試行": trialsWith((d) => (d.internals ?? []).length),
     "往復（平均）": clean.length === 0 ? 0 : Math.round(sum((d) => d.turns) / clean.length),
   },

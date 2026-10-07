@@ -4,7 +4,7 @@
 > **やりとりをそのまま**書き出しています（手で直さない）。
 > 作り直し: `bash tools/run-tests.sh`
 
-- 実行日時: 2026-10-07T06:07:56.089Z
+- 実行日時: 2026-10-07T07:37:37.029Z
 - 対象: `http://localhost:3001/api`
 - 前提: `docker compose up` で DB が初期データの状態
 
@@ -76,15 +76,15 @@ POST http://localhost:3001/api/auth/login
 ```json
 HTTP 200
 {
+  "token": "dGFuYWthH-eUsOS4rSDlhKrlrZAfY2xlcmsfMTc5MTM4NzQ1Nw.b5Cat7L_ZuBwegxDO505zOn3P47-Jv9eyfwEjF1Sizc",
   "user": {
+    "officeCode": "TKY",
+    "name": "田中 優子",
     "roles": [
       "clerk"
     ],
-    "userId": "tanaka",
-    "officeCode": "TKY",
-    "name": "田中 優子"
-  },
-  "token": "dGFuYWthH-eUsOS4rSDlhKrlrZAfY2xlcmsfMTc5MTM4MjA3Ng.rih_4ElF4u2pD2ggIeZucuMoOyzq6OIit_dy-XatjeU"
+    "userId": "tanaka"
+  }
 }
 ```
 
@@ -874,8 +874,8 @@ HTTP 201
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "tanaka",
-  "createdAt": "2026-10-07 06:07:56.428211+00",
-  "updatedAt": "2026-10-07 06:07:56.428211+00",
+  "createdAt": "2026-10-07 07:37:37.310713+00",
+  "updatedAt": "2026-10-07 07:37:37.310713+00",
   "customerName": "株式会社あおぞら商事",
   "lines": [
     {
@@ -961,8 +961,8 @@ HTTP 201
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "tanaka",
-  "createdAt": "2026-10-07 06:07:56.481989+00",
-  "updatedAt": "2026-10-07 06:07:56.481989+00",
+  "createdAt": "2026-10-07 07:37:37.363004+00",
+  "updatedAt": "2026-10-07 07:37:37.363004+00",
   "customerName": "みどり物産株式会社",
   "lines": [
     {
@@ -1191,6 +1191,7 @@ POST http://localhost:3001/api/bulk/cancel
 ```json
 HTTP 200
 {
+  "succeeded": 1,
   "rejected": [
     {
       "key": "SO2026070001",
@@ -1204,8 +1205,7 @@ HTTP 200
       "key": "NOPE",
       "reason": "見つかりません"
     }
-  ],
-  "succeeded": 1
+  ]
 }
 ```
 
@@ -1241,8 +1241,8 @@ HTTP 200
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "tanaka",
-  "createdAt": "2026-10-07 06:07:56.428211+00",
-  "updatedAt": "2026-10-07 06:07:56.575132+00",
+  "createdAt": "2026-10-07 07:37:37.310713+00",
+  "updatedAt": "2026-10-07 07:37:37.452275+00",
   "customerName": "株式会社あおぞら商事",
   "lines": [
     {
@@ -1395,7 +1395,7 @@ HTTP 200
   "lineCount": 2,
   "createdBy": "sato",
   "createdAt": "2026-09-01 00:00:00+00",
-  "updatedAt": "2026-10-07 06:07:56.645484+00",
+  "updatedAt": "2026-10-07 07:37:37.50249+00",
   "customerName": "南商店",
   "lines": [
     {
@@ -1424,7 +1424,7 @@ HTTP 200
       "customerCode": "C005",
       "customerName": "南商店",
       "customerOrderNo": null,
-      "productCode": "
+      "productCode": "P
 …（長いので省略）
 ```
 
@@ -1533,8 +1533,8 @@ HTTP 201
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "yamada",
-  "createdAt": "2026-10-07 06:07:56.672686+00",
-  "updatedAt": "2026-10-07 06:07:56.672686+00",
+  "createdAt": "2026-10-07 07:37:37.526902+00",
+  "updatedAt": "2026-10-07 07:37:37.526902+00",
   "customerName": "北山フーズ株式会社",
   "lines": [
     {
@@ -1620,8 +1620,8 @@ HTTP 201
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "tanaka",
-  "createdAt": "2026-10-07 06:07:56.702799+00",
-  "updatedAt": "2026-10-07 06:07:56.702799+00",
+  "createdAt": "2026-10-07 07:37:37.550916+00",
+  "updatedAt": "2026-10-07 07:37:37.550916+00",
   "customerName": "株式会社あおぞら商事",
   "lines": [
     {
@@ -1688,8 +1688,8 @@ HTTP 200
       "totalAmount": 8692,
       "lineCount": 2,
       "createdBy": "tanaka",
-      "createdAt": "2026-10-07 06:07:56.702799+00",
-      "updatedAt": "2026-10-07 06:07:56.702799+00",
+      "createdAt": "2026-10-07 07:37:37.550916+00",
+      "updatedAt": "2026-10-07 07:37:37.550916+00",
       "customerName": "株式会社あおぞら商事"
     }
   ]
@@ -1812,8 +1812,8 @@ POST http://localhost:3001/api/bulk/cancel
 ```json
 HTTP 200
 {
-  "rejected": [],
-  "succeeded": 1
+  "succeeded": 1,
+  "rejected": []
 }
 ```
 
