@@ -1,0 +1,8 @@
+{
+  "$comment": "VS Code 拡張で開いたところを撮るときの「何を撮るか」（tools/vscode-shots.sh が読む）。roles は「狭い役割では見えず、広い役割では見える」メニューの字。page と action は権限・操作のタブで見る1画面と1つの操作。",
+  "app": "受注管理",
+  "roles": { "narrow": "sales", "wide": "manager", "onlyWide": ["注文請書", "ダッシュボード"] },
+  "page": "受注照会",
+  "hidden": { "label": "入力者", "role": "sales" },
+  "action": { "label": "まとめて取り消す", "key": "bulkCancel" }
+}
