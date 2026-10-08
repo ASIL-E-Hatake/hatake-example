@@ -130,6 +130,8 @@ const whereMisses = mcpCalls.filter((one) => one.tool === "mcp__hatake__hatake_w
 const examplesMisses = mcpCalls.filter((one) => one.tool === "mcp__hatake__hatake_examples" && /近い例はありません/.test(one.result)).length;
 // reference が「DSL に無い名前」と返した回数（0.9.29 で maxLength を引いて空振りした。0.9.30 から値でも引ける）。
 const referenceMisses = mcpCalls.filter((one) => one.tool === "mcp__hatake__hatake_reference" && /DSL に無い名前/.test(one.result)).length;
+// 空振り（reference / where）に「意味の近いキー」が添えられた回数（0.9.32 から。immutable → readOnlyWhen）。
+const meaningHints = mcpCalls.filter((one) => one.error && /意味の近いキー/.test(one.result)).length;
 const checkVia = {
   mcp: mcpCalls.filter((one) => /hatake_(check|validate)$/.test(one.tool)).length,
   cli: calls.filter((one) => hatakeCli(one) && /^(check|validate)$/.test((String(one.input.command).match(CLI) ?? [])[1] ?? "")).length,
@@ -162,6 +164,7 @@ const digest = {
   whereMisses,
   examplesMisses,
   referenceMisses,
+  meaningHints,
   checkVia,
   contaminated: outside.map((one) => ({ n: one.n, what: short(one) })),
   sequence: calls.map((one) => `${one.n}. ${short(one)}${one.error ? " ✗" : ""}`),

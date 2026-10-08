@@ -82,6 +82,14 @@ npx -p @hatake-fw/api hatake where --from docs/1-要件定義/案件の説明.md
 → [残っている問い](../apps/order-entry-prj/docs/2-設計/出力-残っている問い.txt)・
 [依頼文](../apps/master-maintenance-prj/手順/04-問いに答える.md)
 
+**YAML を読まずに見るなら VS Code 拡張**（0.9.31〜）。左の欄に定義が業務の言葉で並び、
+「人が決めること」には前書きで答えていない問い（いまは `state-owner` の1件）だけが出ます。
+役割を切り替えて「営業には何が見えるか」も、ここで確かめられます。
+
+![VS Code で人が決めることを選んだところ](../apps/order-entry-prj/手順/VSCode/06-人が決めること.png)
+
+→ [VS Code で確かめる](../apps/order-entry-prj/手順/05-VSCodeで確かめる.md)（受注入力を開いて、人が見た順に）
+
 ## 6. 設計書を出す（道具）
 
 画面一覧・遷移図・権限表・画面設計書・API 一覧は、**全部定義から作る生成物**です。手で書いて
