@@ -4,7 +4,7 @@
 > **やりとりをそのまま**書き出しています（手で直さない）。
 > 作り直し: `bash tools/run-tests.sh`
 
-- 実行日時: 2026-10-08T04:39:51.832Z
+- 実行日時: 2026-10-08T09:08:15.626Z
 - 対象: `http://localhost:3001/api`
 - 前提: `docker compose up` で DB が初期データの状態
 
@@ -84,7 +84,7 @@ HTTP 200
     ],
     "name": "田中 優子"
   },
-  "token": "dGFuYWthH-eUsOS4rSDlhKrlrZAfY2xlcmsfMTc5MTQ2MzE5MQ.s7R90w1OtiwdFIJFLkCYfH_l89Y3q8AwpkUfenBoCQU"
+  "token": "dGFuYWthH-eUsOS4rSDlhKrlrZAfY2xlcmsfMTc5MTQ3OTI5NQ.LmW8-I-xkKEXx_QpFI3N1JYOiZcL4b1I16dnDCvpUC4"
 }
 ```
 
@@ -872,8 +872,8 @@ HTTP 201
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "tanaka",
-  "createdAt": "2026-10-08 04:39:52.090569+00",
-  "updatedAt": "2026-10-08 04:39:52.090569+00",
+  "createdAt": "2026-10-08 09:08:15.827223+00",
+  "updatedAt": "2026-10-08 09:08:15.827223+00",
   "customerName": "株式会社あおぞら商事",
   "lines": [
     {
@@ -959,8 +959,8 @@ HTTP 201
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "tanaka",
-  "createdAt": "2026-10-08 04:39:52.132364+00",
-  "updatedAt": "2026-10-08 04:39:52.132364+00",
+  "createdAt": "2026-10-08 09:08:15.86906+00",
+  "updatedAt": "2026-10-08 09:08:15.86906+00",
   "customerName": "みどり物産株式会社",
   "lines": [
     {
@@ -989,7 +989,7 @@ HTTP 201
       "customerCode": "C002",
       "customerName": "みどり物産株式会社",
       "customerOrderNo": null,
-   
+     
 …（長いので省略）
 ```
 
@@ -1239,8 +1239,8 @@ HTTP 200
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "tanaka",
-  "createdAt": "2026-10-08 04:39:52.090569+00",
-  "updatedAt": "2026-10-08 04:39:52.21537+00",
+  "createdAt": "2026-10-08 09:08:15.827223+00",
+  "updatedAt": "2026-10-08 09:08:15.944287+00",
   "customerName": "株式会社あおぞら商事",
   "lines": [
     {
@@ -1268,7 +1268,7 @@ HTTP 200
       "orderStatus": "cancelled",
       "customerCode": "C001",
       "customerName": "株式会社あおぞら商事",
-      "customerOrder
+      "customerOrde
 …（長いので省略）
 ```
 
@@ -1392,7 +1392,7 @@ HTTP 200
   "lineCount": 2,
   "createdBy": "sato",
   "createdAt": "2026-09-01 00:00:00+00",
-  "updatedAt": "2026-10-08 04:39:52.263508+00",
+  "updatedAt": "2026-10-08 09:08:15.991808+00",
   "customerName": "南商店",
   "lines": [
     {
@@ -1530,8 +1530,8 @@ HTTP 201
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "yamada",
-  "createdAt": "2026-10-08 04:39:52.290885+00",
-  "updatedAt": "2026-10-08 04:39:52.290885+00",
+  "createdAt": "2026-10-08 09:08:16.014128+00",
+  "updatedAt": "2026-10-08 09:08:16.014128+00",
   "customerName": "北山フーズ株式会社",
   "lines": [
     {
@@ -1617,8 +1617,8 @@ HTTP 201
   "totalAmount": 8692,
   "lineCount": 2,
   "createdBy": "tanaka",
-  "createdAt": "2026-10-08 04:39:52.316113+00",
-  "updatedAt": "2026-10-08 04:39:52.316113+00",
+  "createdAt": "2026-10-08 09:08:16.031621+00",
+  "updatedAt": "2026-10-08 09:08:16.031621+00",
   "customerName": "株式会社あおぞら商事",
   "lines": [
     {
@@ -1684,8 +1684,8 @@ HTTP 200
       "totalAmount": 8692,
       "lineCount": 2,
       "createdBy": "tanaka",
-      "createdAt": "2026-10-08 04:39:52.316113+00",
-      "updatedAt": "2026-10-08 04:39:52.316113+00",
+      "createdAt": "2026-10-08 09:08:16.031621+00",
+      "updatedAt": "2026-10-08 09:08:16.031621+00",
       "customerName": "株式会社あおぞら商事"
     }
   ],
